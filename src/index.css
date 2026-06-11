@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+/* index.css or global stylesheet */
+
+/* Smooth scrollbar for sticky behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Active NavLink underline animation */
+.nav-link-active {
+  position: relative;
+  color: #d97706; /* amber-600 */
+}
+
+.nav-link-active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1.5px;
+  width: 100%;
+  background-color: #d97706;
+}
+
+/* Hover underline grow effect */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 1.5px;
+  width: 0;
+  background-color: #d97706;
+  transition: width 0.25s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Hamburger bar morph */
+.hamburger-bar {
+  display: block;
+  width: 20px;
+  height: 1.5px;
+  background-color: #44403c; /* stone-700 */
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+/* Mobile drawer slide */
+.mobile-drawer {
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+/* Sticky + scroll shadow */
+.navbar-scrolled {
+  backdrop-filter: blur(8px);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.07);
+  border-bottom: 0.5px solid rgba(0, 0, 0, 0.08);
+}
