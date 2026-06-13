@@ -17,10 +17,10 @@ export default function HotelLogo() {
       {/* হোটেলের নাম */}
       <div className="flex flex-col leading-none">
         <span className="text-base font-bold tracking-widest text-stone-800 uppercase">
-          Aurum
+        Hotel
         </span>
         <span className="text-[10px] font-medium tracking-[0.25em] text-amber-600 uppercase mt-1">
-          Hotel & Resort
+        & Resort
         </span>
       </div>
     </NavLink>
