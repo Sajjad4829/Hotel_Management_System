@@ -1,4 +1,4 @@
-import AboutHotel from "../AboutHotel/AboutHotel";
+import FacilitiesPreview from "../FacilityPreview/Facilitiespreview";
 import FeaturedRooms from "../FeaturesRooms/FeaturesRoom";
 import HeroSection from "./Herosec";
 
@@ -7,8 +7,8 @@ const Home = () => {
     return (
         <div>
             <HeroSection></HeroSection>
-            <AboutHotel></AboutHotel>
             <FeaturedRooms></FeaturedRooms>
+            <FacilitiesPreview></FacilitiesPreview>
         </div>
     );
 };

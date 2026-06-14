@@ -6,7 +6,7 @@ const NAV_LINKS = [
   { label: "Book", to: "/book", hasMega: true },
   { label: "Offers", to: "/offers" },
   { label: "Rooms", to: "/rooms" },
-  { label: "Facilities", to: "/facilities" },
+  { label: "Facilities", to: "/facility" },
   { label: "Dining", to: "/dining" },
   { label: "Locations", to: "/locations" },
 ];

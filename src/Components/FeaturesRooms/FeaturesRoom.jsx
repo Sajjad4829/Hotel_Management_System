@@ -260,7 +260,7 @@ export default function FeaturedRooms() {
     : ROOMS.filter((r) => r.category === activeFilter);
 
   return (
-    <section className="relative py-20 lg:py-28 overflow-hidden" style={{ background: "#f8fafc" }}>
+    <section className="relative py-20 lg:py-15 overflow-hidden" style={{ background: "#f8fafc" }}>
 
       {/* Decorative blur orbs — premium background feel */}
       <div
