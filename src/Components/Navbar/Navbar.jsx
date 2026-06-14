@@ -27,7 +27,7 @@ const MOBILE_LINKS = [
   },
   { label: "Offers" },
   { label: "Rooms" },
-  { label: "Facilities" },
+  { label: "Facility" },
   { label: "Dining" },
   { label: "Locations" },
 ];
