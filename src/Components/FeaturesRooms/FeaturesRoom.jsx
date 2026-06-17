@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 /* ─── DATA ──────────────────────────────────────────────── */
 const ROOMS = [
@@ -317,15 +318,15 @@ export default function FeaturedRooms() {
                 style={
                   isActive
                     ? {
-                        background: "linear-gradient(135deg, #1e3a5f, #0f2942)",
-                        color: "#fff",
-                        boxShadow: "0 4px 14px rgba(30,58,95,0.28)",
-                      }
+                      background: "linear-gradient(135deg, #1e3a5f, #0f2942)",
+                      color: "#fff",
+                      boxShadow: "0 4px 14px rgba(30,58,95,0.28)",
+                    }
                     : {
-                        background: "#fff",
-                        color: "#64748b",
-                        border: "1px solid #e2e8f0",
-                      }
+                      background: "#fff",
+                      color: "#64748b",
+                      border: "1px solid #e2e8f0",
+                    }
                 }
               >
                 {f}
@@ -359,7 +360,10 @@ export default function FeaturedRooms() {
               boxShadow: "0 6px 24px rgba(30,58,95,0.25)",
             }}
           >
-            View All Rooms
+            <Link  to="/rooms" >
+              View All Rooms
+            </Link>
+
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
               <path d="M5 12h14M12 5l7 7-7 7" />
             </svg>

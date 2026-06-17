@@ -6,12 +6,14 @@ import Footer from './Components/Footer/Footer'
 import FacilitiesPage from './Components/Facility/Facility'
 import RoomsPage from './Components/Roompage/Rooms'
 import RoomDetails from './Components/RoomDetails/RoomDetails'
+import ScrollToTop from './Components/ScrollToTop/ScrollToTop'
 
 function App() {
   return (
     <>
 
       <Header />
+      <ScrollToTop />
       <main>
         <Routes>
           {/* ইউজার শুরুতে সাইটে ঢুকলেই (/) হেডারের নিচে হোম পেজটি দেখতে পাবে */}
