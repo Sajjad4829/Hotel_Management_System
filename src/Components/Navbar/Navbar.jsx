@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
 
-/* ─── DATA ─────────────────────────────────────────────── */
+/* ─── navigation ─────────────────────────────────────────────── */
 const NAV_LINKS = [
-  { label: "Book", to: "/book", hasMega: true },
+  { label: "Book", to: "/book" },
   { label: "Offers", to: "/offers" },
   { label: "Rooms", to: "/rooms" },
   { label: "Facilities", to: "/facility" },
@@ -11,20 +11,9 @@ const NAV_LINKS = [
   { label: "Locations", to: "/locations" },
 ];
 
-const MEGA_LEFT = [
-  { label: "Find a Hotel", desc: "Search thousands of destinations" },
-  { label: "Homes & Villas", desc: "Premium private residences" },
-  { label: "Explore Destinations", desc: "Curated city & resort guides" },
-  { label: "Luxury Travel", desc: "Ultra-premium experiences" },
-  { label: "Resorts & Beaches", desc: "Sun, sand & serenity" },
-  { label: "All-Inclusive Stays", desc: "Everything included, nothing missed" },
-];
-
 const MOBILE_LINKS = [
   {
-    label: "Book",
-    children: MEGA_LEFT.map((i) => i.label),
-  },
+    label: "Book"},
   { label: "Offers" },
   { label: "Rooms" },
   { label: "Facility" },
@@ -98,74 +87,6 @@ const Logo = () => (
   </NavLink>
 );
 
-/* ─── MEGA MENU ──────────────────────────────────────────── */
-const MegaMenu = ({ visible }) => (
-  <div
-    className="absolute top-full left-0 right-0 z-50 pointer-events-none"
-    style={{
-      opacity: visible ? 1 : 0,
-      transform: visible ? "translateY(0)" : "translateY(-8px)",
-      transition: "opacity 0.22s ease, transform 0.22s ease",
-      pointerEvents: visible ? "auto" : "none",
-    }}
-  >
-    <div className="h-px w-full" style={{ background: "#d97706" }} />
-    <div className="bg-white shadow-2xl">
-      <div className="max-w-6xl mx-auto px-8 py-8 grid grid-cols-[1fr_340px] gap-10">
-
-        {/* Left — links */}
-        <div className="grid grid-cols-2 gap-x-10 gap-y-1">
-          <div className="col-span-2 mb-3">
-            <span className="text-[10px] tracking-[0.22em] uppercase font-semibold text-stone-400">
-              Explore & Book
-            </span>
-          </div>
-          {MEGA_LEFT.map((item) => (
-            <NavLink
-              key={item.label}
-              to="#"
-              className="group flex flex-col py-3 border-b border-stone-100 hover:border-amber-300 transition-colors duration-200"
-            >
-              <span className="text-[13px] font-semibold text-stone-800 group-hover:text-amber-700 transition-colors duration-200 tracking-wide">
-                {item.label}
-              </span>
-              <span className="text-[11px] text-stone-400 mt-0.5 group-hover:text-stone-500 transition-colors duration-200">
-                {item.desc}
-              </span>
-            </NavLink>
-          ))}
-        </div>
-
-        {/* Right — featured card */}
-        <div className="relative rounded-sm overflow-hidden group cursor-pointer" style={{ minHeight: 260 }}>
-          <img
-            src="https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=600&q=75"
-            alt="Featured — Maldives Overwater Villa"
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="absolute inset-0"
-            style={{ background: "linear-gradient(to top, rgba(10,8,5,0.82) 0%, rgba(10,8,5,0.2) 60%, transparent 100%)" }} />
-          <div className="absolute bottom-0 left-0 right-0 p-5">
-            <p className="text-[10px] tracking-[0.22em] uppercase text-amber-300 font-medium mb-1">
-              Featured Escape
-            </p>
-            <h3 className="text-white font-semibold text-base leading-snug mb-3"
-              style={{ fontFamily: "Georgia, serif" }}>
-              Maldives Overwater<br />Villa Experience
-            </h3>
-            <button
-              className="text-[11px] font-semibold tracking-widest uppercase px-4 py-2 text-white border border-white/50 hover:bg-white hover:text-stone-900 transition-all duration-200"
-              style={{ borderRadius: "2px" }}
-            >
-              Discover More
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-);
 
 /* ─── MOBILE DRAWER ──────────────────────────────────────── */
 const MobileDrawer = ({ open, onClose }) => {
@@ -274,10 +195,9 @@ const MobileDrawer = ({ open, onClose }) => {
 /* ─── NAVBAR ─────────────────────────────────────────────── */
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
-  const [megaOpen, setMegaOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const megaRef = useRef(null);
-  const megaTimer = useRef(null);
+ 
+
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -285,19 +205,12 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const openMega = () => {
-    clearTimeout(megaTimer.current);
-    setMegaOpen(true);
-  };
+  
 
-  const closeMega = () => {
-    megaTimer.current = setTimeout(() => setMegaOpen(false), 120);
-  };
 
   return (
     <>
       <header
-        ref={megaRef}
         className="fixed top-0 inset-x-0 z-40 bg-white transition-shadow duration-300"
         style={{ boxShadow: scrolled ? "0 1px 16px rgba(0,0,0,0.09)" : "0 1px 0 rgba(0,0,0,0.07)" }}
       >
@@ -338,52 +251,34 @@ export default function Navbar() {
             <Logo />
 
             {/* Desktop nav links */}
-            <nav className="hidden lg:flex items-center gap-1">
-              {NAV_LINKS.map((link) =>
-                link.hasMega ? (
-                  <div
-                    key={link.label}
-                    onMouseEnter={openMega}
-                    onMouseLeave={closeMega}
-                    className="relative"
-                  >
-                    <button
-                      className={`flex items-center gap-1 px-4 py-5 text-[12.5px] font-semibold tracking-wide uppercase transition-colors duration-150 ${
-                        megaOpen ? "text-amber-700" : "text-stone-700 hover:text-amber-700"
-                      }`}
-                    >
-                      {link.label}
-                      <IconChevron open={megaOpen} />
-                    </button>
-                    <div
-                      className="absolute bottom-0 left-4 right-4 h-[2px] transition-all duration-200"
-                      style={{ background: megaOpen ? "#d97706" : "transparent" }}
-                    />
-                  </div>
-                ) : (
-                  <NavLink
-                    key={link.label}
-                    to={link.to}
-                    className={({ isActive }) =>
-                      `relative px-4 py-5 text-[12.5px] font-semibold tracking-wide uppercase transition-colors duration-150 group ${
-                        isActive ? "text-amber-700" : "text-stone-700 hover:text-amber-700"
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        {link.label}
-                        <span
-                          className={`absolute bottom-0 left-4 right-4 h-[2px] transition-all duration-200 ${
-                            isActive ? "bg-amber-600" : "bg-transparent group-hover:bg-amber-300"
-                          }`}
-                        />
-                      </>
-                    )}
-                  </NavLink>
-                )
-              )}
-            </nav>
+           <nav className="hidden lg:flex items-center gap-1">
+  {NAV_LINKS.map((link) => (
+    <NavLink
+      key={link.label}
+      to={link.to}
+      className={({ isActive }) =>
+        `relative px-4 py-5 text-[12.5px] font-semibold tracking-wide uppercase transition-colors duration-150 group ${
+          isActive
+            ? "text-amber-700"
+            : "text-stone-700 hover:text-amber-700"
+        }`
+      }
+    >
+      {({ isActive }) => (
+        <>
+          {link.label}
+          <span
+            className={`absolute bottom-0 left-4 right-4 h-[2px] transition-all duration-200 ${
+              isActive
+                ? "bg-amber-600"
+                : "bg-transparent group-hover:bg-amber-300"
+            }`}
+          />
+        </>
+      )}
+    </NavLink>
+  ))}
+</nav>
 
             {/* Mobile hamburger */}
             <button
@@ -396,10 +291,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mega menu */}
-        <div onMouseEnter={openMega} onMouseLeave={closeMega}>
-          <MegaMenu visible={megaOpen} />
-        </div>
+       
       </header>
 
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />

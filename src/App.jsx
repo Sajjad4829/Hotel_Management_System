@@ -7,6 +7,7 @@ import FacilitiesPage from './Components/Facility/Facility'
 import RoomsPage from './Components/Roompage/Rooms'
 import RoomDetails from './Components/RoomDetails/RoomDetails'
 import ScrollToTop from './Components/ScrollToTop/ScrollToTop'
+import BookingPage from './Components/Booking Page/Booking'
 
 function App() {
   return (
@@ -21,6 +22,8 @@ function App() {
            <Route path="/facility" element={<FacilitiesPage />} />
            <Route path="/rooms" element={<RoomsPage />} />
            <Route path="/rooms/:id" element={<RoomDetails />} />
+           <Route path="/book/:id" element={<BookingPage />} />
+           <Route path="/book" element={<BookingPage />} />
           {/* ভবিষ্যতে অন্য পেজের লিংকগুলো জাস্ট এর নিচে এভাবে বসে যাবে: */}
           {/* <Route path="/rooms" element={<Rooms />} /> */}
         </Routes>
