@@ -1,3 +1,4 @@
+import SearchBookingBar from "../Bookingsearch/BookingSearch";
 import HotelContactSection from "../Contact/Contact";
 import FacilitiesPreview from "../FacilityPreview/Facilitiespreview";
 import FeaturedRooms from "../FeaturesRooms/FeaturesRoom";
@@ -8,11 +9,12 @@ import HeroSection from "./Herosec";
 const Home = () => {
     return (
         <div>
-            <HeroSection></HeroSection>
-            <FeaturedRooms></FeaturedRooms>
-            <FacilitiesPreview></FacilitiesPreview>
-            <TestimonialsPage></TestimonialsPage>
-            <HotelContactSection></HotelContactSection>
+            <SearchBookingBar />
+            <HeroSection />
+            <FeaturedRooms />
+            <FacilitiesPreview />
+            <TestimonialsPage />
+            <HotelContactSection />
         </div>
     );
 };

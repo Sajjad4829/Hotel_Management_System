@@ -19,104 +19,463 @@ import {
 } from "react-icons/fi";
 import { MdOutlineKingBed, MdOutlineBathtub, MdOutlinePool } from "react-icons/md";
 import { TbMassage } from "react-icons/tb";
-
+import { useSearchParams } from "react-router-dom";
 const roomsData = [
   {
     id: 1,
     name: "Classic Standard Room",
     type: "Standard",
+    location: "Dhaka",
+    city: "Dhaka",
+    country: "Bangladesh",
+
     price: 149,
+
     rating: 4.3,
     reviews: 128,
+
     capacity: 2,
-    image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
-    description: "A well-appointed room with city views, premium linens, and modern amenities for a comfortable stay.",
+    beds: 1,
+    bathrooms: 1,
+    size: "32 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: false,
+
+    cancellation: true,
+    featured: true,
     available: true,
+
+    image:
+      "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1200",
+      "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200",
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200",
+      "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200",
+    ],
+
+    description:
+      "A well-appointed room with elegant interiors, premium bedding, city views, complimentary WiFi, and modern amenities for a relaxing luxury stay.",
   },
+
   {
     id: 2,
     name: "Deluxe Garden View",
     type: "Deluxe",
+    location: "Cox's Bazar",
+    city: "Sylhet",
+    country: "Bangladesh",
+
     price: 229,
+
     rating: 4.6,
     reviews: 94,
+
     capacity: 2,
-    image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80",
-    description: "Overlooking lush gardens, this deluxe room features a king bed, marble bathroom, and private balcony.",
+    beds: 1,
+    bathrooms: 1,
+    size: "38 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: true,
+
+    cancellation: true,
+    featured: true,
     available: true,
+
+    image:
+      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
+      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200",
+    ],
+
+    description:
+      "A beautifully designed deluxe room overlooking lush gardens, featuring a king-size bed, marble bathroom, luxury furnishings, and a private balcony.",
   },
+
   {
     id: 3,
     name: "Executive Suite",
     type: "Executive",
+    location: "Sylhet",
+    city: "Dhaka",
+    country: "Bangladesh",
+
     price: 389,
+
     rating: 4.8,
     reviews: 67,
-    capacity: 2,
-    image: "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80",
-    description: "Refined executive suite with a separate living area, panoramic views, and exclusive lounge access.",
+
+    capacity: 3,
+    beds: 1,
+    bathrooms: 2,
+    size: "55 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: true,
+
+    cancellation: true,
+    featured: true,
     available: true,
+
+    image:
+      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
+      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200",
+      "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200",
+    ],
+
+    description:
+      "An elegant executive suite with a spacious living area, panoramic skyline views, luxury bathroom, premium workspace, and exclusive executive lounge access.",
   },
+
   {
     id: 4,
     name: "Family Suite",
     type: "Family Suite",
+    location: "Chattogram",
+    city: "Cox's Bazar",
+    country: "Bangladesh",
+
     price: 449,
+
     rating: 4.7,
     reviews: 52,
+
     capacity: 5,
-    image: "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80",
-    description: "Spacious suite designed for families with two bedrooms, a cozy lounge, and kids-friendly amenities.",
+    beds: 3,
+    bathrooms: 2,
+    size: "75 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: true,
+
+    cancellation: true,
+    featured: false,
     available: false,
+
+    image:
+      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200",
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
+      "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
+    ],
+
+    description:
+      "A spacious family suite with two bedrooms, elegant lounge, dining space, luxury amenities, and beautiful sea-facing windows for memorable family vacations.",
   },
+
   {
     id: 5,
     name: "Ocean View Deluxe",
     type: "Deluxe",
+    location: "Cox's Bazar",
+    city: "Cox's Bazar",
+    country: "Bangladesh",
+
     price: 269,
+
     rating: 4.9,
     reviews: 113,
+
     capacity: 2,
-    image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80",
-    description: "Wake up to breathtaking ocean vistas in this elegantly furnished deluxe room with a private terrace.",
+    beds: 1,
+    bathrooms: 1,
+    size: "42 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: true,
+
+    cancellation: true,
+    featured: true,
     available: true,
+
+    image:
+      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200",
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200",
+      "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200",
+      "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200",
+    ],
+
+    description:
+      "Wake up to breathtaking ocean views in this luxury deluxe room offering a private balcony, premium furnishings, king-size bed, and exceptional comfort.",
   },
   {
     id: 6,
-    name: "Classic Twin Room",
+    name: "Classic Standard Room",
     type: "Standard",
-    price: 159,
-    rating: 4.2,
-    reviews: 87,
+    location: "Dhaka",
+    city: "Dhaka",
+    country: "Bangladesh",
+
+    price: 149,
+
+    rating: 4.3,
+    reviews: 128,
+
     capacity: 2,
-    image: "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?w=800&q=80",
-    description: "Ideal for colleagues or friends, this twin room provides two plush single beds and all modern comforts.",
+    beds: 1,
+    bathrooms: 1,
+    size: "32 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: false,
+
+    cancellation: true,
+    featured: true,
     available: true,
+
+    image:
+      "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1200",
+      "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200",
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200",
+      "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200",
+    ],
+
+    description:
+      "A well-appointed room with elegant interiors, premium bedding, city views, complimentary WiFi, and modern amenities for a relaxing luxury stay.",
   },
+
   {
     id: 7,
-    name: "Grand Presidential Suite",
-    type: "Presidential Suite",
-    price: 1299,
-    rating: 5.0,
-    reviews: 29,
-    capacity: 4,
-    image: "https://images.unsplash.com/photo-1631049552057-403cdb8f0658?w=800&q=80",
-    description: "The pinnacle of luxury — a full-floor suite with butler service, private pool, and panoramic skyline views.",
+    name: "Deluxe Garden View",
+    type: "Deluxe",
+    location: "Rajshahi",
+    city: "Sylhet",
+    country: "Bangladesh",
+
+    price: 229,
+
+    rating: 4.6,
+    reviews: 94,
+
+    capacity: 2,
+    beds: 1,
+    bathrooms: 1,
+    size: "38 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: true,
+
+    cancellation: true,
+    featured: true,
     available: true,
+
+    image:
+      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
+      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200",
+    ],
+
+    description:
+      "A beautifully designed deluxe room overlooking lush gardens, featuring a king-size bed, marble bathroom, luxury furnishings, and a private balcony.",
   },
+
   {
     id: 8,
-    name: "Executive Penthouse",
+    name: "Executive Suite",
     type: "Executive",
-    price: 599,
-    rating: 4.9,
-    reviews: 41,
+    location: "Khulna",
+    city: "Dhaka",
+    country: "Bangladesh",
+
+    price: 389,
+
+    rating: 4.8,
+    reviews: 67,
+
     capacity: 3,
-    image: "https://images.unsplash.com/photo-1602002418082-a4443e081dd1?w=800&q=80",
-    description: "A top-floor penthouse retreat with floor-to-ceiling windows, gourmet kitchen, and rooftop terrace access.",
-    available: false,
+    beds: 1,
+    bathrooms: 2,
+    size: "55 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: true,
+
+    cancellation: true,
+    featured: true,
+    available: true,
+
+    image:
+      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
+      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200",
+      "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200",
+    ],
+
+    description:
+      "An elegant executive suite with a spacious living area, panoramic skyline views, luxury bathroom, premium workspace, and exclusive executive lounge access.",
   },
+
+  {
+    id: 9,
+    name: "Family Suite",
+    type: "Family Suite",
+    location: "Bandarban",
+    city: "Cox's Bazar",
+    country: "Bangladesh",
+
+    price: 449,
+
+    rating: 4.7,
+    reviews: 52,
+
+    capacity: 5,
+    beds: 3,
+    bathrooms: 2,
+    size: "75 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: true,
+
+    cancellation: true,
+    featured: false,
+    available: false,
+
+    image:
+      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200",
+      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200",
+      "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200",
+      "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=1200",
+    ],
+
+    description:
+      "A spacious family suite with two bedrooms, elegant lounge, dining space, luxury amenities, and beautiful sea-facing windows for memorable family vacations.",
+  },
+
+  {
+    id: 10,
+    name: "Ocean View Deluxe",
+    type: "Deluxe",
+    location: "Rangamati",
+    city: "Cox's Bazar",
+    country: "Bangladesh",
+
+    price: 269,
+
+    rating: 4.9,
+    reviews: 113,
+
+    capacity: 2,
+    beds: 1,
+    bathrooms: 1,
+    size: "42 m²",
+
+    breakfast: true,
+    wifi: true,
+    parking: true,
+    ac: true,
+    tv: true,
+    minibar: true,
+
+    cancellation: true,
+    featured: true,
+    available: true,
+
+    image:
+      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800&q=80",
+
+    gallery: [
+      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200",
+      "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200",
+      "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200",
+      "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=1200",
+    ],
+
+    description:
+      "Wake up to breathtaking ocean views in this luxury deluxe room offering a private balcony, premium furnishings, king-size bed, and exceptional comfort.",
+  },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ];
 
 const featureCards = [
@@ -178,13 +537,28 @@ export default function RoomsPage() {
   const [availabilityFilter, setAvailabilityFilter] = useState("All");
   const [activeFilters, setActiveFilters] = useState(null);
 
+  const [searchParams] = useSearchParams();
+
+  const location = searchParams.get("location");
+  const adults = Number(searchParams.get("adults"));
+const filteredRooms = roomsData.filter((room) => {
+  const matchLocation =
+    !location ||
+    room.location.toLowerCase().includes(location.toLowerCase());
+
+  const matchCapacity = room.capacity >= adults;
+
+  return matchLocation && matchCapacity;
+});
+
+
   const applySearch = () => {
     setActiveFilters({ search, typeFilter, maxPrice, capacityFilter, availabilityFilter });
   };
 
   const filters = activeFilters || { search: "", typeFilter: "All", maxPrice: 1500, capacityFilter: "Any", availabilityFilter: "All" };
 
-  const filtered = roomsData.filter((r) => {
+  const filtered = filteredRooms.filter((r) => {
     const matchName = r.name.toLowerCase().includes(filters.search.toLowerCase());
     const matchType = filters.typeFilter === "All" || r.type === filters.typeFilter;
     const matchPrice = r.price <= filters.maxPrice;
@@ -398,11 +772,10 @@ export default function RoomsPage() {
                     </Link>
                     <Link
                       to={`/book/${room.id}`}
-                      className={`flex-1 text-center text-xs font-semibold py-2 rounded-lg transition-colors ${
-                        room.available
-                          ? "bg-amber-500 text-white hover:bg-amber-600"
-                          : "bg-stone-100 text-stone-400 cursor-not-allowed pointer-events-none"
-                      }`}
+                      className={`flex-1 text-center text-xs font-semibold py-2 rounded-lg transition-colors ${room.available
+                        ? "bg-amber-500 text-white hover:bg-amber-600"
+                        : "bg-stone-100 text-stone-400 cursor-not-allowed pointer-events-none"
+                        }`}
                     >
                       {room.available ? "Book Now" : "Unavailable"}
                     </Link>
@@ -440,8 +813,8 @@ export default function RoomsPage() {
                 Grand <span className="italic text-amber-300">Presidential</span> Suite
               </h2>
               <p className="text-stone-400 text-sm leading-relaxed mb-8 font-light">
-                An entire floor transformed into a private sanctuary. This suite commands panoramic skyline views, 
-                features a private heated pool, dedicated butler, and interiors curated by an award-winning designer. 
+                An entire floor transformed into a private sanctuary. This suite commands panoramic skyline views,
+                features a private heated pool, dedicated butler, and interiors curated by an award-winning designer.
                 The pinnacle of what a hotel stay can be.
               </p>
 
