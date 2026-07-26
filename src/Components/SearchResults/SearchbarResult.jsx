@@ -1,0 +1,191 @@
+import { useState, useMemo, useEffect } from "react";
+
+import { getMockHotels } from "./Mockdata";
+import SearchResultHeader from "./SearchResultHeader";
+import FilterSidebar from "./FilterSidebar";
+import { EmptyState, LoadingSkeleton, Pagination } from "./Ui";
+import { useSearchParams } from "react-router-dom";
+import HotelCard from "./Hotelcard";
+/* ─── CONSTANTS ─────────────────────────────────────────── */
+const HOTELS_PER_PAGE = 5;
+
+const DEFAULT_FILTERS = {
+  price: { min: 0, max: 1000 },
+  roomType: "",
+  stars: [],
+  guestRatingMin: 0,
+  breakfast: false,
+  freeCancellation: false,
+  amenities: [],
+};
+
+
+/* ─── HELPERS ────────────────────────────────────────────── */
+const applyFilters = (hotels, filters) =>
+  hotels.filter((h) => {
+    if (h.price < filters.price.min || h.price > filters.price.max) return false;
+    if (filters.roomType && h.roomType !== filters.roomType) return false;
+    if (filters.stars.length > 0 && !filters.stars.includes(h.stars)) return false;
+    if (filters.guestRatingMin > 0 && h.guestRating < filters.guestRatingMin) return false;
+    if (filters.breakfast && !h.breakfast) return false;
+    if (filters.freeCancellation && !h.freeCancellation) return false;
+    if (
+      filters.amenities.length > 0 &&
+      !filters.amenities.every((a) => h.amenities.includes(a))
+    )
+      return false;
+    return true;
+  });
+
+const applySort = (hotels, sortBy) => {
+  const arr = [...hotels];
+  switch (sortBy) {
+    case "price_asc":
+      return arr.sort((a, b) => a.price - b.price);
+    case "price_desc":
+      return arr.sort((a, b) => b.price - a.price);
+    case "rating_desc":
+      return arr.sort((a, b) => b.guestRating - a.guestRating);
+    case "popular":
+      return arr.sort((a, b) => (b.popular ? 1 : 0) - (a.popular ? 1 : 0));
+    case "newest":
+      return arr.sort((a, b) => (b.newest ? 1 : 0) - (a.newest ? 1 : 0));
+    default:
+      return arr;
+  }
+};
+
+/* ════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ════════════════════════════════════════════════════════ */
+export default function SearchbarResult() {
+
+
+
+  /* ── State ── */
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const pageFromUrl = Number(searchParams.get("page")) || 1;
+
+  
+
+  const [hotels] = useState(() => getMockHotels());
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  const [sortBy, setSortBy] = useState("recommended");
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const [loading, setLoading] = useState(true);
+const [currentPage, setCurrentPage] = useState(pageFromUrl);
+  useEffect(() => {
+    searchParams.set("page", currentPage);
+    setSearchParams(searchParams);
+  }, [currentPage]);
+
+  const searchData = {
+    location: searchParams.get("location") || "",
+    checkIn: searchParams.get("checkIn") || "",
+    checkOut: searchParams.get("checkOut") || "",
+    adults: Number(searchParams.get("adults")) || 1,
+    children: Number(searchParams.get("children")) || 0,
+    rooms: Number(searchParams.get("rooms")) || 1,
+  };
+
+
+
+  /* Simulate initial load */
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 1200);
+    return () => clearTimeout(t);
+  }, []);
+
+  /* Reset to page 1 when filters or sort changes */
+useEffect(() => {
+  if (currentPage !== 1) {
+    setCurrentPage(1);
+    setSearchParams({ page: 1 });
+  }
+}, [filters, sortBy]);
+  /* ── Derived data ── */
+  // const filteredHotels = useMemo(() => applyFilters(hotels, filters), [hotels, filters]);
+  //   const filteredHotels = useMemo(() => {
+
+  //   let result = hotels;
+
+  //   // location search
+  //   if (searchData.location) {
+  //     result = result.filter((hotel) =>
+  //       hotel.location
+  //         .toLowerCase()
+  //         .includes(searchData.location.toLowerCase())
+  //     );
+  //   }
+
+  //   return applyFilters(result, filters);
+
+  // }, [hotels, filters, searchData.location]);
+
+  const filteredHotels = useMemo(() => {
+    return applyFilters(hotels, filters);
+  }, [hotels, filters]);
+  const sortedHotels = useMemo(() => applySort(filteredHotels, sortBy), [filteredHotels, sortBy]);
+  const totalPages = Math.ceil(sortedHotels.length / HOTELS_PER_PAGE);
+  const paginatedHotels = useMemo(
+    () => sortedHotels.slice((currentPage - 1) * HOTELS_PER_PAGE, currentPage * HOTELS_PER_PAGE),
+    [sortedHotels, currentPage]
+  );
+
+  /* ── Handlers ── */
+  const handleFilterChange = (updated) => setFilters(updated);
+  const handleFilterReset = () => setFilters(DEFAULT_FILTERS);
+  console.log(paginatedHotels);
+  return (
+    <div className="min-h-screen" style={{ background: "#F7F9FB", fontFamily: "'Inter', sans-serif" }}>
+
+      {/* ─── Header ─── */}
+      <SearchResultHeader
+        searchParams={searchData}
+        totalFound={filteredHotels.length}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        onMobileFilterOpen={() => setIsMobileFilterOpen(true)}
+      />
+
+      {/* ─── Body ─── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex gap-6 items-start">
+
+        {/* ─── Filter Sidebar ─── */}
+        <FilterSidebar
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onReset={handleFilterReset}
+          isMobileOpen={isMobileFilterOpen}
+          onMobileClose={() => setIsMobileFilterOpen(false)}
+        />
+
+        {/* ─── Results Column ─── */}
+        <main className="flex-1 min-w-0 flex flex-col gap-4">
+          {loading ? (
+            <LoadingSkeleton count={HOTELS_PER_PAGE} />
+          ) : paginatedHotels.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <>
+              {paginatedHotels.map((hotel) => (
+                <HotelCard key={hotel.id} hotel={hotel} currentPage={currentPage} />
+              ))}
+             <Pagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  onPageChange={(page) => {
+    setCurrentPage(page);
+    setSearchParams({ page });
+  }}
+/>
+            </>
+          )}
+        </main>
+
+      </div>
+    </div>
+  );
+}
