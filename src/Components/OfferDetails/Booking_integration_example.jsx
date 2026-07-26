@@ -1,8 +1,4 @@
-// src/pages/Booking.integration.example.jsx
-//
-// Reference snippet only — merge into your existing Booking page (src/pages/Booking.jsx).
-// Shows how to read the { offer, room } state pushed by OfferDetails' Book Now button,
-// and how to pre-fill the booking summary when it's present.
+
 
 import React from "react";
 import { useLocation } from "react-router-dom";
