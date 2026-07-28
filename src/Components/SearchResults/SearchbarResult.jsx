@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-
+import { useLocation } from "react-router-dom";
 import { getMockHotels } from "./Mockdata";
 import SearchResultHeader from "./SearchResultHeader";
 import FilterSidebar from "./FilterSidebar";
@@ -59,7 +59,9 @@ const applySort = (hotels, sortBy) => {
    MAIN COMPONENT
    ════════════════════════════════════════════════════════ */
 export default function SearchbarResult() {
+  const location = useLocation();
 
+  const [searchData] = useState(location.state || {});
 
 
   /* ── State ── */
@@ -67,7 +69,7 @@ export default function SearchbarResult() {
 
   const pageFromUrl = Number(searchParams.get("page")) || 1;
 
-  
+
 
   const [hotels] = useState(() => getMockHotels());
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
@@ -75,20 +77,23 @@ export default function SearchbarResult() {
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const [loading, setLoading] = useState(true);
-const [currentPage, setCurrentPage] = useState(pageFromUrl);
+  const [currentPage, setCurrentPage] = useState(pageFromUrl);
+  console.log("location.state =", location.state);
+  console.log("searchData =", searchData);
   useEffect(() => {
     searchParams.set("page", currentPage);
     setSearchParams(searchParams);
   }, [currentPage]);
+  // const searchData = location.state || {};
 
-  const searchData = {
-    location: searchParams.get("location") || "",
-    checkIn: searchParams.get("checkIn") || "",
-    checkOut: searchParams.get("checkOut") || "",
-    adults: Number(searchParams.get("adults")) || 1,
-    children: Number(searchParams.get("children")) || 0,
-    rooms: Number(searchParams.get("rooms")) || 1,
-  };
+  // const searchData = {
+  //   location: searchParams.get("location") || "",
+  //   checkIn: searchParams.get("checkIn") || "",
+  //   checkOut: searchParams.get("checkOut") || "",
+  //   adults: Number(searchParams.get("adults")) || 1,
+  //   children: Number(searchParams.get("children")) || 0,
+  //   rooms: Number(searchParams.get("rooms")) || 1,
+  // };
 
 
 
@@ -99,30 +104,13 @@ const [currentPage, setCurrentPage] = useState(pageFromUrl);
   }, []);
 
   /* Reset to page 1 when filters or sort changes */
-useEffect(() => {
-  if (currentPage !== 1) {
-    setCurrentPage(1);
-    setSearchParams({ page: 1 });
-  }
-}, [filters, sortBy]);
-  /* ── Derived data ── */
-  // const filteredHotels = useMemo(() => applyFilters(hotels, filters), [hotels, filters]);
-  //   const filteredHotels = useMemo(() => {
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+      setSearchParams({ page: 1 });
+    }
+  }, [filters, sortBy]);
 
-  //   let result = hotels;
-
-  //   // location search
-  //   if (searchData.location) {
-  //     result = result.filter((hotel) =>
-  //       hotel.location
-  //         .toLowerCase()
-  //         .includes(searchData.location.toLowerCase())
-  //     );
-  //   }
-
-  //   return applyFilters(result, filters);
-
-  // }, [hotels, filters, searchData.location]);
 
   const filteredHotels = useMemo(() => {
     return applyFilters(hotels, filters);
@@ -137,7 +125,7 @@ useEffect(() => {
   /* ── Handlers ── */
   const handleFilterChange = (updated) => setFilters(updated);
   const handleFilterReset = () => setFilters(DEFAULT_FILTERS);
-  console.log(paginatedHotels);
+  //console.log(paginatedHotels);
   return (
     <div className="min-h-screen" style={{ background: "#F7F9FB", fontFamily: "'Inter', sans-serif" }}>
 
@@ -171,16 +159,21 @@ useEffect(() => {
           ) : (
             <>
               {paginatedHotels.map((hotel) => (
-                <HotelCard key={hotel.id} hotel={hotel} currentPage={currentPage} />
+                <HotelCard
+                  key={hotel.id}
+                  hotel={hotel}
+                  currentPage={currentPage}
+                  searchData={searchData}
+                />
               ))}
-             <Pagination
-  currentPage={currentPage}
-  totalPages={totalPages}
-  onPageChange={(page) => {
-    setCurrentPage(page);
-    setSearchParams({ page });
-  }}
-/>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={(page) => {
+                  setCurrentPage(page);
+                  setSearchParams({ page });
+                }}
+              />
             </>
           )}
         </main>

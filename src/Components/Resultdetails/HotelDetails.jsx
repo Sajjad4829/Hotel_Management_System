@@ -1,14 +1,14 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { ArrowLeft, Clock, AlertCircle } from "lucide-react";
 
-import hotelDetailsData from "./HotelDetailsData";
+import hotelDetailsData from "../Resultdetails/HotelDetailsData";
 import HotelGallery from "./HotelGallery";
 import HotelInfo from "./HotelInfo";
 import Facilities from "./Facilities";
 import RoomCard from "./RoomCard";
 import BookingCard from "./BookingCard";
 import Reviews from "./Reviews";
-
+console.log("=== HOTEL DETAILS FILE LOADED ===");
 /* ─── NOT FOUND FALLBACK ────────────────────────────────── */
 const NotFound = () => (
   <div className="min-h-screen flex flex-col items-center justify-center text-center px-6"
@@ -81,6 +81,18 @@ const Policies = ({ policies }) => {
    MAIN PAGE
    ════════════════════════════════════════════════════════ */
 export default function HotelDetails() {
+alert("HotelDetails Loaded");
+
+  console.log("HotelDetails Component Render");
+
+  const location = useLocation();
+
+  console.log(location.state);
+
+  console.log("HotelDetails state:", location.state);
+
+
+
   const { id } = useParams();
   const hotel = hotelDetailsData.find((h) => h.id === Number(id));
 
@@ -168,7 +180,14 @@ export default function HotelDetails() {
           {/* ── RIGHT: Sticky booking card (1/3) ── */}
           <div className="lg:col-span-1">
             <div className="sticky top-6">
-              <BookingCard hotel={hotel} />
+              <BookingCard
+                hotel={hotel}
+                checkIn={location.state?.checkIn}
+                checkOut={location.state?.checkOut}
+                guests={location.state?.guests}
+                children={location.state?.children}
+                roomsCount={location.state?.roomsCount}
+              />
             </div>
           </div>
 

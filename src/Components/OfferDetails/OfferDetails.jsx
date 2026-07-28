@@ -10,9 +10,10 @@ import {
   Sparkles,
   ArrowRight,
   Star,
+  ChevronDown,
 } from "lucide-react";
 
-import offersData, { getOfferById, getOfferByIdOrSlug,getSimilarOffers,} from "../OfferPage/offersData";
+import offersData, { getOfferById, getOfferByIdOrSlug, getSimilarOffers, } from "../OfferPage/offersData";
 
 import Breadcrumb from "./Breadcrumb";
 import CountdownTimer from "./CountdownTimer";
@@ -38,12 +39,12 @@ const OfferDetails = () => {
 
 
 
-const offer = useMemo(() => getOfferByIdOrSlug(id), [id]);
-const similarOffers = useMemo(
-  () => (offer ? getSimilarOffers(offer.id, 3) : []),
-  [offer]
-);
-  
+  const offer = useMemo(() => getOfferByIdOrSlug(id), [id]);
+  const similarOffers = useMemo(
+    () => (offer ? getSimilarOffers(offer.id, 3) : []),
+    [offer]
+  );
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
   }, [id]);
@@ -64,10 +65,10 @@ const similarOffers = useMemo(
       </div>
     );
   }
-const currentDate = new Date();
-const isExpired = useMemo(() => {
-  return new Date(offer.expiry).getTime() < new Date().getTime();
-}, [offer.expiry]);
+  const currentDate = new Date();
+  const isExpired = useMemo(() => {
+    return new Date(offer.expiry).getTime() < new Date().getTime();
+  }, [offer.expiry]);
   // const isExpired = new Date(offer.expiry).getTime() < Date.now();
 
   const handleBookNow = () => {
@@ -80,92 +81,133 @@ const isExpired = useMemo(() => {
 
   return (
     <div className="min-h-screen bg-ink-900 text-ivory-100">
-      {/* ---------------------------------------------------------------- */}
-      {/* Luxury Hero Banner                                                */}
-      {/* ---------------------------------------------------------------- */}
-      <section className="relative h-[62vh] min-h-[420px] w-full overflow-hidden">
+      <section className="relative h-[64vh] min-h-[440px] w-full overflow-hidden">
+        {/* Slow continuous "Ken Burns" pan */}
         <motion.img
-          src={offer.mainImage}
-          alt={offer.offerTitle}
+          src={offer.mainImage || offer.image}
+          alt={offer.title}
           initial={{ scale: 1.08, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1.1, ease: "easeOut" }}
+          animate={{ scale: [1.08, 1.14, 1.08], opacity: 1 }}
+          transition={{
+            opacity: { duration: 1.1, ease: "easeOut" },
+            scale: { duration: 18, ease: "easeInOut", repeat: Infinity },
+          }}
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink-900 via-ink-900/60 to-ink-900/10" />
-        <div className="absolute inset-0 bg-gradient-to-r from-ink-900/70 via-transparent to-transparent" />
 
-        <div className="relative z-10 h-full max-w-6xl mx-auto px-6 flex flex-col justify-end pb-10">
-          <motion.div initial="hidden" animate="show" variants={fadeUp} className="mb-5">
-            <Breadcrumb
-              items={[
-                { label: "Offers", to: "/offers" },
-                { label: offer.offerTitle },
-              ]}
-            />
-          </motion.div>
+        {/* Only a light top scrim for nav legibility — most of the image
+            stays bright and vivid instead of a full dark wash.
+            Uses inline rgba (not Tailwind's /NN opacity syntax) so it
+            renders correctly regardless of Tailwind version. */}
+        <div
+          className="absolute top-0 left-0 right-0 h-32"
+          style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0))" }}
+        />
 
-          <motion.div
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
-            transition={{ delay: 0.1 }}
-            className="flex flex-wrap items-center gap-3 mb-4"
-          >
-            {offer.offerBadge && (
-              <span className="flex items-center gap-1.5 rounded-full bg-brass-500 text-ink-900 text-xs font-semibold uppercase tracking-wide px-3.5 py-1.5">
-                <Sparkles size={13} />
-                {offer.offerBadge}
-              </span>
-            )}
-            <span className="rounded-full border border-ivory-100/25 text-ivory-200/80 text-xs uppercase tracking-wide px-3.5 py-1.5">
-              {offer.offerCategory}
-            </span>
-            {isExpired && (
-              <span className="rounded-full bg-red-900/60 border border-red-400/30 text-red-200 text-xs uppercase tracking-wide px-3.5 py-1.5">
-                Expired
-              </span>
-            )}
-          </motion.div>
+        <motion.nav
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 max-w-6xl mx-auto px-6 pt-6 flex items-center gap-2 text-xs font-medium"
+        >
+          <Link to="/" className="text-white hover:text-amber-400 transition-colors">
+            Home
+          </Link>
+          <span className="text-slate-400">/</span>
+          <Link to="/offers" className="text-white hover:text-amber-400 transition-colors">
+            Offers
+          </Link>
+          <span className="text-slate-400">/</span>
+          <span className="text-amber-400 line-clamp-1 max-w-[220px] sm:max-w-none">
+            {offer.title}
+          </span>
+        </motion.nav> 
+        
+        {/* ── Floating glass info dock, anchored to the bottom ── */}
+        <motion.div
+          initial="hidden"
+          animate="show"
+          variants={{
+            hidden: {},
+            show: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } },
+          }}
+          className="absolute bottom-6 left-0 right-0 z-10"
+        >
+          <div className="max-w-6xl mx-auto px-6">
+            <div
+              className="rounded-3xl border shadow-2xl px-6 py-6 sm:px-8 sm:py-7 max-w-3xl backdrop-blur-xl"
+              style={{
+                backgroundColor: "rgba(0,0,0,0.78)",
+                borderColor: "rgba(255,255,255,0.12)",
+                boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6)",
+              }}
+            >
+              <motion.div variants={fadeUp} className="flex flex-wrap items-center gap-3 mb-4">
+                {offer.badge && (
+                  <motion.span
+                    animate={{
+                      boxShadow: [
+                        "0 0 0px rgba(245,158,11,0)",
+                        "0 0 18px rgba(245,158,11,0.55)",
+                        "0 0 0px rgba(245,158,11,0)",
+                      ],
+                    }}
+                    transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+                    className="flex items-center gap-1.5 rounded-full bg-amber-500 text-slate-900 text-xs font-bold uppercase tracking-wide px-3.5 py-1.5"
+                  >
+                    <Sparkles size={13} />
+                    {offer.badge}
+                  </motion.span>
+                )}
+                {offer.category && (
+                  <span
+                    className="rounded-full border text-white text-xs font-semibold uppercase tracking-wide px-3.5 py-1.5"
+                    style={{ borderColor: "rgba(255,255,255,0.3)" }}
+                  >
+                    {offer.category}
+                  </span>
+                )}
+                {isExpired && (
+                  <span className="rounded-full bg-red-600 text-white text-xs font-bold uppercase tracking-wide px-3.5 py-1.5">
+                    Expired
+                  </span>
+                )}
+              </motion.div>
 
-          <motion.h1
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
-            transition={{ delay: 0.18 }}
-            className="font-serif text-3xl sm:text-5xl text-ivory-50 max-w-3xl leading-tight"
-          >
-            {offer.offerTitle}
-          </motion.h1>
+              <motion.h1
+                variants={fadeUp}
+                className="font-serif text-2xl sm:text-4xl font-bold text-white leading-tight"
+              >
+                {offer.title}
+              </motion.h1>
 
-          <motion.p
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
-            transition={{ delay: 0.26 }}
-            className="mt-3 text-ivory-300/80 max-w-xl"
-          >
-            {offer.shortDescription}
-          </motion.p>
+              <motion.p variants={fadeUp} className="mt-3 text-slate-300 text-sm sm:text-base">
+                {offer.shortDescription}
+              </motion.p>
 
-          <motion.div
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
-            transition={{ delay: 0.32 }}
-            className="mt-4 flex items-center gap-2 text-sm text-ivory-300/70"
-          >
-            <Star size={15} className="text-brass-400" fill="currentColor" strokeWidth={0} />
-            {offer.rating} <span className="text-ivory-400/50">({offer.reviewCount} reviews)</span>
-            <span className="text-ivory-400/30">•</span>
-            {offer.hotelName}
-          </motion.div>
-        </div>
+              <motion.div
+                variants={fadeUp}
+                className="mt-4 flex items-center gap-2 text-sm font-medium text-white"
+              >
+                <Star size={15} className="text-amber-400" fill="currentColor" strokeWidth={0} />
+                {offer.rating}
+                <span className="text-slate-400">({offer.reviewCount} reviews)</span>
+                <span className="text-slate-500">•</span>
+                {offer.hotelName}
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Gentle bouncing scroll cue */}
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-2 right-6 z-10 text-white"
+        >
+          <ChevronDown size={22} />
+        </motion.div>
       </section>
-
-      {/* ---------------------------------------------------------------- */}
-      {/* Body                                                              */}
-      {/* ---------------------------------------------------------------- */}
       <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-12">
         {/* Left / main column */}
         <div className="lg:col-span-2 space-y-12">
@@ -184,10 +226,10 @@ const isExpired = useMemo(() => {
                 </p>
                 <div className="flex items-baseline gap-3">
                   <span className="text-ivory-400/50 line-through text-lg">
-                    {offer.currency} {offer.offerOriginalPrice}
+                    {offer.currency} {offer.originalPrice}
                   </span>
                   <span className="font-serif text-4xl text-ivory-50">
-                    {offer.currency} {offer.offerDiscountPrice}
+                    {offer.currency} {offer.discountedPrice}
                   </span>
                 </div>
                 <div className="mt-2 flex items-center gap-3 text-sm">
@@ -203,7 +245,7 @@ const isExpired = useMemo(() => {
                   <CalendarClock size={13} />
                   Offer expires
                 </p>
-                <p className="text-ivory-100 font-medium">{formatDate(offer.offerExpiryDate)}</p>
+                <p className="text-ivory-100 font-medium">{formatDate(offer.expiry)}</p>
               </div>
             </div>
 
@@ -212,7 +254,7 @@ const isExpired = useMemo(() => {
                 <p className="text-xs uppercase tracking-[0.2em] text-ivory-400/60 mb-3">
                   Offer ends in
                 </p>
-                <CountdownTimer expiry={offer.offerExpiryDate} />
+                <CountdownTimer expiry={offer.expiry} />
               </div>
             )}
           </motion.div>
@@ -279,7 +321,7 @@ const isExpired = useMemo(() => {
               ))}
             </ul>
             <p className="mt-4 text-xs text-ivory-400/50">
-              Valid from {formatDate(offer.offerStartDate)} to {formatDate(offer.offerExpiryDate)}.
+              Valid from {offer?.validFrom ? formatDate(offer.validFrom) : "N/A"} to {formatDate(offer.expiry)}.
             </p>
           </motion.div>
 
@@ -290,8 +332,8 @@ const isExpired = useMemo(() => {
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="font-serif text-2xl text-ivory-50 mb-5">Your Room</h2>
-            <RelatedRoomCard room={offer.roomName} />
+            <h2 className="font-serif text-2xl text-ivory-50 mb-5">Your Room </h2>
+            <RelatedRoomCard room={offer} />
           </motion.div>
         </div>
 
@@ -311,27 +353,27 @@ const isExpired = useMemo(() => {
 
             <div className="flex items-baseline gap-2 mb-1">
               <span className="text-ivory-400/50 line-through text-sm">
-                {offer.currency} {offer.offerOriginalPrice}
+                {offer.currency} {offer.originalPrice}
               </span>
               <span className="rounded-full bg-brass-500/15 text-brass-300 text-xs font-semibold px-2 py-0.5">
                 -{offer.offerDiscountPercent}%
               </span>
             </div>
             <p className="font-serif text-3xl text-ivory-50 mb-1">
-              {offer.currency} {offer.offerDiscountPrice}
+              {offer.currency} {offer.discountedPrice}
             </p>
             <p className="text-sm text-brass-400 mb-6">
-              You save {offer.currency} {offer.offerSavings}
+              You save {offer.currency} {offer.savings}
             </p>
 
             <dl className="space-y-2.5 text-sm border-t border-ivory-100/10 pt-5 mb-6">
               <div className="flex justify-between">
                 <dt className="text-ivory-400/60">Valid from</dt>
-                <dd className="text-ivory-200">{formatDate(offer.offerStartDate)}</dd>
+                <dd className="text-ivory-200">{formatDate(offer.validFrom)}</dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-ivory-400/60">Valid until</dt>
-                <dd className="text-ivory-200">{formatDate(offer.offerExpiryDate)}</dd>
+                <dd className="text-ivory-200">{formatDate(offer.expiry)}</dd>
               </div>
               {offer.roomName && (
                 <div className="flex justify-between">

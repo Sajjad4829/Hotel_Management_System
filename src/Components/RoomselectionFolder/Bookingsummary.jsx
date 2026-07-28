@@ -1,5 +1,6 @@
 import { ArrowRight, ShoppingCart, Tag, Info } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { calculatePricing } from "../../utils/pricing";
 
 const TAX_RATE = 0.12;
 const SERVICE_FEE_RATE = 0.05;
@@ -11,13 +12,15 @@ export default function BookingSummary({ hotel, selectedRooms, rooms }) {
   const totalRoomsCount = selectedEntries.reduce((sum, [, qty]) => sum + qty, 0);
 
   const subtotal = selectedEntries.reduce((sum, [roomId, qty]) => {
-    const room = rooms.find((r) => r.id === Number(roomId));
-    return sum + (room ? room.price * qty : 0);
-  }, 0);
+  const room = rooms.find((r) => r.id === Number(roomId));
+  return sum + (room ? room.price * qty : 0);
+}, 0);
 
-  const taxes = Math.round(subtotal * TAX_RATE);
-  const serviceFee = Math.round(subtotal * SERVICE_FEE_RATE);
-  const grandTotal = subtotal + taxes + serviceFee;
+const {
+  taxes,
+  serviceFee,
+  total: grandTotal,
+} = calculatePricing(subtotal);
 
   const canContinue = totalRoomsCount > 0;
 
@@ -34,12 +37,21 @@ export default function BookingSummary({ hotel, selectedRooms, rooms }) {
     
 
     navigate(`/book/${hotel.id}`, {
-      state: {
-        hotelId: hotel?.id,
-        hotel,
-        selectedRooms: roomsPayload,
-        totalPrice: grandTotal,
-      },
+     state: {
+    hotelId: hotel?.id,
+    hotel,
+    selectedRooms: roomsPayload,
+
+    pricing: {
+      subtotal,
+      taxes,
+      serviceFee,
+      total: grandTotal,
+    },
+  }
+
+
+      
     });
   };
 

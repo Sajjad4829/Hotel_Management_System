@@ -49,7 +49,7 @@ const offersdatas = [
     discountedPrice: 224,
     savings: 96,
     price: 224,
-
+    validFrom: "2026-07-01",
     expiry: "2026-08-31",
 
     hotelId: 1,
@@ -164,7 +164,7 @@ const offersdatas = [
     discountedPrice: 599,
     savings: 181,
     price: 599,
-
+    validFrom: "2026-05-01",
     expiry: "2026-09-15",
 
     hotelId: 2,
@@ -279,7 +279,7 @@ const offersdatas = [
     discountedPrice: 432,
     savings: 108,
     price: 432,
-
+    validFrom: "2026-08-01",
     expiry: "2026-08-20",
 
     hotelId: 3,
@@ -394,7 +394,7 @@ const offersdatas = [
     discountedPrice: 182,
     savings: 78,
     price: 182,
-
+    validFrom: "2026-07-01",
     expiry: "2026-09-01",
 
     hotelId: 4,
@@ -509,7 +509,7 @@ const offersdatas = [
     discountedPrice: 458,
     savings: 152,
     price: 458,
-
+    validFrom: "2026-07-06",
     expiry: "2026-08-25",
 
     hotelId: 5,
@@ -624,7 +624,7 @@ const offersdatas = [
     discountedPrice: 1150,
     savings: 300,
     price: 1150,
-
+    validFrom: "2026-07-10",
     expiry: "2026-09-30",
 
     hotelId: 1,
@@ -739,7 +739,7 @@ const offersdatas = [
     discountedPrice: 165,
     savings: 55,
     price: 165,
-
+    validFrom: "2026-07-21",
     expiry: "2026-08-31",
 
     hotelId: 6,
@@ -830,7 +830,7 @@ const offersdatas = [
     heroSubtitle: "A harbour-view suite paired with a private five-course sunset dinner.",
 
     description:
-      "A harbour-view suite paired with a private five-course tasting dinner as the sun sets over the water.", 
+      "A harbour-view suite paired with a private five-course tasting dinner as the sun sets over the water.",
     shortDescription:
       "A harbour-view suite paired with a private five-course tasting dinner as the sun sets over the water.",
     fullDescription:
@@ -854,7 +854,7 @@ const offersdatas = [
     discountedPrice: 328,
     savings: 82,
     price: 328,
-
+    validFrom: "2026-08-01",
     expiry: "2026-09-10",
 
     hotelId: 7,

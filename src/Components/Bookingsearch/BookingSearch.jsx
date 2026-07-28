@@ -33,12 +33,12 @@ const SearchBookingBar = () => {
 
         setError("");
 
+        navigate("/search-results", {
+            state: searchData,
+        });
 
 
 
-        navigate(
-            `/search-results?location=${searchData.destination}&checkIn=${searchData.checkIn}&checkOut=${searchData.checkOut}&adults=${searchData.adults}&children=${searchData.children}&rooms=${searchData.rooms}`
-        );
     };
     const fieldIcon = (paths) => (
         <svg
@@ -59,7 +59,7 @@ const SearchBookingBar = () => {
     return (
         <section className="  relative bg-gradient-to-b from-[#F7F9FB] to-[#EFF3F7] pt-10 pb-16 md:pb-24 px-4 sm:px-6 lg:px-8">
             <div className="  max-w-[1400px] mx-auto">
-                                {/* Search Card */}
+                {/* Search Card */}
                 <div className="relative bg-white border border-[#E3E9F0] rounded-[18px] shadow-[0_16px_40px_-12px_rgba(30,42,56,0.18)] md:-mb-14 md:h-[90px] px-3 py-3 md:px-4 md:py-0">
                     <div className="flex flex-col md:flex-row md:items-stretch md:h-full">
                         {/* Destination */}

@@ -1,5 +1,6 @@
 import { Star, Wifi, Waves, Sparkles, Dumbbell, Car, UtensilsCrossed, Heart, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 const AMENITY_ICONS = {
   wifi: { icon: <Wifi size={12} />, label: "WiFi" },
   pool: { icon: <Waves size={12} />, label: "Pool" },
@@ -16,9 +17,12 @@ const ratingBg = (rating) => {
   return "#374151";
 };
 
-export default function HotelCard({hotel,currentPage,}) {
+export default function HotelCard({ hotel, currentPage, searchData }) {
 
   const navigate = useNavigate();
+
+
+  console.log("HotelCard searchData:", searchData);
   if (!hotel) return null;
 
   const {
@@ -81,7 +85,9 @@ export default function HotelCard({hotel,currentPage,}) {
         <button
           type="button"
           aria-label="Add to wishlist"
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors duration-200"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full
+           bg-white/80 backdrop-blur-sm flex items-center justify-center
+            text-slate-400 hover:text-rose-500 transition-colors duration-200"
         >
           <Heart size={15} />
         </button>
@@ -189,13 +195,33 @@ export default function HotelCard({hotel,currentPage,}) {
             <p className="text-[10px] text-slate-400 mt-0.5">Includes taxes & fees</p>
           </div>
 
+          {console.log("Before navigate:", searchData)}
+
+          <button
+            // onClick={() =>
+            //   navigate(`/hotel/${hotel.id}?page=${currentPage}`, {
+            //     state: searchData,
+            //   })
+            // }
+            onClick={() => {
+              console.log("Navigating with:", searchData);
+
+              navigate(`/hotel/${hotel.id}?page=${currentPage}`, {
+                state: searchData,
+              });
+            }}
+          ></button>
           <button
             type="button"
-            onClick={() => navigate(`/hotel/${hotel.id}?page=${currentPage}`)}
+            onClick={() =>
+              navigate(`/hotel/${hotel.id}?page=${currentPage}`, {
+                state: searchData,
+              })
+            }
             className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[12px] font-bold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
             style={{
               background: "#2C4A6E",
-              boxShadow: "0 6px 18px rgba(44,74,110,0.3)"
+              boxShadow: "0 6px 18px rgba(44,74,110,0.3)",
             }}
           >
             See Availability

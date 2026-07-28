@@ -1,30 +1,9 @@
 import React, { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import {
-  FiCalendar,
-  FiUsers,
-  FiHome,
-  FiMaximize2,
-  FiPhone,
-  FiMail,
-  FiMapPin,
-  FiShield,
-  FiCreditCard,
-  FiStar,
-  FiHeadphones,
-  FiCheckCircle,
-  FiClock,
-  FiChevronRight,
-  FiArrowLeft,
-  FiWifi,
-  FiCoffee,
-  FiTruck,
-  FiTag,
-  FiLock,
-} from "react-icons/fi";
-import { roomsData } from "../Roompage/Roomsdata";
-
+import { calculatePricing } from "../../utils/pricing";
+import {FiCalendar,FiUsers, FiHome, FiMaximize2,FiPhone,FiMail,FiMapPin,FiShield, FiCreditCard, FiStar, FiHeadphones, FiCheckCircle, FiClock,
+  FiChevronRight, FiArrowLeft,FiWifi,FiCoffee,FiTruck, FiTag, FiLock,} from "react-icons/fi";import { roomsData } from "../Roompage/Roomsdata";
 
 function BookingInput({
   label,
@@ -159,40 +138,25 @@ function SectionCard({ title, subtitle, children, className = "" }) {
 // ==================================================
 
 export default function BookingPage() {
-
-
-
-  // const location = useLocation();
-  // const { id } = useParams();
-
-  // const room =
-  //   location.state?.room ||
-  //   roomsData.find((r) => String(r.id) === String(id));
-  // const offer = location.state?.offer;
-  // console.log(room);
-  // console.log(bookingItem.roomName);
-  // const location = useLocation();
-  // const { id } = useParams();
-
-  // const room = location.state?.room;
-
-  // const offer = location.state?.offer;
-
-  // const bookingItem =
-  //   room ||
-  //   offer ||
-  //   roomsData.find((r) => String(r.id) === String(id));
-
   const location = useLocation();
+
   const { id } = useParams();
 
-  const room = location.state?.room || roomsData.find(r => String(r.id) === String(id));
+  // const room = location.state?.room || roomsData.find(r => String(r.id) === String(id));
+  // const offer = location.state?.offer;
+
+  // const bookingItem = room || offer;
   const offer = location.state?.offer;
 
-  const bookingItem = room || offer;
+  const room =
+    location.state?.room ||
+    location.state?.selectedRooms?.[0]?.room ||
+    roomsData.find((r) => String(r.id) === String(id));
 
+  const bookingItem = offer || room;
+ 
   console.log(bookingItem);
-
+  //console.log(location.state.selectedRooms[0].room);
 
   // ---------- Stay details state ----------
   const [checkIn, setCheckIn] = useState("");
@@ -232,41 +196,6 @@ export default function BookingPage() {
 
   const datesSelected = Boolean(checkIn && checkOut);
 
-  // const pricing = useMemo(() => {
-  //   if (!bookingItem) return null;
-  //   const subtotal = bookingItem.discountPrice || bookingItem.price * nights * roomsCount;
-  //   const taxesAndFees = Math.round(subtotal * 0.08);
-  //   const serviceCharge = Math.round(subtotal * 0.05);
-  //   const discount = subtotal > 500 ? Math.round(subtotal * 0.05) : 0;
-  //   const total = subtotal + taxesAndFees + serviceCharge - discount;
-  //   return { subtotal, taxesAndFees, serviceCharge, discount, total };
-  // }, [room, nights, roomsCount]);
-  const pricing = useMemo(() => {
-    if (!bookingItem) return null;
-
-    const roomPrice =
-      bookingItem.discountPrice ??
-      bookingItem.discountedPrice ??
-      bookingItem.price ??
-      bookingItem.originalPrice;
-
-    const subtotal = roomPrice * nights * roomsCount;
-
-    const taxesAndFees = Math.round(subtotal * 0.08);
-    const serviceCharge = Math.round(subtotal * 0.05);
-    const discount = subtotal > 500 ? Math.round(subtotal * 0.05) : 0;
-    const total = subtotal + taxesAndFees + serviceCharge - discount;
-
-    return {
-      subtotal,
-      taxesAndFees,
-      serviceCharge,
-      discount,
-      total,
-      roomPrice,
-    };
-  }, [bookingItem, nights, roomsCount]);
-
 
   const freeCancellationDate = useMemo(() => {
     const base = checkIn ? new Date(checkIn) : new Date();
@@ -277,13 +206,19 @@ export default function BookingPage() {
       year: "numeric",
     });
   }, [checkIn]);
-
+const pricing =
+  location.state?.pricing ||
+  calculatePricing(
+    (bookingItem?.price || bookingItem?.discountPrice || 0) *
+      nights *
+      roomsCount
+  );
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const bookingData = {
       roomId: bookingItem.id,
-      roomName: bookingItem.roomName,
+      roomName: bookingItem.roomName || bookingItem.name,
       stay: {
         checkIn,
         checkOut,
@@ -304,16 +239,14 @@ export default function BookingPage() {
     // e.g. await fetch("/api/bookings", { method: "POST", body: JSON.stringify(bookingData) })
     console.log("Booking submitted:", bookingData);
     alert(
-      `Thank you, ${guestInfo.firstName || "Guest"}! Your reservation request for ${bookingItem.roomName} has been received.`
+      `Thank you, ${guestInfo.firstName || "Guest"}! Your reservation request for ${bookingItem.roomName || bookingItem.name} has been received.`
     );
   };
 
   const [selectedImage, setSelectedImage] = useState(
-    bookingItem?.mainImage ||
-    bookingItem?.image ||
-    bookingItem?.gallery?.[0] ||
-    ""
+    bookingItem?.mainImage || bookingItem?.image || bookingItem?.gallery?.[0] || ""
   );
+
 
   // ==================================================
   // ROOM NOT FOUND STATE
@@ -378,16 +311,13 @@ export default function BookingPage() {
               Home
             </Link>
             <FiChevronRight className="text-stone-300" />
-            <Link to="/rooms" className="transition hover:text-[#C89B3C]">
-              Rooms
-            </Link>
-            <FiChevronRight className="text-stone-300" />
-            {/* <Link
-              to={`/rooms/${bookingItem.id}`}
+            <Link
+              to={location.state?.offer ? "/offers" : "/rooms"}
               className="transition hover:text-[#C89B3C]"
             >
-              Room Details
-            </Link> */}
+              {location.state?.offer ? "Offers" : "Rooms"}
+            </Link>
+            <FiChevronRight className="text-stone-300" />
             <Link
               to={
                 location.state?.offer
@@ -423,20 +353,13 @@ export default function BookingPage() {
         <div className="space-y-6">
           {/* Selected Room Preview Card */}
           <div className="overflow-hidden rounded-2xl border border-stone-200/70 bg-white shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] sm:flex">
-            {/* <div className="h-48 w-full flex-none overflow-hidden sm:h-auto sm:w-64">
-              {<img
-                src={selectedImage}
-                alt={bookingItem.roomName}
-                className="w-full h-full object-cover"
-              />}
-              
-            </div> */}
+
             <div className="w-full flex-none sm:w-64">
               {/* Main Image */}
               <div className="h-48 overflow-hidden rounded-t-xl sm:rounded-xl">
                 <img
                   src={selectedImage}
-                  alt={bookingItem.roomName}
+                  alt={bookingItem.roomName || bookingItem.name}
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -448,7 +371,7 @@ export default function BookingPage() {
                     <img
                       key={index}
                       src={img}
-                      alt={`${bookingItem.roomName} ${index + 1}`}
+                      alt={`${bookingItem.roomName || bookingItem.name} ${index + 1}`}
                       onClick={() => setSelectedImage(img)}
                       className={`h-14 w-full cursor-pointer rounded-lg object-cover border-2 transition ${selectedImage === img
                         ? "border-amber-500"
@@ -474,7 +397,7 @@ export default function BookingPage() {
                   </span>
                 </div>
                 <h3 className="mt-2 font-serif text-xl font-semibold text-stone-900 sm:text-2xl">
-                  {bookingItem.roomName}
+                  {bookingItem.roomName || bookingItem.name}
                 </h3>
                 <p className="mt-2 text-sm leading-relaxed text-stone-500">
                   {bookingItem.description}
@@ -486,7 +409,7 @@ export default function BookingPage() {
                   <FiMaximize2 className="text-[#C89B3C]" /> {bookingItem.roomSize} m²
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <FiUsers className="text-[#C89B3C]" /> {bookingItem.capacity} Guests
+                  <FiUsers className="text-[#C89B3C]" /> {bookingItem.capacity || bookingItem.maxGuests} Guests
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <FiHome className="text-[#C89B3C]" /> {bookingItem.bedType}
@@ -502,7 +425,7 @@ export default function BookingPage() {
           </div>
 
           {/* Stay Details */}
-          <SectionCard
+          {!location.state?.selectedRooms &&(<SectionCard
             title="Stay Information"
             subtitle="Tell us when you'd like to arrive and how many will be staying."
           >
@@ -584,7 +507,7 @@ export default function BookingPage() {
                 ]}
               />
             </div>
-          </SectionCard>
+          </SectionCard>)}
 
           {/* Guest Information */}
           <SectionCard
@@ -729,7 +652,7 @@ export default function BookingPage() {
             <div className="flex items-center gap-3 border-b border-stone-100 pb-5">
               <img
                 src={bookingItem.panoramaImage}
-                alt={bookingItem.roomName}
+                alt={bookingItem.roomName || bookingItem.name}
                 className="h-16 w-16 flex-none rounded-xl object-cover"
               />
               <div className="min-w-0">
@@ -737,7 +660,7 @@ export default function BookingPage() {
                   {bookingItem.roomType}
                 </span>
                 <h4 className="mt-1 truncate text-sm font-semibold text-stone-900">
-                  {bookingItem.roomName}
+                  {bookingItem.roomName || bookingItem.name}
                 </h4>
                 <span className="inline-flex items-center gap-1 text-xs text-stone-500">
                   <FiStar className="text-[#C89B3C]" /> {bookingItem.rating} (
@@ -770,22 +693,22 @@ export default function BookingPage() {
             <div className="border-b border-stone-100 py-4">
               <SummaryRow
                 label={`$${bookingItem.discountPrice || bookingItem.price} × ${nights} night${nights > 1 ? "s" : ""} × ${roomsCount} room${roomsCount > 1 ? "s" : ""}`}
-                value={`$${pricing.subtotal.toLocaleString()}`}
+                value={`$${pricing?.subtotal?.toLocaleString() ?? 0}`}
               />
               <SummaryRow
                 label="Taxes & Fees"
-                value={`$${pricing.taxesAndFees.toLocaleString()}`}
+               value={`$${pricing?.taxes?.toLocaleString() ?? 0}`}
               />
               <SummaryRow
                 label="Service Charge"
-                value={`$${pricing.serviceCharge.toLocaleString()}`}
+                value={`$${pricing.serviceFee.toLocaleString()}`}
               />
-              {pricing.discount > 0 && (
+              {/* {pricing?.discount > 0 && (
                 <SummaryRow
                   label="Promo Discount"
                   value={`– $${pricing.discount.toLocaleString()}`}
                 />
-              )}
+              )} */}
               {!datesSelected && (
                 <p className="mt-2 text-[11px] text-stone-400">
                   Showing estimated price for 1 night. Select your dates for

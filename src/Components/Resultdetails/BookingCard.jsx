@@ -1,6 +1,23 @@
 import { Calendar, Users, ArrowRight, Shield, Tag } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+export default function BookingCard({ hotel, checkIn, checkOut, guests, children, roomsCount }) {
 
-export default function BookingCard({ hotel }) {
+  const navigate = useNavigate();
+
+
+  const handleSelectRoom = () => {
+    navigate(`/room-selection/${hotel.id}`, {
+      state: {
+        hotelId: hotel.id,
+        checkIn,
+        checkOut,
+        guests,
+        children,
+        roomsCount,
+      },
+    });
+  };
+
   if (!hotel) return null;
   const { price, originalPrice, guestRating, ratingLabel, freeCancellation } = hotel;
 
@@ -48,14 +65,14 @@ export default function BookingCard({ hotel }) {
           <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Check-in</p>
           <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
             <Calendar size={13} className="text-[#2C4A6E]" />
-            Select date
+            {checkIn || "Select date"}
           </div>
         </div>
         <div className="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-[#2C4A6E] transition-colors">
           <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Check-out</p>
           <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
             <Calendar size={13} className="text-[#2C4A6E]" />
-            Select date
+            {checkOut || "Select date"}
           </div>
         </div>
       </div>
@@ -65,16 +82,19 @@ export default function BookingCard({ hotel }) {
         <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Guests</p>
         <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
           <Users size={13} className="text-[#2C4A6E]" />
-          2 Adults · 0 Children
+          {guests
+            ? `${guests} Adults · ${children || 0} Children`
+            : "2 Adults · 0 Children"}
         </div>
       </div>
 
       {/* CTA */}
       <button
+        onClick={handleSelectRoom}
         className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[14px] font-bold text-white transition-all duration-200 hover:shadow-lg active:scale-95"
         style={{ background: "#2C4A6E" }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#003580")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "#2C4A6E")}
+      // onMouseEnter={(e) => (e.currentTarget.style.background = "#003580")}
+      // onMouseLeave={(e) => (e.currentTarget.style.background = "#2C4A6E")}
       >
         Select Room
         <ArrowRight size={16} />

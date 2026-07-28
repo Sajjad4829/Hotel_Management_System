@@ -96,12 +96,6 @@ const RelatedRoomCard = ({ room }) => {
             </span>
           </div>
 
-          <Link
-            to={`/rooms/${id}`}
-            className="rounded-full border border-brass-400/50 px-5 py-2 text-sm text-brass-300 hover:bg-brass-500 hover:text-ink-900 hover:border-brass-500 transition-colors duration-200"
-          >
-            View Room Details
-          </Link>
         </div>
       </div>
     </motion.div>

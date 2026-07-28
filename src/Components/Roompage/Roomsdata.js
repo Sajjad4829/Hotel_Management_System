@@ -1,12 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────
-// MASTER ROOM DATA SOURCE
-// This is the single source of truth for room objects across the app:
-// Rooms page, Hotel Details, Room Details, Booking Page, Offers Page,
-// Search Results, and (later) the backend API all read from this file.
-// Do not redefine or duplicate room objects anywhere else — import from
-// here and derive/filter as needed.
-// ─────────────────────────────────────────────────────────────────────────
-
 const AMENITY_ICON = {
   "Free WiFi": "Wifi",
   "Air Conditioning": "Wind",
