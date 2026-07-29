@@ -197,36 +197,22 @@ export default function HotelCard({ hotel, currentPage, searchData }) {
 
           {console.log("Before navigate:", searchData)}
 
-          <button
-            // onClick={() =>
-            //   navigate(`/hotel/${hotel.id}?page=${currentPage}`, {
-            //     state: searchData,
-            //   })
-            // }
-            onClick={() => {
-              console.log("Navigating with:", searchData);
-
-              navigate(`/hotel/${hotel.id}?page=${currentPage}`, {
-                state: searchData,
-              });
-            }}
-          ></button>
-          <button
-            type="button"
-            onClick={() =>
-              navigate(`/hotel/${hotel.id}?page=${currentPage}`, {
-                state: searchData,
-              })
-            }
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[12px] font-bold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
-            style={{
-              background: "#2C4A6E",
-              boxShadow: "0 6px 18px rgba(44,74,110,0.3)",
-            }}
-          >
-            See Availability
-            <ArrowRight size={13} />
-          </button>
+      <button
+  type="button"
+  onClick={() =>
+    navigate(`/hotel/${hotel.id}?page=${currentPage}`, {
+      state: searchData,
+    })
+  }
+  className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[12px] font-bold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-95"
+  style={{
+    background: "#2C4A6E",
+    boxShadow: "0 6px 18px rgba(44,74,110,0.3)",
+  }}
+>
+  See Availability
+  <ArrowRight size={13} />
+</button>
         </div>
       </div>
     </div>

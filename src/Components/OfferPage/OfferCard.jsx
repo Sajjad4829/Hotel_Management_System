@@ -24,6 +24,8 @@ function formatExpiry(dateStr) {
  * Glass-effect card used across the Featured Offers slider / grid.
  */
 export default function OfferCard({ offer, index = 0 }) {
+
+  
   const navigate = useNavigate();
   return (
     <motion.article
@@ -76,17 +78,11 @@ export default function OfferCard({ offer, index = 0 }) {
           <span>Expires {formatExpiry(offer.expiry)}</span>
         </div>
 
-        {/* <motion.button
-       
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          className="mt-2 w-full rounded-xl bg-[#1F3B64] py-3 text-sm font-bold text-white transition-colors hover:bg-[#152a49] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A24B]"
-        >
-          Book Now
-        </motion.button> */}
 
+
+console.log("Offer sending:", offer);
         <Link
-        
+
           className="mt-2 w-full rounded-xl bg-[#1F3B64] py-3 text-center text-sm font-bold text-white transition-colors hover:bg-[#152a49] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A24B]"
           to="/book"
           state={{
@@ -95,6 +91,9 @@ export default function OfferCard({ offer, index = 0 }) {
         >
           Book Now
         </Link>
+
+
+        
       </div>
     </motion.article>
   );

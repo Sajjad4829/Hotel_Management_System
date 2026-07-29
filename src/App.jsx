@@ -9,11 +9,13 @@ import RoomDetails from './Components/RoomDetails/RoomDetails'
 import ScrollToTop from './Components/ScrollToTop/ScrollToTop'
 import BookingPage from './Components/BookingPage/Booking'
 import SearchResultWrapper from './Components/SearchResults/SearchResultWrapper'
-import HotelDetails from "./Components/HotelDetails/HotelDetails";
+import HotelDetails from "./Components/OfferHotelDetails/HotelDetails";
 import RoomSelection from './Components/RoomselectionFolder/Roomselection'
 import AIAssistant from './Components/AI_Assistent/Aiassistant'
 import OffersPage from './Components/OfferPage/OffersPage'
 import OfferDetails from './Components/OfferDetails/OfferDetails'
+import Login from './Components/LoginPage/Login'
+import Register from './Components/RegisterPage/Register'
 
 
 
@@ -38,6 +40,8 @@ function App() {
           <Route path="/hotel/:id" element={<HotelDetails />} />
           <Route path="/hotel/:id/rooms" element={<RoomSelection />} />
           <Route path="/offers/:id" element={<OfferDetails />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Routes>
       </main>
 

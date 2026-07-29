@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { Star, MapPin, ArrowLeft, BedDouble } from "lucide-react";
-import hotelDetailsData from "../Resultdetails/HotelDetailsData";
+import hotelDetailsData from "../SearchResultDetails/HotelDetailsData";
 
 import BookingSummary from "./BookingSummary";
 import RoomCard from "./Roomcard";
@@ -65,12 +65,12 @@ export default function RoomSelection() {
   const hotelId = id ? Number(id) : location.state?.hotelId ?? 1;
 
 
-const hotel = useMemo(
-  () => hotelDetailsData.find((h) => h.id === hotelId),
-  [hotelId]
-);
+  const hotel = useMemo(
+    () => hotelDetailsData.find((h) => h.id === hotelId),
+    [hotelId]
+  );
 
-const rooms = hotel?.rooms || [];
+  const rooms = hotel?.rooms || [];
 
   const [selectedRooms, setSelectedRooms] = useState({});
 
@@ -88,10 +88,8 @@ const rooms = hotel?.rooms || [];
 
   const totalSelected = Object.values(selectedRooms).reduce((a, b) => a + b, 0);
 
-//   console.log("params id =", id);
-// console.log("hotelId =", hotelId);
-console.log( location.state);
 
+  console.log(location.state);
 
   return (
     <div className="min-h-screen" style={{ background: "#F7F9FB", fontFamily: "'Inter', sans-serif" }}>

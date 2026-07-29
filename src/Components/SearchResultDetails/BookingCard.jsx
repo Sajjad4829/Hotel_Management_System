@@ -3,10 +3,18 @@ import { useNavigate } from "react-router-dom";
 export default function BookingCard({ hotel, checkIn, checkOut, guests, children, roomsCount }) {
 
   const navigate = useNavigate();
-
+console.log({
+  hotel,
+  checkIn,
+  checkOut,
+  guests,
+  children,
+  roomsCount,
+});
 
   const handleSelectRoom = () => {
-    navigate(`/room-selection/${hotel.id}`, {
+     console.log("BookingCard Clicked");
+    navigate(`/hotel/${hotel.id}/rooms`, {
       state: {
         hotelId: hotel.id,
         checkIn,

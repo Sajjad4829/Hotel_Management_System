@@ -26,6 +26,12 @@ const NotFound = () => (
       <ArrowLeft size={14} />
       Back to Search
     </Link>
+
+    <p>Destination: {location.state?.destination}</p>
+    <p>Check In: {location.state?.checkIn}</p>
+    <p>Adults: {location.state?.adults}</p>
+    <p>Children: {location.state?.children}</p>
+    <p>Rooms: {location.state?.rooms}</p>
   </div>
 );
 
@@ -41,7 +47,12 @@ const Policies = ({ policies }) => {
   if (!policies) return null;
   const { checkIn, checkOut, cancellationPolicy } = policies;
 
+
   return (
+
+
+
+
     <div>
       <h2 className="text-[16px] font-bold text-[#1E2A38] mb-4">Hotel Policies</h2>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -81,7 +92,9 @@ const Policies = ({ policies }) => {
    MAIN PAGE
    ════════════════════════════════════════════════════════ */
 export default function HotelDetails() {
-alert("HotelDetails Loaded");
+  console.log(location.state);
+  console.log("sajjad");
+  alert("HotelDetails Loaded");
 
   console.log("HotelDetails Component Render");
 
@@ -184,9 +197,9 @@ alert("HotelDetails Loaded");
                 hotel={hotel}
                 checkIn={location.state?.checkIn}
                 checkOut={location.state?.checkOut}
-                guests={location.state?.guests}
+                guests={location.state?.adults}
                 children={location.state?.children}
-                roomsCount={location.state?.roomsCount}
+                roomsCount={location.state?.rooms}
               />
             </div>
           </div>

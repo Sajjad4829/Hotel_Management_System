@@ -2,8 +2,10 @@ import React, { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { calculatePricing } from "../../utils/pricing";
-import {FiCalendar,FiUsers, FiHome, FiMaximize2,FiPhone,FiMail,FiMapPin,FiShield, FiCreditCard, FiStar, FiHeadphones, FiCheckCircle, FiClock,
-  FiChevronRight, FiArrowLeft,FiWifi,FiCoffee,FiTruck, FiTag, FiLock,} from "react-icons/fi";import { roomsData } from "../Roompage/Roomsdata";
+import {
+  FiCalendar, FiUsers, FiHome, FiMaximize2, FiPhone, FiMail, FiMapPin, FiShield, FiCreditCard, FiStar, FiHeadphones, FiCheckCircle, FiClock,
+  FiChevronRight, FiArrowLeft, FiWifi, FiCoffee, FiTruck, FiTag, FiLock,
+} from "react-icons/fi"; import { roomsData } from "../Roompage/Roomsdata";
 
 function BookingInput({
   label,
@@ -154,8 +156,9 @@ export default function BookingPage() {
     roomsData.find((r) => String(r.id) === String(id));
 
   const bookingItem = offer || room;
- 
-  console.log(bookingItem);
+  console.log("Received in Booking:", location.state);
+  console.log("Booking Item:", bookingItem);
+  // console.log(bookingItem);
   //console.log(location.state.selectedRooms[0].room);
 
   // ---------- Stay details state ----------
@@ -206,13 +209,13 @@ export default function BookingPage() {
       year: "numeric",
     });
   }, [checkIn]);
-const pricing =
-  location.state?.pricing ||
-  calculatePricing(
-    (bookingItem?.price || bookingItem?.discountPrice || 0) *
+  const pricing =
+    location.state?.pricing ||
+    calculatePricing(
+      (bookingItem?.price || bookingItem?.discountPrice || 0) *
       nights *
       roomsCount
-  );
+    );
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -425,7 +428,7 @@ const pricing =
           </div>
 
           {/* Stay Details */}
-          {!location.state?.selectedRooms &&(<SectionCard
+          {!location.state?.selectedRooms && (<SectionCard
             title="Stay Information"
             subtitle="Tell us when you'd like to arrive and how many will be staying."
           >
@@ -697,7 +700,7 @@ const pricing =
               />
               <SummaryRow
                 label="Taxes & Fees"
-               value={`$${pricing?.taxes?.toLocaleString() ?? 0}`}
+                value={`$${pricing?.taxes?.toLocaleString() ?? 0}`}
               />
               <SummaryRow
                 label="Service Charge"
