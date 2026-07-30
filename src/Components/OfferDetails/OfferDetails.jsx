@@ -277,7 +277,7 @@ const OfferDetails = () => {
             transition={{ duration: 0.5 }}
           >
             <h2 className="font-serif text-2xl text-ivory-50 mb-4">About This Offer</h2>
-            <p className="text-ivory-300/75 leading-relaxed">{offer.offerDescription}</p>
+            <p className="text-ivory-300/75 leading-relaxed">{offer.Description}</p>
           </motion.div>
 
           {/* What's included */}

@@ -13,6 +13,7 @@ import {
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
 import Input from "./Input";
 import Button from "./Button";
+import { Link } from "react-router-dom";
 
 function Skyline() {
   const windows = useMemo(() => {
@@ -260,11 +261,10 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setRemember((r) => !r)}
-                  className={`relative h-5 w-9 rounded-full transition-colors duration-300 ${
-                    remember
+                  className={`relative h-5 w-9 rounded-full transition-colors duration-300 ${remember
                       ? "bg-gradient-to-r from-[#E8C77E] to-[#C9A455]"
                       : "bg-black/15 dark:bg-white/15"
-                  }`}
+                    }`}
                 >
                   <motion.span
                     layout
@@ -278,12 +278,12 @@ export default function Login() {
                 </span>
               </label>
 
-              <a
-                href="#"
+              <Link
+                to="/forgot-password"
                 className="text-[13px] font-medium text-[#A9843F] dark:text-[#C9A455] hover:underline underline-offset-4"
               >
                 Forgot password?
-              </a>
+              </Link>
             </div>
 
             <Button type="submit" isLoading={loading} className="mt-2 group">

@@ -1,30 +1,43 @@
-import { Calendar, Users, ArrowRight, Shield, Tag } from "lucide-react";
+import { Calendar, Users, ArrowRight, Shield, Tag,Pencil, ChevronUp, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 export default function BookingCard({ hotel, checkIn, checkOut, guests, children, roomsCount }) {
-
+const [showSearchEdit, setShowSearchEdit] = useState(false);
   const navigate = useNavigate();
-console.log({
-  hotel,
-  checkIn,
-  checkOut,
-  guests,
-  children,
-  roomsCount,
-});
 
-  const handleSelectRoom = () => {
-     console.log("BookingCard Clicked");
-    navigate(`/hotel/${hotel.id}/rooms`, {
-      state: {
-        hotelId: hotel.id,
-        checkIn,
-        checkOut,
-        guests,
-        children,
-        roomsCount,
-      },
-    });
-  };
+const [newCheckIn, setNewCheckIn] = useState(checkIn || "");
+const [newCheckOut, setNewCheckOut] = useState(checkOut || "");
+const [newGuests, setNewGuests] = useState(guests || 2);
+const [newChildren, setNewChildren] = useState(children || 0);
+const [newRoomsCount, setNewRoomsCount] = useState(roomsCount || 1);
+
+const handleUpdateSearch = () => {
+  navigate(`/hotel/${hotel.id}`, {
+    replace: true,
+    state: {
+  checkIn: newCheckIn,
+  checkOut: newCheckOut,
+  adults: newGuests,
+  children: newChildren,
+  rooms: newRoomsCount,
+},
+  });
+  
+
+  setShowSearchEdit(false);
+};
+
+const handleSelectRoom = () => {
+  navigate(`/hotel/${hotel.id}/rooms`, {
+    state: {
+      hotelId: hotel.id,
+      checkIn: newCheckIn,
+      checkOut: newCheckOut,
+      guests: newGuests,
+      children: newChildren,
+    },
+  });
+};
 
   if (!hotel) return null;
   const { price, originalPrice, guestRating, ratingLabel, freeCancellation } = hotel;
@@ -73,14 +86,14 @@ console.log({
           <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Check-in</p>
           <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
             <Calendar size={13} className="text-[#2C4A6E]" />
-            {checkIn || "Select date"}
+           {newCheckIn || "Select date"}
           </div>
         </div>
         <div className="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-[#2C4A6E] transition-colors">
           <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Check-out</p>
           <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
             <Calendar size={13} className="text-[#2C4A6E]" />
-            {checkOut || "Select date"}
+            {newCheckOut || "Select date"}
           </div>
         </div>
       </div>
@@ -90,11 +103,93 @@ console.log({
         <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Guests</p>
         <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
           <Users size={13} className="text-[#2C4A6E]" />
-          {guests
-            ? `${guests} Adults · ${children || 0} Children`
-            : "2 Adults · 0 Children"}
+          {`${newGuests} Adults · ${newChildren} Children`}
         </div>
       </div>
+   {/* Modify Button */}
+
+<button
+  type="button"
+  onClick={() => setShowSearchEdit(!showSearchEdit)}
+  className="mt-4 mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#2C4A6E] bg-white py-3 text-sm font-semibold text-[#2C4A6E] transition-all duration-200 hover:bg-[#2C4A6E] hover:text-white"
+>
+  <Pencil size={16} />
+  Modify Search
+  {showSearchEdit ? (
+    <ChevronUp size={16} />
+  ) : (
+    <ChevronDown size={16} />
+  )}
+</button>
+
+{showSearchEdit && (
+  <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div>
+        <label className="mb-1 block text-xs font-semibold text-slate-500">
+          Check In
+        </label>
+        <input
+          type="date"
+          value={newCheckIn}
+         onChange={(e) => setNewCheckIn(e.target.value)}
+          className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:border-[#2C4A6E] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-semibold text-slate-500">
+          Check Out
+        </label>
+        <input
+          type="date"
+         value={newCheckOut}
+          onChange={(e) => setNewCheckOut(e.target.value)}
+          className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:border-[#2C4A6E] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-semibold text-slate-500">
+          Adults
+        </label>
+        <input
+          type="number"
+          min="1"
+          value={newGuests}
+          onChange={(e) => setNewGuests(Number(e.target.value))}
+          className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:border-[#2C4A6E] focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-xs font-semibold text-slate-500">
+          Children
+        </label>
+        <input
+          type="number"
+          min="0"
+          value={newChildren}
+          onChange={(e) => setNewChildren(Number(e.target.value))}
+          className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:border-[#2C4A6E] focus:outline-none"
+        />
+      </div>
+
+      
+
+    </div>
+
+    <button
+     onClick={handleUpdateSearch}
+      className="mt-4 w-full rounded-xl bg-[#2C4A6E] py-3 font-semibold text-white hover:bg-[#1E3553]"
+      
+    >
+      Update Search
+    </button>
+  </div>
+)}
+
 
       {/* CTA */}
       <button

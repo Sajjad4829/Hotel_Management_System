@@ -61,10 +61,17 @@ function HotelSummaryCard({ hotel }) {
 export default function RoomSelection() {
   const { id } = useParams();
   const location = useLocation();
+  console.log(location.state);
 
   const hotelId = id ? Number(id) : location.state?.hotelId ?? 1;
 
-
+  const {
+    checkIn,
+    checkOut,
+    guests,
+    children,
+  } = location.state || {};
+  console.log(checkIn, checkOut, guests, children);
   const hotel = useMemo(
     () => hotelDetailsData.find((h) => h.id === hotelId),
     [hotelId]
@@ -89,7 +96,7 @@ export default function RoomSelection() {
   const totalSelected = Object.values(selectedRooms).reduce((a, b) => a + b, 0);
 
 
-  console.log(location.state);
+
 
   return (
     <div className="min-h-screen" style={{ background: "#F7F9FB", fontFamily: "'Inter', sans-serif" }}>
@@ -154,7 +161,10 @@ export default function RoomSelection() {
             <BookingSummary
               hotel={hotel}
               selectedRooms={selectedRooms}
-              rooms={rooms}
+              checkIn={checkIn}
+              checkOut={checkOut}
+              guests={guests}
+              children={children}
             />
           </div>
 

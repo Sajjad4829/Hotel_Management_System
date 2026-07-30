@@ -5,54 +5,67 @@ import { calculatePricing } from "../../utils/pricing";
 const TAX_RATE = 0.12;
 const SERVICE_FEE_RATE = 0.05;
 
-export default function BookingSummary({ hotel, selectedRooms, rooms }) {
+export default function BookingSummary({
+  hotel,
+  selectedRooms,
+  checkIn,
+  checkOut,
+  guests,
+  children,
+}) {
   const navigate = useNavigate();
+const rooms = hotel?.rooms || [];
+
+
 
   const selectedEntries = Object.entries(selectedRooms).filter(([, qty]) => qty > 0);
   const totalRoomsCount = selectedEntries.reduce((sum, [, qty]) => sum + qty, 0);
 
   const subtotal = selectedEntries.reduce((sum, [roomId, qty]) => {
-  const room = rooms.find((r) => r.id === Number(roomId));
-  return sum + (room ? room.price * qty : 0);
-}, 0);
+    const room = rooms.find((r) => r.id === Number(roomId));
+    return sum + (room ? room.price * qty : 0);
+  }, 0);
 
-const {
-  taxes,
-  serviceFee,
-  total: grandTotal,
-} = calculatePricing(subtotal);
+  const {
+    taxes,
+    serviceFee,
+    total: grandTotal,
+  } = calculatePricing(subtotal);
 
   const canContinue = totalRoomsCount > 0;
 
   const handleContinue = () => {
     console.log("Hotel:", hotel);
-  console.log("Hotel ID:", hotel?.id);
+    console.log("Hotel ID:", hotel?.id);
     if (!canContinue) return;
 
     const roomsPayload = selectedEntries.map(([roomId, qty]) => ({
       room: rooms.find((r) => r.id === Number(roomId)),
       qty,
     }));
-
-    
-
     navigate(`/book/${hotel.id}`, {
-     state: {
-    hotelId: hotel?.id,
-    hotel,
-    selectedRooms: roomsPayload,
+      state: {
+        hotelId: hotel?.id,
+        hotel,
 
-    pricing: {
-      subtotal,
-      taxes,
-      serviceFee,
-      total: grandTotal,
-    },
-  }
+        checkIn,
+        checkOut,
+        guests,
+        children,
 
+        selectedRooms: roomsPayload,
 
-      
+        pricing: {
+          subtotal,
+          taxes,
+          serviceFee,
+          total: grandTotal,
+        },
+      },
     });
+
+
+
   };
 
   return (
@@ -143,7 +156,7 @@ const {
 
         {/* CTA */}
         <button
-           onClick={handleContinue}
+          onClick={handleContinue}
           disabled={!canContinue}
           className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[14px] font-bold
                       transition-all duration-200 active:scale-95 ${canContinue

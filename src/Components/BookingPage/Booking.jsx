@@ -141,7 +141,17 @@ function SectionCard({ title, subtitle, children, className = "" }) {
 
 export default function BookingPage() {
   const location = useLocation();
-
+  const [arrivalTime, setArrivalTime] = useState("");
+  const [occasion, setOccasion] = useState("");
+  const {
+    hotel,
+    checkIn,
+    checkOut,
+    guests,
+    children,
+    selectedRooms,
+    //pricing,
+  } = location.state || {};
   const { id } = useParams();
 
   // const room = location.state?.room || roomsData.find(r => String(r.id) === String(id));
@@ -156,19 +166,15 @@ export default function BookingPage() {
     roomsData.find((r) => String(r.id) === String(id));
 
   const bookingItem = offer || room;
+  const bookingRooms = location.state?.selectedRooms || [];
+
+  console.log(bookingRooms);
+
   console.log("Received in Booking:", location.state);
   console.log("Booking Item:", bookingItem);
-  // console.log(bookingItem);
-  //console.log(location.state.selectedRooms[0].room);
 
-  // ---------- Stay details state ----------
-  const [checkIn, setCheckIn] = useState("");
-  const [checkOut, setCheckOut] = useState("");
-  const [guests, setGuests] = useState(2);
-  const [roomsCount, setRoomsCount] = useState(1);
-  const [children, setChildren] = useState(0);
-  const [arrivalTime, setArrivalTime] = useState("");
-  const [occasion, setOccasion] = useState("");
+  console.log(location.state.selectedRooms);
+
 
   // ---------- Guest information state ----------
   const [guestInfo, setGuestInfo] = useState({
@@ -209,13 +215,15 @@ export default function BookingPage() {
       year: "numeric",
     });
   }, [checkIn]);
+
+
   const pricing =
     location.state?.pricing ||
     calculatePricing(
-      (bookingItem?.price || bookingItem?.discountPrice || 0) *
-      nights *
-      roomsCount
+      (bookingItem?.price || bookingItem?.discountPrice || 0) * nights
     );
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -228,7 +236,7 @@ export default function BookingPage() {
         nights,
         guests,
         children,
-        roomsCount,
+        // roomsCount,
         arrivalTime,
         occasion,
       },
@@ -242,7 +250,8 @@ export default function BookingPage() {
     // e.g. await fetch("/api/bookings", { method: "POST", body: JSON.stringify(bookingData) })
     console.log("Booking submitted:", bookingData);
     alert(
-      `Thank you, ${guestInfo.firstName || "Guest"}! Your reservation request for ${bookingItem.roomName || bookingItem.name} has been received.`
+      `Thank you, ${guestInfo.firstName || "Guest"}! Your reservation request for ${bookingItem.roomName ||
+      bookingItem.name} has been received.`
     );
   };
 
@@ -355,77 +364,70 @@ export default function BookingPage() {
         {/* ================= LEFT COLUMN ================= */}
         <div className="space-y-6">
           {/* Selected Room Preview Card */}
-          <div className="overflow-hidden rounded-2xl border border-stone-200/70 bg-white shadow-[0_4px_24px_-8px_rgba(0,0,0,0.06)] sm:flex">
 
-            <div className="w-full flex-none sm:w-64">
-              {/* Main Image */}
-              <div className="h-48 overflow-hidden rounded-t-xl sm:rounded-xl">
-                <img
-                  src={selectedImage}
-                  alt={bookingItem.roomName || bookingItem.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
+         {bookingRooms.map((item) => (
+  <div
+    key={item.room.id}
+    className="mb-5 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm"
+  >
+    <div className="flex flex-col md:flex-row">
 
-              {/* Gallery */}
-              {bookingItem.gallery?.length > 0 && (
-                <div className="mt-3 grid grid-cols-5 gap-2 px-2 pb-2">
-                  {bookingItem.gallery.map((img, index) => (
-                    <img
-                      key={index}
-                      src={img}
-                      alt={`${bookingItem.roomName || bookingItem.name} ${index + 1}`}
-                      onClick={() => setSelectedImage(img)}
-                      className={`h-14 w-full cursor-pointer rounded-lg object-cover border-2 transition ${selectedImage === img
-                        ? "border-amber-500"
-                        : "border-transparent hover:border-amber-300"
-                        }`}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="flex flex-1 flex-col justify-between p-6">
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-[#C89B3C]/10 px-3 py-1 text-xs font-semibold text-[#8a6a23]">
-                    {bookingItem.roomType}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-medium text-stone-500">
-                    <FiStar className="text-[#C89B3C]" />
-                    {bookingItem.rating}{" "}
-                    <span className="text-stone-400">
-                      ({bookingItem.reviews} reviews)
-                    </span>
-                  </span>
-                </div>
-                <h3 className="mt-2 font-serif text-xl font-semibold text-stone-900 sm:text-2xl">
-                  {bookingItem.roomName || bookingItem.name}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-stone-500">
-                  {bookingItem.description}
-                </p>
-              </div>
+      {/* Image */}
+      <div className="md:w-64">
+        <img
+          src={item.room.mainImage || item.room.image}
+          alt={item.room.name}
+          className="h-52 w-full object-cover"
+        />
+      </div>
 
-              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-stone-500">
-                <span className="inline-flex items-center gap-1.5">
-                  <FiMaximize2 className="text-[#C89B3C]" /> {bookingItem.roomSize} m²
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <FiUsers className="text-[#C89B3C]" /> {bookingItem.capacity || bookingItem.maxGuests} Guests
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <FiHome className="text-[#C89B3C]" /> {bookingItem.bedType}
-                </span>
-                <span className="ml-auto text-sm font-semibold text-stone-900">
-                  ${bookingItem.discountPrice || bookingItem.price}{" "}
-                  <span className="text-xs font-normal text-stone-400">
-                    / night
-                  </span>
-                </span>
-              </div>
-            </div>
-          </div>
+      {/* Details */}
+      <div className="flex flex-1 flex-col justify-between p-5">
+
+        <div>
+          <span className="rounded-full bg-[#C89B3C]/10 px-3 py-1 text-xs font-semibold text-[#8a6a23]">
+            {item.room.roomType}
+          </span>
+
+          <h3 className="mt-2 text-xl font-semibold">
+            {item.room.name}
+          </h3>
+
+          <p className="mt-2 text-sm text-gray-500">
+            {item.room.description}
+          </p>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+
+          <span>
+            📐 {item.room.roomSize} m²
+          </span>
+
+          <span>
+            👤 {item.room.capacity || item.room.maxGuests} Guests
+          </span>
+
+          <span>
+            🛏 {item.room.bedType}
+          </span>
+
+          <span className="ml-auto font-bold text-lg">
+            ${(item.room.discountPrice || item.room.price) * item.qty}
+          </span>
+
+        </div>
+
+        <div className="mt-3 text-sm font-medium text-[#2C4A6E]">
+          Quantity : {item.qty}
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+))}
+
 
           {/* Stay Details */}
           {!location.state?.selectedRooms && (<SectionCard
@@ -439,16 +441,17 @@ export default function BookingPage() {
                 type="date"
                 icon={FiCalendar}
                 value={checkIn}
-                onChange={(e) => setCheckIn(e.target.value)}
                 required
               />
+
+
+
               <BookingInput
                 label="Check-out"
                 id="checkOut"
                 type="date"
                 icon={FiCalendar}
                 value={checkOut}
-                onChange={(e) => setCheckOut(e.target.value)}
                 required
               />
               <BookingInput
@@ -457,7 +460,6 @@ export default function BookingPage() {
                 as="select"
                 icon={FiUsers}
                 value={guests}
-                onChange={(e) => setGuests(Number(e.target.value))}
                 options={guestSelectOptions}
               />
               <BookingInput
@@ -465,8 +467,8 @@ export default function BookingPage() {
                 id="roomsCount"
                 as="select"
                 icon={FiHome}
-                value={roomsCount}
-                onChange={(e) => setRoomsCount(Number(e.target.value))}
+                // value={roomsCount}
+                // onChange={(e) => setRoomsCount(Number(e.target.value))}
                 options={roomsSelectOptions}
               />
               <BookingInput
@@ -475,7 +477,6 @@ export default function BookingPage() {
                 as="select"
                 icon={FiUsers}
                 value={children}
-                onChange={(e) => setChildren(Number(e.target.value))}
                 options={childrenSelectOptions}
               />
               <BookingInput
@@ -663,6 +664,8 @@ export default function BookingPage() {
                   {bookingItem.roomType}
                 </span>
                 <h4 className="mt-1 truncate text-sm font-semibold text-stone-900">
+
+
                   {bookingItem.roomName || bookingItem.name}
                 </h4>
                 <span className="inline-flex items-center gap-1 text-xs text-stone-500">
@@ -689,15 +692,20 @@ export default function BookingPage() {
                 value={datesSelected ? nights : "1 (default)"}
               />
               <SummaryRow label="Guests" value={`${guests} Adults, ${children} Children`} />
-              <SummaryRow label="Rooms" value={roomsCount} />
+              {/* <SummaryRow label="Rooms" value={roomsCount} /> */}
             </div>
 
             {/* Pricing breakdown */}
             <div className="border-b border-stone-100 py-4">
-              <SummaryRow
-                label={`$${bookingItem.discountPrice || bookingItem.price} × ${nights} night${nights > 1 ? "s" : ""} × ${roomsCount} room${roomsCount > 1 ? "s" : ""}`}
-                value={`$${pricing?.subtotal?.toLocaleString() ?? 0}`}
-              />
+              {bookingRooms.map((item) => (
+                <SummaryRow
+                  key={item.room.id}
+                  label={`${item.room.name} × ${item.qty}`}
+                  value={`$${(
+                    (item.room.discountPrice || item.room.price) * item.qty
+                  ).toLocaleString()}`}
+                />
+              ))}
               <SummaryRow
                 label="Taxes & Fees"
                 value={`$${pricing?.taxes?.toLocaleString() ?? 0}`}

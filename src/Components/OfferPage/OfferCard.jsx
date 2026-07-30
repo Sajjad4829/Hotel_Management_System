@@ -80,7 +80,6 @@ export default function OfferCard({ offer, index = 0 }) {
 
 
 
-console.log("Offer sending:", offer);
         <Link
 
           className="mt-2 w-full rounded-xl bg-[#1F3B64] py-3 text-center text-sm font-bold text-white transition-colors hover:bg-[#152a49] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A24B]"

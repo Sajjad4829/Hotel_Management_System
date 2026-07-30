@@ -1,7 +1,7 @@
 import { useParams, Link, useLocation } from "react-router-dom";
 import { ArrowLeft, Clock, AlertCircle } from "lucide-react";
 
-import hotelDetailsData from "../Resultdetails/HotelDetailsData";
+import hotelDetailsData from "./HotelDetailsData";
 import HotelGallery from "./HotelGallery";
 import HotelInfo from "./HotelInfo";
 import Facilities from "./Facilities";
@@ -26,12 +26,6 @@ const NotFound = () => (
       <ArrowLeft size={14} />
       Back to Search
     </Link>
-
-    <p>Destination: {location.state?.destination}</p>
-    <p>Check In: {location.state?.checkIn}</p>
-    <p>Adults: {location.state?.adults}</p>
-    <p>Children: {location.state?.children}</p>
-    <p>Rooms: {location.state?.rooms}</p>
   </div>
 );
 
@@ -91,18 +85,32 @@ const Policies = ({ policies }) => {
 /* ════════════════════════════════════════════════════════
    MAIN PAGE
    ════════════════════════════════════════════════════════ */
-export default function HotelDetails() {
-  console.log(location.state);
-  console.log("sajjad");
-  alert("HotelDetails Loaded");
-
-  console.log("HotelDetails Component Render");
+export default function SearchHotelDetails() {
+  
 
   const location = useLocation();
 
-  console.log(location.state);
+const {
+  destination,
+  checkIn,
+  checkOut,
+  adults,
+  children,
+  rooms: roomsCount,
+} = location.state || {};
 
-  console.log("HotelDetails state:", location.state);
+
+
+
+
+// console.log(location.state);
+//   console.log("sajjad");
+//   alert("HotelDetails Loaded");
+
+//   console.log("HotelDetails Component Render");
+//   console.log(location.state);
+
+//   console.log("HotelDetails state:", location.state);
 
 
 
