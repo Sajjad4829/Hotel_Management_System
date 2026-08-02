@@ -207,25 +207,6 @@ export default function CuratedDestinations({ data = {} }) {
           </div>
         )}
 
-        {/* Bottom CTA */}
-        <div className="text-center mt-14">
-          <button
-            className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl text-[13px] font-semibold tracking-wide text-white transition-all duration-200 hover:opacity-90 hover:-translate-y-0.5 active:scale-95"
-            style={{
-              background: "linear-gradient(135deg, #1e3a5f 0%, #0f2942 60%, #b45309 100%)",
-              boxShadow: "0 6px 24px rgba(30,58,95,0.25)",
-            }}
-          >
-            <Link to="/search-results">
-              View All Destinations
-            </Link>
-
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-
       </div>
     </section>
   );

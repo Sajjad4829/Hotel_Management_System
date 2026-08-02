@@ -50,6 +50,7 @@ export default function DestinationDetails() {
   const gallery = details.gallery?.items || [];
   const attractions = details.attractions?.items || [];
   const travelInfo = details.travelInfo || {};
+  const facilitiesConfig = details.facilities || {};
 
   return (
     <div className="min-h-screen pb-16" style={{ background: "#F7F9FB", fontFamily: "'Inter', sans-serif" }}>
@@ -266,7 +267,7 @@ export default function DestinationDetails() {
                         <div className="mt-2 border-t border-slate-100 pt-4">
                           <h4 className="font-bold text-[#1E2A38] mb-4 text-sm uppercase tracking-wide">Available Accommodation</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {hotel.rooms.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)).map((room, rIdx) => (
+                            {[...hotel.rooms].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)).map((room, rIdx) => (
                               <div key={rIdx} className="bg-slate-50 border border-slate-200 rounded-lg overflow-hidden flex flex-col group hover:shadow-md transition-shadow">
                                 {room.images && room.images.length > 0 && (
                                   <div className="w-full h-40 overflow-hidden relative">
@@ -329,6 +330,73 @@ export default function DestinationDetails() {
                       )}
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Hotel Facilities (Specific to this destination) */}
+            {facilitiesConfig.isVisible !== false && facilitiesConfig.items?.length > 0 && (
+              <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8" style={{ background: facilitiesConfig.backgroundStyle || '#ffffff' }}>
+                {facilitiesConfig.badgeText && (
+                  <span className="inline-block px-3 py-1 bg-orange-50 text-[#b45309] text-xs font-bold uppercase tracking-wider rounded-full mb-4">
+                    {facilitiesConfig.badgeText}
+                  </span>
+                )}
+                {facilitiesConfig.sectionTitle && (
+                  <h2 className="text-2xl md:text-3xl font-bold text-[#1e3a5f] mb-4" style={{ fontFamily: "Georgia, serif" }}>
+                    {facilitiesConfig.sectionTitle}
+                  </h2>
+                )}
+                {facilitiesConfig.sectionSubtitle && (
+                  <p className="text-slate-600 mb-8 max-w-2xl">{facilitiesConfig.sectionSubtitle}</p>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {facilitiesConfig.items
+                    .filter(item => item.status === 'Active')
+                    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+                    .map((facility, idx) => {
+                      const alignment = facility.iconPosition || 'top-left';
+                      let containerClass = '';
+                      let iconAlignClass = '';
+
+                      switch (alignment) {
+                        case 'top-center':
+                          containerClass = 'flex-col text-center items-center';
+                          iconAlignClass = 'mx-auto mb-6';
+                          break;
+                        case 'left':
+                          containerClass = 'flex-row items-start text-left gap-5';
+                          iconAlignClass = 'shrink-0 mt-1 mb-2';
+                          break;
+                        case 'right':
+                          containerClass = 'flex-row-reverse items-start text-right gap-5';
+                          iconAlignClass = 'shrink-0 mt-1 mb-2';
+                          break;
+                        case 'top-left':
+                        default:
+                          containerClass = 'flex-col text-left';
+                          iconAlignClass = 'mr-auto mb-6';
+                          break;
+                      }
+
+                      const isRow = alignment === 'left' || alignment === 'right';
+                      
+                      return (
+                        <div key={idx} className={`bg-white rounded-2xl p-6 border border-slate-100 hover:border-orange-200 transition-all hover:-translate-y-1 hover:shadow-lg group flex ${containerClass}`}>
+                          <div 
+                            className={`w-14 h-14 rounded-xl flex items-center justify-center text-white shadow-md transition-transform group-hover:scale-110 ${iconAlignClass}`}
+                            style={{ background: facility.gradient || 'linear-gradient(135deg, #b45309, #d97706)' }}
+                          >
+                            {renderIcon(facility.icon, { size: 28 })}
+                          </div>
+                          <div className={`flex flex-col ${isRow ? 'flex-1' : ''} h-full`}>
+                            <h3 className="text-lg font-bold text-[#1e3a5f] mb-2">{facility.name}</h3>
+                            <p className="text-slate-500 text-sm leading-relaxed mb-1 flex-1">{facility.desc}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
             )}

@@ -5,6 +5,9 @@ import NavbarEditor from './NavbarEditor';
 import BookingSearchEditor from './BookingSearchEditor';
 import HeroEditor from './HeroEditor';
 import FeaturedCollectionEditor from './FeaturedCollectionEditor';
+import FacilitiesEditor from './FacilitiesEditor';
+import ReviewsEditor from './ReviewsEditor';
+import StatisticsEditor from './StatisticsEditor';
 
 export default function PageBuilder() {
   const { pagesData, updatePageData } = usePageContext();
@@ -19,14 +22,12 @@ export default function PageBuilder() {
       name: 'Home Page',
       sections: [
         { id: 'navbar', name: 'Navbar' },
-        { id: 'bookingSearch', name: 'Booking Search' },
         { id: 'hero', name: 'Hero' },
-        { id: 'featuredCollection', name: 'Featured Collection' },
-        { id: 'curatedCollection', name: 'Curated Collection' },
-        { id: 'aiSection', name: 'AI Section' },
-        { id: 'curatedDestinations', name: 'Curated Destinations' },
+        { id: 'bookingSearch', name: 'Booking Search' },
+        { id: 'featuredCollection', name: 'Curated Destinations' },
         { id: 'facilities', name: 'Facilities' },
         { id: 'reviews', name: 'Reviews' },
+        { id: 'statistics', name: 'Statistics' },
         { id: 'cta', name: 'CTA' },
         { id: 'newsletter', name: 'Newsletter' },
         { id: 'footer', name: 'Footer' },
@@ -220,6 +221,12 @@ export default function PageBuilder() {
                 data={currentPageData} 
                 onChange={(field, value) => handleInputChange(field, value)} 
               />
+            ) : isNestedPage && selectedSection === 'facilities' ? (
+              <FacilitiesEditor />
+            ) : isNestedPage && selectedSection === 'reviews' ? (
+              <ReviewsEditor />
+            ) : isNestedPage && selectedSection === 'statistics' ? (
+              <StatisticsEditor />
             ) : (
               <div className="space-y-2">
                 {Object.entries(currentPageData).map(([key, value]) => renderInput(key, value))}

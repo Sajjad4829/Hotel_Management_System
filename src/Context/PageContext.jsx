@@ -120,6 +120,18 @@ const defaultPagesData = {
             gallery: { items: [] },
             attractions: { items: [] },
             travelInfo: { bestTimeToVisit: "", weather: "", transportation: "", localTips: "" },
+            facilities: {
+              isVisible: true,
+              sectionTitle: "Premium Hotel Facilities",
+              badgeText: "Amenities",
+              sectionSubtitle: "Experience world-class comfort with our premium facilities available at most properties in this destination.",
+              items: [
+                { id: "fac-1", name: "High-Speed WiFi", desc: "Stay connected with complimentary high-speed fiber internet in all rooms and public areas.", gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)", icon: "Wifi", status: "Active", displayOrder: 1 },
+                { id: "fac-2", name: "Infinity Pool", desc: "Relax in temperature-controlled infinity pools with panoramic views.", gradient: "linear-gradient(135deg, #0ea5e9, #6366f1)", icon: "Waves", status: "Active", displayOrder: 2 },
+                { id: "fac-3", name: "Modern Fitness Center", desc: "Fully equipped 24-hour gym with state-of-the-art equipment.", gradient: "linear-gradient(135deg, #f59e0b, #d97706)", icon: "Dumbbell", status: "Active", displayOrder: 3 },
+                { id: "fac-4", name: "24/7 Room Service", desc: "Enjoy gourmet meals delivered right to your door anytime.", gradient: "linear-gradient(135deg, #ec4899, #f43f5e)", icon: "Utensils", status: "Active", displayOrder: 4 }
+              ]
+            },
             seo: { slug: "dhaka", metaTitle: "Dhaka Hotels & Tourism", metaDescription: "Explore Dhaka with our curated hotels.", featuredImage: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=1200&q=80", status: "Published" }
           }
         },
@@ -142,6 +154,18 @@ const defaultPagesData = {
             gallery: { items: [] },
             attractions: { items: [] },
             travelInfo: { bestTimeToVisit: "", weather: "", transportation: "", localTips: "" },
+            facilities: {
+              isVisible: true,
+              sectionTitle: "Premium Hotel Facilities",
+              badgeText: "Amenities",
+              sectionSubtitle: "Experience world-class comfort with our premium facilities available at most properties in this destination.",
+              items: [
+                { id: "fac-1", name: "High-Speed WiFi", desc: "Stay connected with complimentary high-speed fiber internet in all rooms and public areas.", gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)", icon: "Wifi", status: "Active", displayOrder: 1 },
+                { id: "fac-2", name: "Infinity Pool", desc: "Relax in temperature-controlled infinity pools with panoramic views.", gradient: "linear-gradient(135deg, #0ea5e9, #6366f1)", icon: "Waves", status: "Active", displayOrder: 2 },
+                { id: "fac-3", name: "Modern Fitness Center", desc: "Fully equipped 24-hour gym with state-of-the-art equipment.", gradient: "linear-gradient(135deg, #f59e0b, #d97706)", icon: "Dumbbell", status: "Active", displayOrder: 3 },
+                { id: "fac-4", name: "24/7 Room Service", desc: "Enjoy gourmet meals delivered right to your door anytime.", gradient: "linear-gradient(135deg, #ec4899, #f43f5e)", icon: "Utensils", status: "Active", displayOrder: 4 }
+              ]
+            },
             seo: { slug: "coxs-bazar", metaTitle: "Cox's Bazar Sea Beach", metaDescription: "Relax at the world's longest natural sea beach.", featuredImage: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80", status: "Published" }
           }
         },
@@ -164,6 +188,18 @@ const defaultPagesData = {
             gallery: { items: [] },
             attractions: { items: [] },
             travelInfo: { bestTimeToVisit: "", weather: "", transportation: "", localTips: "" },
+            facilities: {
+              isVisible: true,
+              sectionTitle: "Premium Hotel Facilities",
+              badgeText: "Amenities",
+              sectionSubtitle: "Experience world-class comfort with our premium facilities available at most properties in this destination.",
+              items: [
+                { id: "fac-1", name: "High-Speed WiFi", desc: "Stay connected with complimentary high-speed fiber internet in all rooms and public areas.", gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)", icon: "Wifi", status: "Active", displayOrder: 1 },
+                { id: "fac-2", name: "Infinity Pool", desc: "Relax in temperature-controlled infinity pools with panoramic views.", gradient: "linear-gradient(135deg, #0ea5e9, #6366f1)", icon: "Waves", status: "Active", displayOrder: 2 },
+                { id: "fac-3", name: "Modern Fitness Center", desc: "Fully equipped 24-hour gym with state-of-the-art equipment.", gradient: "linear-gradient(135deg, #f59e0b, #d97706)", icon: "Dumbbell", status: "Active", displayOrder: 3 },
+                { id: "fac-4", name: "24/7 Room Service", desc: "Enjoy gourmet meals delivered right to your door anytime.", gradient: "linear-gradient(135deg, #ec4899, #f43f5e)", icon: "Utensils", status: "Active", displayOrder: 4 }
+              ]
+            },
             seo: { slug: "sylhet", metaTitle: "Sylhet Tea Gardens & Tourism", metaDescription: "Discover the natural beauty of Sylhet.", featuredImage: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80", status: "Published" }
           }
         }
@@ -172,8 +208,49 @@ const defaultPagesData = {
     curatedCollection: { title: "Curated Rooms" },
     aiSection: { title: "AI Assistant" },
     curatedDestinations: { title: "Explore Destinations", description: "Our Curated Destinations" },
-    facilities: { title: "Our Facilities" },
-    reviews: { title: "Guest Reviews" },
+    facilities: { 
+      isVisible: true,
+      badgeText: "Premium Amenities",
+      title: "Hotel",
+      titleHighlight: "Facilities",
+      subtitle: "Enjoy world-class amenities for a comfortable stay — every detail considered, every comfort included.",
+      items: [
+        { id: "fac-1", name: "Free WiFi", desc: "High-speed fibre internet everywhere", gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)", icon: "Wifi", status: "Active", displayOrder: 1 },
+        { id: "fac-2", name: "Swimming Pool", desc: "Heated infinity pool with skyline views", gradient: "linear-gradient(135deg, #0ea5e9, #6366f1)", icon: "Waves", status: "Active", displayOrder: 2 },
+        { id: "fac-3", name: "Fitness Center", desc: "24-hour gym with personal trainers", gradient: "linear-gradient(135deg, #f59e0b, #d97706)", icon: "Dumbbell", status: "Active", displayOrder: 3 },
+        { id: "fac-4", name: "Valet Parking", desc: "Secure on-site parking & valet service", gradient: "linear-gradient(135deg, #14b8a6, #0ea5e9)", icon: "Car", status: "Active", displayOrder: 4 },
+        { id: "fac-5", name: "Room Service", desc: "In-room dining around the clock", gradient: "linear-gradient(135deg, #ec4899, #f43f5e)", icon: "Utensils", status: "Active", displayOrder: 5 },
+        { id: "fac-6", name: "Gourmet Breakfast", desc: "Fresh, locally-sourced morning buffet", gradient: "linear-gradient(135deg, #f97316, #f59e0b)", icon: "Coffee", status: "Active", displayOrder: 6 },
+        { id: "fac-7", name: "24/7 Reception", desc: "Always-on concierge & front desk", gradient: "linear-gradient(135deg, #8b5cf6, #6366f1)", icon: "Clock", status: "Active", displayOrder: 7 }
+      ]
+    },
+    reviews: { 
+      isVisible: true,
+      badgeText: "Guest Stories",
+      title: "What Our",
+      titleHighlight: "Guests Say",
+      subtitle: "Real experiences from our happy guests around the world.",
+      items: [
+        { id: "rev-1", name: "Sophia Bennett", location: "London, United Kingdom", rating: 5, review: "An absolutely stunning property. From the moment we arrived, the staff anticipated every need. The infinity pool and spa were the highlight of our trip — we'll be back.", initials: "SB", color: "linear-gradient(135deg, #f59e0b, #6366f1)", status: "Active", displayOrder: 1 },
+        { id: "rev-2", name: "Daniel Mensah", location: "Accra, Ghana", rating: 5, review: "Service was impeccable and the rooms exceeded expectations. The breakfast spread alone is worth the stay. Highly recommend the Ocean Suite for the views.", initials: "DM", color: "linear-gradient(135deg, #0ea5e9, #f59e0b)", status: "Active", displayOrder: 2 },
+        { id: "rev-3", name: "Aiko Tanaka", location: "Tokyo, Japan", rating: 4.5, review: "Beautifully designed, peaceful, and quiet despite being in the city center. The concierge helped plan our entire itinerary — truly five-star hospitality.", initials: "AT", color: "linear-gradient(135deg, #6366f1, #8b5cf6)", status: "Active", displayOrder: 3 },
+        { id: "rev-4", name: "Lucas Martin", location: "Paris, France", rating: 5, review: "We celebrated our anniversary here and it was magical. The presidential suite, the private dining experience, everything felt curated just for us.", initials: "LM", color: "linear-gradient(135deg, #14b8a6, #f59e0b)", status: "Active", displayOrder: 4 },
+        { id: "rev-5", name: "Priya Sharma", location: "Mumbai, India", rating: 4.5, review: "Exceptional attention to detail. The spa treatments were rejuvenating and the staff went above and beyond to make our family feel at home.", initials: "PS", color: "linear-gradient(135deg, #f59e0b, #0ea5e9)", status: "Active", displayOrder: 5 },
+        { id: "rev-6", name: "Ethan Walker", location: "Sydney, Australia", rating: 5, review: "Best hotel experience we've had in years. Clean, modern, luxurious — and the staff remembered our names from day one. Can't recommend it enough.", initials: "EW", color: "linear-gradient(135deg, #8b5cf6, #f59e0b)", status: "Active", displayOrder: 6 },
+      ]
+    },
+    statistics: {
+      isVisible: true,
+      badgeText: "Trusted Worldwide",
+      title: "Numbers That Speak",
+      titleHighlight: "For Themselves",
+      items: [
+        { id: "stat-1", icon: "Users", value: "25,000", suffix: "+", label: "Happy Guests", status: "Active", displayOrder: 1 },
+        { id: "stat-2", icon: "Award", value: "4.9", suffix: " / 5", label: "5-Star Reviews", status: "Active", displayOrder: 2 },
+        { id: "stat-3", icon: "Repeat", value: "68", suffix: "%", label: "Repeat Customers", status: "Active", displayOrder: 3 },
+        { id: "stat-4", icon: "Globe", value: "80", suffix: "+", label: "Global Visitors", status: "Active", displayOrder: 4 },
+      ]
+    },
     cta: { title: "Ready to Experience Luxury Stay", buttonText: "Book Now" },
     newsletter: { title: "Subscribe", description: "Join our newsletter" },
     footer: { copyright: "© 2026 Haven" }
@@ -223,6 +300,10 @@ export function PageProvider({ children }) {
             featuredCollection: {
                 ...defaultPagesData.home.featuredCollection,
                 ...(existingHome.featuredCollection || {})
+            },
+            facilities: {
+                ...defaultPagesData.home.facilities,
+                ...(existingHome.facilities || {})
             }
           };
         }
@@ -272,6 +353,18 @@ export function PageProvider({ children }) {
                   weather: oldDetails.travelInfo?.weather || "",
                   transportation: oldDetails.travelInfo?.transportation || "",
                   localTips: oldDetails.travelInfo?.localTips || ""
+                },
+                facilities: oldDetails.facilities || {
+                  isVisible: true,
+                  sectionTitle: "Premium Hotel Facilities",
+                  badgeText: "Amenities",
+                  sectionSubtitle: "Experience world-class comfort with our premium facilities available at most properties in this destination.",
+                  items: [
+                    { id: "fac-1", name: "High-Speed WiFi", desc: "Stay connected with complimentary high-speed fiber internet in all rooms and public areas.", gradient: "linear-gradient(135deg, #6366f1, #8b5cf6)", icon: "Wifi", status: "Active", displayOrder: 1 },
+                    { id: "fac-2", name: "Infinity Pool", desc: "Relax in temperature-controlled infinity pools with panoramic views.", gradient: "linear-gradient(135deg, #0ea5e9, #6366f1)", icon: "Waves", status: "Active", displayOrder: 2 },
+                    { id: "fac-3", name: "Modern Fitness Center", desc: "Fully equipped 24-hour gym with state-of-the-art equipment.", gradient: "linear-gradient(135deg, #f59e0b, #d97706)", icon: "Dumbbell", status: "Active", displayOrder: 3 },
+                    { id: "fac-4", name: "24/7 Room Service", desc: "Enjoy gourmet meals delivered right to your door anytime.", gradient: "linear-gradient(135deg, #ec4899, #f43f5e)", icon: "Utensils", status: "Active", displayOrder: 4 }
+                  ]
                 },
                 seo: {
                   slug: oldDetails.seo?.slug || dest.slug || dest.id,

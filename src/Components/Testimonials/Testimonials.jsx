@@ -1,4 +1,5 @@
-import { Star, Quote, Users, Award, Repeat, Globe } from "lucide-react";
+import { Star, Quote, ShieldCheck, MapPin, Users, Award, Repeat, Globe, TrendingUp, Heart, CheckCircle, Building, HelpCircle } from "lucide-react";
+import { usePageContext } from "../../Context/PageContext";
 
 /* ════════════════════════════════════════════════════════
    DATA
@@ -60,12 +61,7 @@ const TESTIMONIALS = [
   },
 ];
 
-const STATS = [
-  { icon: <Users size={26} />, value: "25,000+", label: "Happy Guests" },
-  { icon: <Award size={26} />, value: "4.9 / 5", label: "5-Star Reviews" },
-  { icon: <Repeat size={26} />, value: "68%", label: "Repeat Customers" },
-  { icon: <Globe size={26} />, value: "80+", label: "Global Visitors" },
-];
+// Dynamically loaded from PageContext
 
 /* ════════════════════════════════════════════════════════
    REUSABLE COMPONENTS
@@ -153,12 +149,21 @@ const TestimonialCard = ({ t }) => (
 
     {/* Guest info */}
     <div className="flex items-center gap-3 pt-5 border-t" style={{ borderColor: "#e5efff" }}>
-      <div
-        className="w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-[13px] flex-shrink-0"
-        style={{ background: t.color }}
-      >
-        {t.initials}
-      </div>
+      {t.image ? (
+        <img 
+          src={t.image} 
+          alt={t.name} 
+          className="w-11 h-11 rounded-full object-cover flex-shrink-0 border" 
+          style={{ borderColor: "#e5efff" }}
+        />
+      ) : (
+        <div
+          className="w-11 h-11 rounded-full flex items-center justify-center text-white font-semibold text-[13px] flex-shrink-0"
+          style={{ background: t.color || '#9ca3af' }}
+        >
+          {t.initials}
+        </div>
+      )}
       <div className="leading-tight">
         <p className="font-semibold text-[13.5px]" style={{ color: "#1f2937" }}>
           {t.name}
@@ -178,39 +183,69 @@ const TestimonialCard = ({ t }) => (
 );
 
 /* Stat card */
-const StatCard = ({ stat }) => (
+const StatCard = ({ stat }) => {
+  // Map icon string to component
+  const icons = {
+    Users, Award, Repeat, Globe, Star, TrendingUp, Heart, CheckCircle, Building, MapPin
+  };
+  const IconComp = icons[stat.icon] || HelpCircle;
+
+  return (
   <div
-    className="text-center rounded-2xl p-7 bg-white/70 backdrop-blur-xl border transition-all duration-300 hover:-translate-y-1"
-    style={{ borderColor: "#e5efff", boxShadow: "0 4px 20px rgba(59,130,246,0.06)" }}
+    className="group relative bg-white rounded-3xl p-8 border hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+    style={{ borderColor: "#f1f5f9", boxShadow: "0 4px 20px rgba(0,0,0,0.03)" }}
   >
     <div
-      className="w-14 h-14 rounded-xl flex items-center justify-center mx-auto mb-4"
-      style={{ background: "rgba(59,130,246,0.08)", color: "#f59e0b" }}
+      className="absolute top-0 right-0 w-24 h-24 rounded-bl-[100px] opacity-0 group-hover:opacity-10 transition-opacity duration-300"
+      style={{ background: "linear-gradient(135deg, #f59e0b, #6366f1)" }}
+    />
+    <div
+      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3"
+      style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.1), rgba(99,102,241,0.1))", color: "#f59e0b" }}
     >
-      {stat.icon}
+      <IconComp size={26} />
     </div>
-    <p
-      className="font-light mb-1"
-      style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.8rem, 4vw, 2.4rem)", color: "#f59e0b" }}
-    >
-      {stat.value}
-    </p>
-    <p className="text-[11px] tracking-[0.18em] uppercase font-medium" style={{ color: "#6b7280" }}>
-      {stat.label}
-    </p>
+    <div className="relative z-10">
+      <h3 className="font-bold mb-2 tracking-tight" style={{ fontSize: "clamp(1.75rem, 3vw, 2.25rem)", color: "#1f2937" }}>
+        {stat.value}{stat.suffix}
+      </h3>
+      <p className="font-semibold uppercase tracking-widest text-[11px]" style={{ color: "#9ca3af" }}>
+        {stat.label}
+      </p>
+    </div>
   </div>
-);
+)};
 
 /* ════════════════════════════════════════════════════════
    PAGE
    ════════════════════════════════════════════════════════ */
 export default function TestimonialsPage({ data = {} }) {
+  const { pagesData } = usePageContext();
+  const statistics = pagesData?.home?.statistics || {};
+
+  const badgeText = data.badgeText || "Guest Stories";
+  const title = data.title || "What Our";
+  const titleHighlight = data.titleHighlight || "Guests Say";
+  const subtitle = data.subtitle || "Real experiences from our happy guests around the world.";
+
+  const rawItems = Array.isArray(data.items) ? data.items : [];
+  const visibleItems = rawItems
+    .filter(item => item.status !== 'Inactive')
+    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
+  const statsItems = Array.isArray(statistics.items) ? statistics.items : [];
+  const visibleStats = statsItems
+    .filter(item => item.status !== 'Inactive')
+    .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
+
   return (
     <div style={{ fontFamily: "'Inter', 'Poppins', sans-serif", color: "#1f2937" }}>
 
       {/* ═══ 1. HERO SECTION ═══ */}
-      <section
-        className="relative py-24 lg:py-32 overflow-hidden text-center"
+      {data.isVisible !== false && (
+        <>
+        <section
+        className="relative py-12 lg:py-16 overflow-hidden text-center"
         style={{ background: "linear-gradient(180deg, #ffffff 0%, #f5f9ff 100%)" }}
       >
         <BlurShape className="top-10 -left-32" size="420px" color="rgba(59,130,246,0.10)" duration="8s" />
@@ -222,41 +257,52 @@ export default function TestimonialsPage({ data = {} }) {
         />
 
         <div className="relative max-w-3xl mx-auto px-6">
-          <div className="inline-flex items-center gap-3 mb-6">
-            <span className="h-px w-8" style={{ background: "#f59e0b" }} />
-            <span className="text-[11px] tracking-[0.3em] uppercase font-semibold" style={{ color: "#f59e0b" }}>
-              Guest Stories
-            </span>
-            <span className="h-px w-8" style={{ background: "#f59e0b" }} />
-          </div>
+          {badgeText && (
+            <div className="inline-flex items-center gap-3 mb-6">
+              <span className="h-px w-8" style={{ background: "#f59e0b" }} />
+              <span className="text-[11px] tracking-[0.3em] uppercase font-semibold" style={{ color: "#f59e0b" }}>
+                {badgeText}
+              </span>
+              <span className="h-px w-8" style={{ background: "#f59e0b" }} />
+            </div>
+          )}
           <h1
             className="font-light leading-tight mb-5"
             style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(2.2rem, 6vw, 4rem)", color: "#1f2937" }}
           >
-            What Our <span style={{ color: "#f59e0b", fontStyle: "italic" }}>Guests Say</span>
+            {title} <span style={{ color: "#f59e0b", fontStyle: "italic" }}>{titleHighlight}</span>
           </h1>
           <p className="max-w-xl mx-auto" style={{ fontSize: "clamp(0.95rem, 2vw, 1.15rem)", lineHeight: 1.8, color: "#6b7280" }}>
-            Real experiences from our happy guests around the world.
+            {subtitle}
           </p>
         </div>
       </section>
 
       {/* ═══ 2. TESTIMONIAL GRID ═══ */}
-      <section className="relative py-16 lg:py-24 overflow-hidden" style={{ background: "linear-gradient(180deg, #f5f9ff 0%, #ffffff 100%)" }}>
+      <section className="relative py-8 lg:py-12 overflow-hidden" style={{ background: "linear-gradient(180deg, #f5f9ff 0%, #ffffff 100%)" }}>
         <BlurShape className="top-0 -left-28" size="360px" color="rgba(59,130,246,0.10)" duration="7s" />
         <BlurShape className="bottom-0 -right-28" size="380px" color="rgba(59,130,246,0.10)" duration="9s" />
 
         <div className="relative max-w-7xl mx-auto px-5 sm:px-8 lg:px-12">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <TestimonialCard key={t.name} t={t} />
-            ))}
+            {visibleItems.length > 0 ? (
+              visibleItems.map((t, idx) => (
+                <TestimonialCard key={t.id || t.name || idx} t={t} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12 text-slate-400">
+                <p>No guest reviews available.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
+        </>
+      )}
 
       {/* ═══ 3. STATS SECTION ═══ */}
-      <section className="relative py-16 lg:py-24 overflow-hidden bg-white">
+      {statistics.isVisible !== false && (
+      <section className="relative py-8 lg:py-12 overflow-hidden bg-white">
         <div
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full pointer-events-none"
           style={{ background: "radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)", filter: "blur(80px)" }}
@@ -265,31 +311,40 @@ export default function TestimonialsPage({ data = {} }) {
 
         <div className="relative max-w-6xl mx-auto px-5 sm:px-8 lg:px-12">
           <div className="text-center mb-14">
-            <div className="inline-flex items-center gap-3 mb-4">
-              <span className="h-px w-8" style={{ background: "#f59e0b" }} />
-              <span className="text-[11px] tracking-[0.28em] uppercase font-semibold" style={{ color: "#f59e0b" }}>
-                Trusted Worldwide
-              </span>
-              <span className="h-px w-8" style={{ background: "#f59e0b" }} />
-            </div>
+            {statistics.badgeText && (
+              <div className="inline-flex items-center gap-3 mb-4">
+                <span className="h-px w-8" style={{ background: "#f59e0b" }} />
+                <span className="text-[11px] tracking-[0.28em] uppercase font-semibold" style={{ color: "#f59e0b" }}>
+                  {statistics.badgeText}
+                </span>
+                <span className="h-px w-8" style={{ background: "#f59e0b" }} />
+              </div>
+            )}
             <h2
               className="font-light leading-tight mb-4"
               style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "clamp(1.9rem, 4vw, 2.75rem)", color: "#1f2937" }}
             >
-              Numbers That Speak <span style={{ color: "#f59e0b", fontStyle: "italic" }}>For Themselves</span>
+              {statistics.title} <span style={{ color: "#f59e0b", fontStyle: "italic" }}>{statistics.titleHighlight}</span>
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {STATS.map((stat) => (
-              <StatCard key={stat.label} stat={stat} />
-            ))}
+            {visibleStats.length > 0 ? (
+              visibleStats.map((stat) => (
+                <StatCard key={stat.id || stat.label} stat={stat} />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8 text-slate-400">
+                No statistics available.
+              </div>
+            )}
           </div>
         </div>
       </section>
+      )}
 
       {/* ═══ 4. CTA SECTION ═══ */}
-      <section className="relative py-20 lg:py-28 overflow-hidden text-center" style={{ background: "linear-gradient(180deg, #f5f9ff 0%, #ffffff 100%)" }}>
+      <section className="relative py-10 lg:py-16 overflow-hidden text-center" style={{ background: "linear-gradient(180deg, #f5f9ff 0%, #ffffff 100%)" }}>
         <BlurShape className="top-0 left-1/3" size="420px" color="rgba(59,130,246,0.12)" duration="8s" />
         <BlurShape className="bottom-0 right-1/4" size="320px" color="rgba(59,130,246,0.10)" duration="11s" />
 
