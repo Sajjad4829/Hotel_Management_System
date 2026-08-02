@@ -20,19 +20,16 @@ import Dashboard from './Components/MainDashBoard/DashBoard/dashboard'
 import RoomManagement from './Components/MainDashBoard/Pages/Room_Management/RoomManagement'
 import PublicLayout from './Components/PublicLayout.jsx'
 import DashboardRoute from './Components/DashboardRoute.jsx'
-
-
-
-
+import DestinationDetails from './Components/DestinationDetails/DestinationDetails'
+import { PageProvider } from './Context/PageContext.jsx'
+import PageBuilder from './Components/MainDashBoard/Pages/PageBuilder/PageBuilder.jsx'
 
 function App() {
   return (
-    <>
-
+    <PageProvider>
       <ScrollToTop />
       <AIAssistant />
       <main>
-
         <Routes>
           <Route element={<PublicLayout />}>
             <Route path="/" element={<Home />} />
@@ -45,23 +42,21 @@ function App() {
             <Route path="/search-results" element={<SearchResultWrapper />} />
             <Route path="/hotel/:id" element={<SearchHotelDetails />} />
             <Route path="/hotel/:id/rooms" element={<RoomSelection />} />
+            <Route path="/destination/:id" element={<DestinationDetails />} />
             <Route path="/offers/:id" element={<OfferDetails />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
           </Route>
+
           <Route element={<DashboardRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashrooms" element={<RoomManagement />} />
+            <Route path="/dashboard/rooms" element={<RoomManagement />} />
+            <Route path="/dashboard/page-builder" element={<PageBuilder />} />
           </Route>
-
-
         </Routes>
-
       </main>
-
-
-    </>
+    </PageProvider>
   )
 }
 

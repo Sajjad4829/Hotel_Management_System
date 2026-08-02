@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiEye } from "react-icons/fi";
-import DashboardLayout from "../../layout/Dashboardlayout";
+
 
 // Dummy data — no API, no backend calls.
 const ROOMS = [
@@ -49,8 +49,8 @@ export default function RoomManagement() {
   });
 
   return (
-    <DashboardLayout>
-      {/* Page header */}
+    <>
+    {/* Page header */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Room Management</h1>
@@ -171,6 +171,8 @@ export default function RoomManagement() {
           </table>
         </div>
       </div>
-    </DashboardLayout>
+    
+    </>
   );
 }
+

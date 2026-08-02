@@ -2,7 +2,6 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./MainDashBoard/DashBoard/Sidebar";
 import TopNavbar from "./MainDashBoard/DashBoard/Topnavbar";
 
-
 const DashboardRoute = () => {
   return (
     <div className="flex min-h-screen">

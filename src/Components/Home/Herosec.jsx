@@ -1,38 +1,44 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-const SLIDES = [
-  {
-    image:
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1920&q=80",
-    label: "Grand Suite",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1920&q=80",
-    label: "Infinity Pool",
-  },
-  {
-    image:
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1920&q=80",
-    label: "Beachfront Villa",
-  },
-];
-
-export default function HeroSection() {
+export default function HeroSection({ data = {} }) {
   const [current, setCurrent] = useState(0);
   const [fading, setFading] = useState(false);
 
+  const config = {
+    isVisible: data.isVisible !== false,
+    badgeText: data.badgeText || "Aurum Hotel & Resort",
+    titlePrefix: data.titlePrefix || "Experience",
+    highlightText: data.highlightText || "Luxury",
+    titleSuffix: data.titleSuffix || "& Comfort",
+    description: data.description || "Book your perfect stay with us and enjoy world-class hospitality crafted for every detail of your journey.",
+    primaryButtonText: data.primaryButtonText || "Book Now",
+    primaryButtonLink: data.primaryButtonLink || "/booking",
+    primaryButtonColor: data.primaryButtonColor || "#d97706",
+    secondaryButtonText: data.secondaryButtonText || "Explore Rooms",
+    secondaryButtonLink: data.secondaryButtonLink || "/rooms",
+    overlayIntensity: data.overlayIntensity || "medium",
+    sliderInterval: parseInt(data.sliderInterval) || 5000,
+    slides: data.slides && data.slides.length > 0 ? data.slides : [
+      {
+        image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1920&q=80",
+        label: "Luxury Resort"
+      }
+    ]
+  };
+
   useEffect(() => {
+    if (config.slides.length <= 1) return;
+    
     const timer = setInterval(() => {
       setFading(true);
       setTimeout(() => {
-        setCurrent((prev) => (prev + 1) % SLIDES.length);
+        setCurrent((prev) => (prev + 1) % config.slides.length);
         setFading(false);
       }, 600);
-    }, 5000);
+    }, config.sliderInterval);
     return () => clearInterval(timer);
-  }, []);
+  }, [config.slides.length, config.sliderInterval]);
 
   const goTo = (index) => {
     if (index === current) return;
@@ -43,6 +49,16 @@ export default function HeroSection() {
     }, 400);
   };
 
+  if (!config.isVisible) return null;
+
+  // Calculate overlay gradient based on intensity
+  let overlayGradient = "linear-gradient(to top, rgba(10,8,5,0.82) 0%, rgba(10,8,5,0.45) 50%, rgba(10,8,5,0.25) 100%)"; // Medium
+  if (config.overlayIntensity === 'light') {
+    overlayGradient = "linear-gradient(to top, rgba(10,8,5,0.6) 0%, rgba(10,8,5,0.2) 50%, rgba(10,8,5,0.1) 100%)";
+  } else if (config.overlayIntensity === 'dark') {
+    overlayGradient = "linear-gradient(to top, rgba(10,8,5,0.95) 0%, rgba(10,8,5,0.7) 50%, rgba(10,8,5,0.5) 100%)";
+  }
+
   return (
     <section className="relative w-full h-screen min-h-[600px] overflow-hidden">
 
@@ -51,17 +67,14 @@ export default function HeroSection() {
         className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ${
           fading ? "opacity-0" : "opacity-100"
         }`}
-        style={{ backgroundImage: `url(${SLIDES[current].image})` }}
+        style={{ backgroundImage: `url(${config.slides[current]?.image || ''})` }}
         aria-hidden="true"
       />
 
-      {/* Layered overlay — deep gradient from bottom + dark tint */}
+      {/* Layered overlay */}
       <div
         className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(10,8,5,0.82) 0%, rgba(10,8,5,0.45) 50%, rgba(10,8,5,0.25) 100%)",
-        }}
+        style={{ background: overlayGradient }}
         aria-hidden="true"
       />
 
@@ -76,46 +89,50 @@ export default function HeroSection() {
       />
 
       {/* Slide label — top right */}
-      <div className="absolute top-8 right-8 hidden md:flex items-center gap-2">
-        <span className="w-5 h-px bg-amber-400/70" />
-        <span className="text-amber-300/80 text-xs tracking-[0.2em] uppercase font-medium">
-          {SLIDES[current].label}
-        </span>
-      </div>
+      {config.slides[current]?.label && (
+        <div className="absolute top-8 right-8 hidden md:flex items-center gap-2">
+          <span className="w-5 h-px bg-amber-400/70" />
+          <span className="text-amber-300/80 text-xs tracking-[0.2em] uppercase font-medium">
+            {config.slides[current].label}
+          </span>
+        </div>
+      )}
 
       {/* ── Main content ── */}
       <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
 
-        {/* Eyebrow */}
-        <div className="flex items-center gap-3 mb-6">
-          <span className="h-px w-8 bg-amber-400/60" />
-          <span className="text-amber-400 text-xs tracking-[0.3em] uppercase font-medium">
-            Aurum Hotel &amp; Resort
-          </span>
-          <span className="h-px w-8 bg-amber-400/60" />
-        </div>
+        {/* Eyebrow / Badge */}
+        {config.badgeText && (
+          <div className="flex items-center gap-3 mb-6">
+            <span className="h-px w-8 bg-amber-400/60" />
+            <span className="text-amber-400 text-xs tracking-[0.3em] uppercase font-medium">
+              {config.badgeText}
+            </span>
+            <span className="h-px w-8 bg-amber-400/60" />
+          </div>
+        )}
 
         {/* Main heading */}
         <h1
-          className="text-white font-light leading-[1.1] mb-5"
+          className="text-white font-light leading-[1.1] mb-5 max-w-4xl"
           style={{
             fontFamily: "'Georgia', 'Times New Roman', serif",
             fontSize: "clamp(2.4rem, 6vw, 5rem)",
             letterSpacing: "-0.01em",
           }}
         >
-          Experience{" "}
+          {config.titlePrefix}{" "}
           <em
             className="not-italic"
             style={{ color: "#fbbf24", fontStyle: "italic" }}
           >
-            Luxury
+            {config.highlightText}
           </em>
           <br />
-          &amp; Comfort
+          {config.titleSuffix}
         </h1>
 
-        {/* Sub heading */}
+        {/* Sub heading / Description */}
         <p
           className="text-stone-300/90 font-light mb-10 max-w-xl"
           style={{
@@ -124,94 +141,95 @@ export default function HeroSection() {
             letterSpacing: "0.01em",
           }}
         >
-          Book your perfect stay with us and enjoy world-class hospitality
-          crafted for every detail of your journey.
+          {config.description}
         </p>
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          {/* Primary — Book Now */}
-          <Link
-            to="/booking"
-            className="group relative inline-flex items-center gap-2 px-8 py-3.5 overflow-hidden"
-            style={{
-              background: "#d97706",
-              borderRadius: "2px",
-              transition: "background 0.25s ease",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = "#b45309")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "#d97706")
-            }
-          >
-            <span
-              className="text-white font-medium tracking-widest uppercase"
-              style={{ fontSize: "0.75rem" }}
+          {/* Primary Button */}
+          {config.primaryButtonText && (
+            <Link
+              to={config.primaryButtonLink}
+              className="group relative inline-flex items-center gap-2 px-8 py-3.5 overflow-hidden"
+              style={{
+                background: config.primaryButtonColor,
+                borderRadius: "2px",
+                transition: "background 0.25s ease",
+              }}
             >
-              Book Now
-            </span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-3.5 h-3.5 text-white transition-transform duration-200 group-hover:translate-x-1"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
+              <span
+                className="text-white font-medium tracking-widest uppercase relative z-10"
+                style={{ fontSize: "0.75rem" }}
+              >
+                {config.primaryButtonText}
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-3.5 h-3.5 text-white transition-transform duration-200 group-hover:translate-x-1 relative z-10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+              {/* Hover state overlay to slightly darken the custom color */}
+              <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            </Link>
+          )}
 
-          {/* Secondary — Explore Rooms */}
-          <Link
-            to="/rooms"
-            className="group inline-flex items-center gap-2 px-8 py-3.5 border border-white/40 text-white/90 hover:border-white hover:text-white transition-all duration-250"
-            style={{ borderRadius: "2px" }}
-          >
-            <span
-              className="font-medium tracking-widest uppercase"
-              style={{ fontSize: "0.75rem" }}
+          {/* Secondary Button */}
+          {config.secondaryButtonText && (
+            <Link
+              to={config.secondaryButtonLink}
+              className="group inline-flex items-center gap-2 px-8 py-3.5 border border-white/40 text-white/90 hover:border-white hover:text-white transition-all duration-250"
+              style={{ borderRadius: "2px" }}
             >
-              Explore Rooms
-            </span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
-          </Link>
+              <span
+                className="font-medium tracking-widest uppercase"
+                style={{ fontSize: "0.75rem" }}
+              >
+                {config.secondaryButtonText}
+              </span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          )}
         </div>
 
         {/* Slide indicators */}
-        <div className="flex items-center gap-2 mt-14">
-          {SLIDES.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => goTo(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className="transition-all duration-300"
-              style={{
-                height: "2px",
-                width: i === current ? "28px" : "14px",
-                background:
-                  i === current
-                    ? "#fbbf24"
-                    : "rgba(255,255,255,0.35)",
-                border: "none",
-                cursor: "pointer",
-                borderRadius: "2px",
-                padding: 0,
-              }}
-            />
-          ))}
-        </div>
+        {config.slides.length > 1 && (
+          <div className="flex items-center gap-2 mt-14">
+            {config.slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                aria-label={`Go to slide ${i + 1}`}
+                className="transition-all duration-300"
+                style={{
+                  height: "2px",
+                  width: i === current ? "28px" : "14px",
+                  background:
+                    i === current
+                      ? "#fbbf24"
+                      : "rgba(255,255,255,0.35)",
+                  border: "none",
+                  cursor: "pointer",
+                  borderRadius: "2px",
+                  padding: 0,
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Scroll hint */}

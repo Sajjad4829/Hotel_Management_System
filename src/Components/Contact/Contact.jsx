@@ -161,7 +161,7 @@ function MapCard() {
 
 // ── Main Section ───────────────────────────────────────────────────────────
 
-export default function HotelContactSection() {
+export default function HotelContactSection({ data = {} }) {
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);

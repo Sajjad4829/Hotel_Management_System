@@ -6,7 +6,6 @@ import {
   FiLogOut,
   FiDollarSign,
 } from "react-icons/fi";
-import DashboardLayout from "../layout/Dashboardlayout";;
 import StatCard from "./Statcard";
 import RecentBookings from "./RecentBookings";
 import RoomStatus from "./Roomstatus";
@@ -22,32 +21,31 @@ const STATS = [
 ];
 
 export default function Dashboard() {
-  return (
-    <DashboardLayout>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-slate-900">Overview</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Welcome back. Here's what's happening at your property today.
-        </p>
+return (
+  <>
+    <div className="mb-6">
+      <h1 className="text-2xl font-semibold text-slate-900">Overview</h1>
+      <p className="mt-1 text-sm text-slate-500">
+        Welcome back. Here's what's happening at your property today.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      {STATS.map((stat) => (
+        <StatCard key={stat.label} {...stat} />
+      ))}
+    </div>
+
+    <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <div className="xl:col-span-2">
+        <RecentBookings />
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {STATS.map((stat) => (
-          <StatCard key={stat.label} {...stat} />
-        ))}
+      <div className="flex flex-col gap-4">
+        <RoomStatus />
+        <QuickActions />
       </div>
-
-      {/* Recent bookings + Room status + Quick actions */}
-      <div className="mt-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <RecentBookings />
-        </div>
-        <div className="flex flex-col gap-4">
-          <RoomStatus />
-          <QuickActions />
-        </div>
-      </div>
-    </DashboardLayout>
-  );
+    </div>
+  </>
+);
 }

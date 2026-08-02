@@ -8,12 +8,19 @@ import {
   FiChevronDown,
   FiChevronsLeft,
   FiChevronsRight,
+  FiLayout,
 } from "react-icons/fi";
 import { MdOutlineBed } from "react-icons/md";
-
+import { NavLink } from "react-router-dom";
 // `children` (optional) turns an item into a nested/expandable menu.
 const NAV_ITEMS = [
   { label: "Overview", icon: FiGrid, href: "#" },
+  {
+    label: "Page Builder",
+    icon: FiLayout,
+    path: "/dashboard/page-builder",
+    children: []
+  },
   {
     label: "Bookings",
     icon: FiCalendar,
@@ -27,29 +34,15 @@ const NAV_ITEMS = [
     label: "Rooms",
     icon: MdOutlineBed,
     children: [
-      { label: "Room Types", href: "#" },
-      { label: "Availability", href: "#" },
+      { label: "All Rooms", path: "/dashboard/rooms" },
+      { label: "Room Types", path: "/dashboard/rooms/types" },
+      { label: "Availability", path: "/dashboard/rooms/availability" },
     ],
   },
   { label: "Guests", icon: FiUsers, href: "#" },
   { label: "Settings", icon: FiSettings, href: "#" },
 ];
 
-/**
- * Sidebar
- *
- * Desktop  -> always visible, fixed to the left, pushes content over.
- *             Can be collapsed to an icon-only rail via the toggle
- *             button in the footer.
- * Mobile   -> hidden off-canvas by default, slides in as a drawer
- *             when `isOpen` is true. `onClose` is called by the
- *             backdrop and by the in-panel close button.
- *
- * Props
- * ----
- * isOpen  : boolean    controls the off-canvas drawer state on mobile
- * onClose : () => void closes the drawer (mobile only)
- */
 export default function Sidebar({ isOpen, onClose }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openMenus, setOpenMenus] = useState({});
@@ -67,9 +60,8 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Backdrop — mobile only, shown while the drawer is open */}
       <div
         onClick={onClose}
-        className={`fixed inset-0 z-30 bg-slate-950/50 transition-opacity duration-200 lg:hidden ${
-          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
-        }`}
+        className={`fixed inset-0 z-30 bg-slate-950/50 transition-opacity duration-200 lg:hidden ${isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+          }`}
         aria-hidden="true"
       />
 
@@ -86,9 +78,8 @@ export default function Sidebar({ isOpen, onClose }) {
               H
             </div>
             <span
-              className={`whitespace-nowrap text-base font-semibold tracking-wide text-white transition-opacity duration-150 ${
-                isCollapsed ? "lg:hidden lg:opacity-0" : "opacity-100"
-              }`}
+              className={`whitespace-nowrap text-base font-semibold tracking-wide text-white transition-opacity duration-150 ${isCollapsed ? "lg:hidden lg:opacity-0" : "opacity-100"
+                }`}
             >
               Haven Admin
             </span>
@@ -106,73 +97,88 @@ export default function Sidebar({ isOpen, onClose }) {
 
         {/* Nav links */}
         <nav className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden px-3 py-4">
-          {NAV_ITEMS.map(({ label, icon: Icon, href, children }) => {
+          {NAV_ITEMS.map(({ label, icon: Icon, href, path, children }) => {
             const hasChildren = Boolean(children?.length);
             const isMenuOpen = openMenus[label];
             const isActive = activeItem === label;
 
+            const content = (
+              <>
+                <Icon
+                  className={`h-[18px] w-[18px] shrink-0 transition-colors duration-150 ${isActive
+                      ? "text-[#C9A24B]"
+                      : "text-slate-400 group-hover:text-white"
+                    }`}
+                />
+                <span
+                  className={`flex-1 truncate ${isCollapsed ? "lg:hidden" : ""
+                    }`}
+                >
+                  {label}
+                </span>
+                {hasChildren && (
+                  <FiChevronDown
+                    className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : "rotate-0"
+                      } ${isCollapsed ? "lg:hidden" : ""}`}
+                  />
+                )}
+              </>
+            );
+
+            const linkClass = `group flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${isActive
+              ? "bg-[#C9A24B]/15 text-[#C9A24B]"
+              : "text-slate-400 hover:bg-white/5 hover:text-white"
+            } ${isCollapsed ? "lg:justify-center" : ""}`;
+
             return (
               <div key={label}>
-                <a
-                  href={hasChildren ? undefined : href}
-                  onClick={() =>
-                    hasChildren ? toggleMenu(label) : selectItem(label)
-                  }
-                  title={isCollapsed ? label : undefined}
-                  className={`group flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors duration-150 ${
-                    isActive
-                      ? "bg-[#C9A24B]/15 text-[#C9A24B]"
-                      : "text-slate-400 hover:bg-white/5 hover:text-white"
-                  } ${isCollapsed ? "lg:justify-center" : ""}`}
-                >
-                  <Icon
-                    className={`h-[18px] w-[18px] shrink-0 transition-colors duration-150 ${
-                      isActive
-                        ? "text-[#C9A24B]"
-                        : "text-slate-400 group-hover:text-white"
-                    }`}
-                  />
-                  <span
-                    className={`flex-1 truncate ${
-                      isCollapsed ? "lg:hidden" : ""
-                    }`}
+                {path ? (
+                  <NavLink
+                    to={path}
+                    onClick={() => selectItem(label)}
+                    title={isCollapsed ? label : undefined}
+                    className={linkClass}
                   >
-                    {label}
-                  </span>
-                  {hasChildren && (
-                    <FiChevronDown
-                      className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
-                        isMenuOpen ? "rotate-180" : "rotate-0"
-                      } ${isCollapsed ? "lg:hidden" : ""}`}
-                    />
-                  )}
-                </a>
+                    {content}
+                  </NavLink>
+                ) : (
+                  <a
+                    href={hasChildren ? undefined : href}
+                    onClick={() =>
+                      hasChildren ? toggleMenu(label) : selectItem(label)
+                    }
+                    title={isCollapsed ? label : undefined}
+                    className={linkClass}
+                  >
+                    {content}
+                  </a>
+                )}
 
                 {/* Nested menu */}
                 {hasChildren && (
                   <div
-                    className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                      isMenuOpen && !isCollapsed
+                    className={`overflow-hidden transition-all duration-200 ease-in-out ${isMenuOpen && !isCollapsed
                         ? "max-h-96 opacity-100"
                         : "max-h-0 opacity-0"
-                    } ${isCollapsed ? "lg:hidden" : ""}`}
+                      } ${isCollapsed ? "lg:hidden" : ""}`}
                   >
                     <div className="ml-4 mt-1 space-y-1 border-l border-white/10 pl-4">
                       {children.map((child) => {
-                        const childActive = activeItem === child.label;
+                       // const childActive = activeItem === child.label;
                         return (
-                          <a
+                          <NavLink
                             key={child.label}
-                            href={child.href}
+                            to={child.path}
                             onClick={() => selectItem(child.label)}
-                            className={`block rounded-md px-3 py-2 text-sm transition-colors duration-150 ${
-                              childActive
+                            className={({ isActive }) =>
+                              `block rounded-md px-3 py-2 text-sm transition-colors duration-150 ${isActive
                                 ? "text-[#C9A24B]"
                                 : "text-slate-400 hover:text-white"
-                            }`}
+                              }`
+                            }
                           >
                             {child.label}
-                          </a>
+                          </NavLink>
                         );
                       })}
                     </div>
@@ -186,9 +192,8 @@ export default function Sidebar({ isOpen, onClose }) {
         {/* Footer — user card + collapse toggle (desktop only) */}
         <div className="shrink-0 border-t border-white/10 p-3">
           <div
-            className={`flex items-center gap-3 rounded-md px-2 py-2 ${
-              isCollapsed ? "lg:justify-center" : ""
-            }`}
+            className={`flex items-center gap-3 rounded-md px-2 py-2 ${isCollapsed ? "lg:justify-center" : ""
+              }`}
           >
             <div className="h-9 w-9 shrink-0 rounded-full bg-slate-700" />
             <div className={`min-w-0 ${isCollapsed ? "lg:hidden" : ""}`}>

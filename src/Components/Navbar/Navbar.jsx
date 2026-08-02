@@ -193,11 +193,12 @@ const MobileDrawer = ({ open, onClose }) => {
 };
 
 /* ─── NAVBAR ─────────────────────────────────────────────── */
-export default function Navbar() {
+export default function Navbar({ data = {} }) {
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
  
-
+  // If navMenu exists but is empty, or doesn't exist, fallback to NAV_LINKS
+  const displayLinks = (data.navMenu && data.navMenu.length > 0) ? data.navMenu : NAV_LINKS;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -211,8 +212,11 @@ export default function Navbar() {
   return (
     <>
       <header
-        className="fixed top-0 inset-x-0 z-40 bg-white transition-shadow duration-300"
-        style={{ boxShadow: scrolled ? "0 1px 16px rgba(0,0,0,0.09)" : "0 1px 0 rgba(0,0,0,0.07)" }}
+        className={`${data.isSticky === false ? "absolute" : "fixed"} inset-x-0 top-0 z-40 transition-shadow duration-300 bg-white`}
+        style={{ 
+          boxShadow: scrolled ? "0 1px 16px rgba(0,0,0,0.09)" : "0 1px 0 rgba(0,0,0,0.07)",
+          backgroundColor: data.headerBgColor || "#ffffff"
+        }}
       >
         {/* Top utility bar */}
         <div className="border-b border-stone-100 hidden lg:block">
@@ -236,9 +240,7 @@ export default function Navbar() {
             </button>
             <button
               className="text-[11px] font-semibold tracking-widest uppercase px-4 py-1.5 text-white transition-colors duration-200"
-              style={{ background: "#b45309", borderRadius: "2px" }}
-              onMouseEnter={e => e.currentTarget.style.background = "#92400e"}
-              onMouseLeave={e => e.currentTarget.style.background = "#b45309"}
+              style={{ background: data.buttonColor || "#b45309", borderRadius: "2px" }}
             >
               Join Now
             </button>
@@ -252,10 +254,10 @@ export default function Navbar() {
 
             {/* Desktop nav links */}
            <nav className="hidden lg:flex items-center gap-1">
-  {NAV_LINKS.map((link) => (
+  {displayLinks.map((link) => (
     <NavLink
       key={link.label}
-      to={link.to}
+      to={link.link || link.to}
       className={({ isActive }) =>
         `relative px-4 py-5 text-[12.5px] font-semibold tracking-wide uppercase transition-colors duration-150 group ${
           isActive
@@ -266,7 +268,7 @@ export default function Navbar() {
     >
       {({ isActive }) => (
         <>
-          {link.label}
+          <span style={{ color: data.textColor || undefined }}>{link.label}</span>
           <span
             className={`absolute bottom-0 left-4 right-4 h-[2px] transition-all duration-200 ${
               isActive

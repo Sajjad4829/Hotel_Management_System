@@ -204,7 +204,7 @@ const StatCard = ({ stat }) => (
 /* ════════════════════════════════════════════════════════
    PAGE
    ════════════════════════════════════════════════════════ */
-export default function TestimonialsPage() {
+export default function TestimonialsPage({ data = {} }) {
   return (
     <div style={{ fontFamily: "'Inter', 'Poppins', sans-serif", color: "#1f2937" }}>
 

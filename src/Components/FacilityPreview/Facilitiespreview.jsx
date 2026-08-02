@@ -161,7 +161,7 @@ const FacilityCard = ({ facility }) => (
 );
 
 /* ─── MAIN SECTION ────────────────────────────────────────── */
-export default function FacilitiesPreview() {
+export default function FacilitiesPreview({ data = {} }) {
   return (
     <>
   

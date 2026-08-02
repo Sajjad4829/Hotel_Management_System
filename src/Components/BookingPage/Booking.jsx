@@ -217,11 +217,18 @@ export default function BookingPage() {
   }, [checkIn]);
 
 
-  const pricing =
-    location.state?.pricing ||
-    calculatePricing(
-      (bookingItem?.price || bookingItem?.discountPrice || 0) * nights
-    );
+  const pricing = useMemo(() => {
+    let subtotal = 0;
+    if (bookingRooms && bookingRooms.length > 0) {
+      subtotal = bookingRooms.reduce((sum, item) => {
+        const itemPrice = item.room.discountPrice || item.room.price || 0;
+        return sum + (itemPrice * item.qty);
+      }, 0);
+    } else {
+      subtotal = bookingItem?.discountPrice || bookingItem?.price || 0;
+    }
+    return calculatePricing(subtotal * nights);
+  }, [bookingRooms, bookingItem, nights]);
 
 
   const handleSubmit = (e) => {
@@ -389,9 +396,14 @@ export default function BookingPage() {
             {item.room.roomType}
           </span>
 
-          <h3 className="mt-2 text-xl font-semibold">
-            {item.room.name}
-          </h3>
+          <div className="flex items-center gap-2 mt-2">
+            <h3 className="text-xl font-semibold">
+              {item.room.name}
+            </h3>
+            <Link to={`/rooms/${item.room.id}`} className="text-[11px] font-medium text-[#C89B3C] hover:text-white hover:bg-[#C89B3C] bg-[#C89B3C]/10 px-2 py-0.5 rounded-full border border-[#C89B3C]/30 transition-colors">
+              View Details
+            </Link>
+          </div>
 
           <p className="mt-2 text-sm text-gray-500">
             {item.room.description}
@@ -653,26 +665,38 @@ export default function BookingPage() {
         <div className="lg:sticky lg:top-8">
           <div className="rounded-2xl border border-stone-200/70 bg-white p-6 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.12)] sm:p-7">
             {/* Room mini preview */}
-            <div className="flex items-center gap-3 border-b border-stone-100 pb-5">
-              <img
-                src={bookingItem.panoramaImage}
-                alt={bookingItem.roomName || bookingItem.name}
-                className="h-16 w-16 flex-none rounded-xl object-cover"
-              />
-              <div className="min-w-0">
-                <span className="inline-block rounded-full bg-[#C89B3C]/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#8a6a23]">
-                  {bookingItem.roomType}
-                </span>
-                <h4 className="mt-1 truncate text-sm font-semibold text-stone-900">
-
-
-                  {bookingItem.roomName || bookingItem.name}
-                </h4>
-                <span className="inline-flex items-center gap-1 text-xs text-stone-500">
-                  <FiStar className="text-[#C89B3C]" /> {bookingItem.rating} (
-                  {bookingItem.reviewCount})
-                </span>
-              </div>
+            <div className="flex flex-col gap-4 border-b border-stone-100 pb-5">
+              {(bookingRooms.length > 0
+                ? bookingRooms
+                : bookingItem
+                ? [{ room: bookingItem, qty: 1 }]
+                : []
+              ).map((item, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <img
+                    src={item.room.panoramaImage || item.room.mainImage || item.room.image}
+                    alt={item.room.roomName || item.room.name}
+                    className="h-16 w-16 flex-none rounded-xl object-cover"
+                  />
+                  <div className="min-w-0">
+                    {item.room.roomType && (
+                      <span className="inline-block rounded-full bg-[#C89B3C]/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#8a6a23]">
+                        {item.room.roomType}
+                      </span>
+                    )}
+                    <h4 className="mt-1 truncate text-sm font-semibold text-stone-900">
+                      {item.room.roomName || item.room.name}
+                      {item.qty > 1 && ` (x${item.qty})`}
+                    </h4>
+                    {(item.room.rating || item.room.reviewCount) && (
+                      <span className="inline-flex items-center gap-1 text-xs text-stone-500">
+                        <FiStar className="text-[#C89B3C]" /> {item.room.rating || 5} (
+                        {item.room.reviewCount || 0})
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {/* Booking details */}
@@ -697,12 +721,17 @@ export default function BookingPage() {
 
             {/* Pricing breakdown */}
             <div className="border-b border-stone-100 py-4">
-              {bookingRooms.map((item) => (
+              {(bookingRooms.length > 0
+                ? bookingRooms
+                : bookingItem
+                ? [{ room: bookingItem, qty: 1 }]
+                : []
+              ).map((item, index) => (
                 <SummaryRow
-                  key={item.room.id}
-                  label={`${item.room.name} × ${item.qty}`}
+                  key={item.room.id || index}
+                  label={`${item.room.roomName || item.room.name} × ${item.qty}`}
                   value={`$${(
-                    (item.room.discountPrice || item.room.price) * item.qty
+                    (item.room.discountPrice || item.room.price) * item.qty * nights
                   ).toLocaleString()}`}
                 />
               ))}

@@ -1,20 +1,21 @@
-import SearchBookingBar from "../Bookingsearch/BookingSearch";
-import HotelContactSection from "../Contact/Contact";
-import FacilitiesPreview from "../FacilityPreview/Facilitiespreview";
-import FeaturedRooms from "../FeaturesRooms/FeaturesRoom";
-import TestimonialsPage from "../Testimonials/Testimonials";
-import HeroSection from "./Herosec";
-
+import { usePageContext } from "../../Context/PageContext";
+import { componentRegistry } from "../../Registry/ComponentRegistry";
 
 const Home = () => {
+    const { pagesData } = usePageContext();
+    const homeData = pagesData.home || {};
+    const layout = homeData.layout || [];
+
     return (
         <div>
-            <SearchBookingBar />
-            <HeroSection />
-            <FeaturedRooms />
-            <FacilitiesPreview />
-            <TestimonialsPage />
-            <HotelContactSection />
+            {layout.map((sectionId) => {
+                const Component = componentRegistry[sectionId];
+                if (!Component) return null;
+                
+                // Pass section-specific data as props
+                const sectionData = homeData[sectionId] || {};
+                return <Component key={sectionId} data={sectionData} />;
+            })}
         </div>
     );
 };

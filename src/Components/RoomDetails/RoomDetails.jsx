@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import hotelDetailsData from "../SearchResultDetails/HotelDetailsData";
 
 // ─── FEATHER ICONS (FI) ──────────────────────────────────────────────────────
 // এখান থেকে 'FiBed' বাদ দেওয়া হয়েছে
@@ -13,6 +14,7 @@ import {
   FiMaximize, 
   FiCheck, 
   FiArrowRight,
+  FiArrowLeft,
   FiChevronRight, 
   FiPhone, 
   FiMail, 
@@ -288,7 +290,32 @@ const testimonials = [
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function RoomDetails() {
   const { id } = useParams();
-  const room = roomsData.find((r) => r.id === Number(id));
+  const navigate = useNavigate();
+  
+  let room = roomsData.find((r) => r.id === Number(id));
+  if (!room) {
+    const allRoomsFromHotels = hotelDetailsData.flatMap((hotel) => hotel.rooms || []);
+    const foundRoom = allRoomsFromHotels.find((r) => r.id === Number(id));
+    if (foundRoom) {
+      room = {
+        id: foundRoom.id,
+        name: foundRoom.name,
+        type: foundRoom.roomType,
+        price: foundRoom.discountPrice || foundRoom.price,
+        rating: 4.8, 
+        reviews: 120, 
+        size: foundRoom.roomSize,
+        bed: foundRoom.bedType,
+        guests: foundRoom.maxGuests,
+        available: foundRoom.availableRooms > 0 || foundRoom.availability === true,
+        description: foundRoom.description,
+        images: foundRoom.gallery && foundRoom.gallery.length > 0 ? foundRoom.gallery : [foundRoom.image, foundRoom.image], 
+        highlights: foundRoom.features || foundRoom.facilities || ["Free WiFi", "City View"],
+        tag: foundRoom.badge || "Popular"
+      };
+    }
+  }
+
   const [activeImage, setActiveImage] = useState(0);
 
   // ── Not Found ──────────────────────────────────────────────────────────────
@@ -530,7 +557,7 @@ export default function RoomDetails() {
               <h2 className="text-2xl md:text-3xl font-light text-stone-800 mb-6 tracking-tight">
                 Hotel Amenities
               </h2>
-              <div className="grid grid-cols-4 sm:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {amenities.map(({ icon, label }) => (
                   <div key={label} className="flex flex-col items-center gap-2 py-4">
                     <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 text-xl">
@@ -651,7 +678,10 @@ export default function RoomDetails() {
                   Every detail of {room.name} has been curated for your comfort. Secure your dates today and arrive to an experience designed entirely around you.
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button className="bg-amber-500 hover:bg-amber-400 text-white px-8 py-3 text-xs tracking-widest uppercase transition-colors duration-300 w-full sm:w-auto">
+                  <button 
+                    onClick={() => navigate(-1)}
+                    className="bg-amber-500 hover:bg-amber-400 text-white px-8 py-3 text-xs tracking-widest uppercase transition-colors duration-300 w-full sm:w-auto"
+                  >
                     Reserve Now — ${room.price.toLocaleString()}/night
                   </button>
                   <button className="border border-stone-600 hover:border-stone-400 text-stone-300 hover:text-white px-8 py-3 text-xs tracking-widest uppercase transition-colors duration-300 w-full sm:w-auto flex items-center justify-center gap-2">
@@ -716,6 +746,7 @@ export default function RoomDetails() {
                   </div>
 
                   <button
+                    onClick={() => navigate(-1)}
                     disabled={!room.available}
                     className={`w-full py-3.5 text-xs tracking-[0.2em] uppercase font-medium transition-colors duration-300 ${
                       room.available

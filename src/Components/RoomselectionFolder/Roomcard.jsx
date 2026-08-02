@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
   Wifi, Wind, Coffee, Tv2, Bath, ShoppingBag, CupSoda,
   Users, Maximize2, BedDouble, CheckCircle, XCircle, ShieldCheck,
@@ -59,9 +60,14 @@ export default function RoomCard({ room, count, onDecrement, onIncrement }) {
           {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h3 className="text-[17px] font-bold text-[#1a3c5e] leading-snug mb-1.5">
-                {room.name}
-              </h3>
+              <div className="flex items-center gap-2 mb-1.5">
+                <h3 className="text-[17px] font-bold text-[#1a3c5e] leading-snug">
+                  {room.name}
+                </h3>
+                <Link to={`/rooms/${room.id}`} className="text-[11px] font-medium text-[#2563eb] hover:text-white hover:bg-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-200 transition-colors">
+                  View Details
+                </Link>
+              </div>
               <div className="flex flex-wrap items-center gap-3">
                 <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
                   <Maximize2 size={12} className="text-[#2563eb]" />
