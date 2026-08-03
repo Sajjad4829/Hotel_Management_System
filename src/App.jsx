@@ -23,39 +23,48 @@ import DashboardRoute from './Components/DashboardRoute.jsx'
 import DestinationDetails from './Components/DestinationDetails/DestinationDetails'
 import { PageProvider } from './Context/PageContext.jsx'
 import PageBuilder from './Components/MainDashBoard/Pages/PageBuilder/PageBuilder.jsx'
+import LocationsPage from './Components/Locations/LocationsPage.jsx'
+import HotelContactSection from './Components/Contact/Contact.jsx'
+import Gallery from './Components/Gallery/Gallery.jsx'
+import { RoomProvider } from './Context/RoomContext.jsx'
 
 function App() {
   return (
     <PageProvider>
-      <ScrollToTop />
-      <AIAssistant />
-      <main>
-        <Routes>
-          <Route element={<PublicLayout />}>
-            <Route path="/" element={<Home />} />
-            <Route path="/facility" element={<FacilitiesPage />} />
-            <Route path="/offers" element={<OffersPage />} />
-            <Route path="/rooms" element={<RoomsPage />} />
-            <Route path="/rooms/:id" element={<RoomDetails />} />
-            <Route path="/book/:id" element={<BookingPage />} />
-            <Route path="/book" element={<BookingPage />} />
-            <Route path="/search-results" element={<SearchResultWrapper />} />
-            <Route path="/hotel/:id" element={<SearchHotelDetails />} />
-            <Route path="/hotel/:id/rooms" element={<RoomSelection />} />
-            <Route path="/destination/:id" element={<DestinationDetails />} />
-            <Route path="/offers/:id" element={<OfferDetails />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-          </Route>
+      <RoomProvider>
+        <div className="min-h-screen bg-stone-50 overflow-x-hidden">
+          <ScrollToTop />
+          <AIAssistant />
+          <Routes>
+            <Route path="/" element={<PublicLayout />}>
+              <Route index element={<Home />} />
+              <Route path="/facility" element={<FacilitiesPage />} />
+              <Route path="/offers" element={<OffersPage />} />
+              <Route path="/rooms" element={<RoomsPage />} />
+              <Route path="/rooms/:id" element={<RoomDetails />} />
+              <Route path="/book/:id" element={<BookingPage />} />
+              <Route path="/book" element={<BookingPage />} />
+              <Route path="/search-results" element={<SearchResultWrapper />} />
+              <Route path="/hotel/:id" element={<SearchHotelDetails />} />
+              <Route path="/hotel/:id/rooms" element={<RoomSelection />} />
+              <Route path="/destination/:id" element={<DestinationDetails />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/locations" element={<LocationsPage />} />
+              <Route path="/contact" element={<HotelContactSection />} />
+              <Route path="/offers/:id" element={<OfferDetails />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+            </Route>
 
-          <Route element={<DashboardRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dashboard/rooms" element={<RoomManagement />} />
-            <Route path="/dashboard/page-builder" element={<PageBuilder />} />
-          </Route>
-        </Routes>
-      </main>
+            <Route element={<DashboardRoute />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/rooms" element={<RoomManagement />} />
+              <Route path="/dashboard/page-builder" element={<PageBuilder />} />
+            </Route>
+          </Routes>
+        </div>
+      </RoomProvider>
     </PageProvider>
   )
 }

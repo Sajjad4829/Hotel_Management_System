@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 
 /* ─── navigation ─────────────────────────────────────────────── */
 const NAV_LINKS = [
-  
+  { label: "Gallery", to: "/gallery" },
   { label: "Offers", to: "/offers" },
   { label: "Rooms", to: "/rooms" },
   { label: "Facilities", to: "/facility" },
@@ -11,15 +11,7 @@ const NAV_LINKS = [
   { label: "Locations", to: "/locations" },
 ];
 
-const MOBILE_LINKS = [
-  {
-    label: "Book"},
-  { label: "Offers" },
-  { label: "Rooms" },
-  { label: "Facility" },
-  { label: "Dining" },
-  { label: "Locations" },
-];
+
 
 /* ─── ICONS (inline SVG — no react-icons dep needed) ───── */
 const IconHelp = () => (
@@ -89,7 +81,7 @@ const Logo = () => (
 
 
 /* ─── MOBILE DRAWER ──────────────────────────────────────── */
-const MobileDrawer = ({ open, onClose }) => {
+const MobileDrawer = ({ open, onClose, links }) => {
   const [openAccordion, setOpenAccordion] = useState(null);
 
   useEffect(() => {
@@ -132,7 +124,7 @@ const MobileDrawer = ({ open, onClose }) => {
 
         {/* Links */}
         <div className="flex-1 overflow-y-auto py-4">
-          {MOBILE_LINKS.map((item) => (
+          {links.map((item) => (
             <div key={item.label} className="border-b border-stone-50">
               {item.children ? (
                 <>
@@ -165,7 +157,7 @@ const MobileDrawer = ({ open, onClose }) => {
                 </>
               ) : (
                 <NavLink
-                  to={`/${item.label.toLowerCase()}`}
+                  to={item.link || item.to || `/${item.label.toLowerCase()}`}
                   onClick={onClose}
                   className="flex items-center px-6 py-4 text-[13px] font-semibold tracking-wide text-stone-800 hover:text-amber-700 transition-colors"
                 >
@@ -296,7 +288,7 @@ export default function Navbar({ data = {} }) {
        
       </header>
 
-      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} links={displayLinks} />
 
       {/* Spacer */}
       <div className="h-[57px] lg:h-[106px]" aria-hidden="true" />

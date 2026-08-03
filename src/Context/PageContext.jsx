@@ -15,10 +15,12 @@ const defaultPagesData = {
       logoImage: "",
       websiteName: "Haven Admin",
       navMenu: [
-        { id: 1, label: "Home", link: "/" },
-        { id: 2, label: "Hotels", link: "/hotels" },
+        { id: 7, label: "Gallery", link: "/gallery" },
+        { id: 2, label: "Offers", link: "/offers" },
         { id: 3, label: "Rooms", link: "/rooms" },
-        { id: 4, label: "Contact", link: "/contact" }
+        { id: 4, label: "Facilities", link: "/facility" },
+        { id: 5, label: "Locations", link: "/locations" },
+        { id: 6, label: "Contact", link: "/contact" }
       ],
       headerButtons: [
         { id: 1, label: "Book Now", link: "/booking" },
@@ -306,6 +308,53 @@ export function PageProvider({ children }) {
                 ...(existingHome.facilities || {})
             }
           };
+        }
+
+        // Migrate navMenu if it lacks Offers (for older saved versions)
+        if (parsed.home && parsed.home.navbar && parsed.home.navbar.navMenu) {
+            const hasOffers = parsed.home.navbar.navMenu.some(item => item.link === '/offers' || item.label === 'Offers');
+            if (!hasOffers) {
+                // If it's exactly the old default, replace it with the new default
+                const isOldDefault = parsed.home.navbar.navMenu.length === 4 && parsed.home.navbar.navMenu[1].label === 'Hotels';
+                if (isOldDefault) {
+                    parsed.home.navbar.navMenu = defaultPagesData.home.navbar.navMenu;
+                } else {
+                    // Otherwise just append Offers
+                    const newId = parsed.home.navbar.navMenu.length > 0 ? Math.max(...parsed.home.navbar.navMenu.map(i => i.id)) + 1 : 1;
+                    parsed.home.navbar.navMenu.push({ id: newId, label: 'Offers', link: '/offers' });
+                }
+            }
+
+            // Also migrate Locations and Contact if they are missing
+            const hasLocations = parsed.home.navbar.navMenu.some(item => item.link === '/locations' || item.label === 'Locations');
+            if (!hasLocations) {
+                const newId = parsed.home.navbar.navMenu.length > 0 ? Math.max(...parsed.home.navbar.navMenu.map(i => i.id)) + 1 : 1;
+                parsed.home.navbar.navMenu.push({ id: newId, label: 'Locations', link: '/locations' });
+            }
+
+            const hasContact = parsed.home.navbar.navMenu.some(item => item.link === '/contact' || item.label === 'Contact');
+            if (!hasContact) {
+                const newId = parsed.home.navbar.navMenu.length > 0 ? Math.max(...parsed.home.navbar.navMenu.map(i => i.id)) + 1 : 1;
+                parsed.home.navbar.navMenu.push({ id: newId, label: 'Contact', link: '/contact' });
+            }
+
+            // Ensure "Home" is removed from navMenu for all existing users
+            parsed.home.navbar.navMenu = parsed.home.navbar.navMenu.filter(
+                item => item.label.toLowerCase() !== 'home' && item.link !== '/'
+            );
+            
+            // Also migrate Gallery to be before Offers if it doesn't exist
+            const hasGallery = parsed.home.navbar.navMenu.some(item => item.link === '/gallery' || item.label === 'Gallery');
+            if (!hasGallery) {
+                const newId = parsed.home.navbar.navMenu.length > 0 ? Math.max(...parsed.home.navbar.navMenu.map(i => i.id)) + 1 : 1;
+                const galleryItem = { id: newId, label: 'Gallery', link: '/gallery' };
+                const offersIndex = parsed.home.navbar.navMenu.findIndex(item => item.label === 'Offers' || item.link === '/offers');
+                if (offersIndex !== -1) {
+                    parsed.home.navbar.navMenu.splice(offersIndex, 0, galleryItem);
+                } else {
+                    parsed.home.navbar.navMenu.unshift(galleryItem);
+                }
+            }
         }
 
         // Migrate destinations to ensure they have the new 'details' object format
