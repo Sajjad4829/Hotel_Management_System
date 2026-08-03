@@ -28,8 +28,26 @@ import {
     Sparkles,
     X,
 } from "lucide-react";
-// import { amenityIconMap } from "../data/roomsData";
-import { amenityIconMap } from "./Roomsdata";
+const amenityIconMap = {
+  "Free WiFi": "Wifi",
+  "Air Conditioning": "Wind",
+  "Flat-screen TV": "Tv",
+  "Mini Bar": "Wine",
+  "Coffee Maker": "Coffee",
+  "Balcony": "DoorOpen",
+  "City View": "Building2",
+  "Ocean View": "Waves",
+  "Mountain View": "Mountain",
+  "Work Desk": "Laptop",
+  "Bathtub": "Bath",
+  "Rain Shower": "ShowerHead",
+  "Safe": "Lock",
+  "Ironing Board": "Iron",
+  "Bathrobes": "Shirt",
+  "Room Service": "BellRing",
+  "Free Parking": "ParkingCircle",
+  "Washing Machine": "WashingMachine"
+};
 const ICONS = {
     Wifi,
     Wind,
@@ -77,10 +95,9 @@ export default function RoomCard({ room }) {
     return (
         <>
             <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-white/60 bg-white/70 shadow-lg shadow-slate-200/60 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-[#1F3B64]/15">
-                {/* ── Image ── */}
                 <div className="relative h-56 w-full overflow-hidden">
                     <img
-                        src={room.mainImage}
+                        src={room.thumbnailImage || "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1200"}
                         alt={room.roomName}
                         loading="lazy"
                         className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
@@ -96,10 +113,10 @@ export default function RoomCard({ room }) {
 
                     {/* Availability badge */}
                     <span
-                        className={`absolute right-4 top-4 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide shadow-md ${room.availability ? "bg-emerald-500 text-white" : "bg-slate-500 text-white"
+                        className={`absolute right-4 top-4 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide shadow-md ${room.status === "Available" ? "bg-emerald-500 text-white" : "bg-slate-500 text-white"
                             }`}
                     >
-                        {room.availability ? "Available" : "Booked"}
+                        {room.status === "Available" ? "Available" : "Booked"}
                     </span>
 
                     {/* Wishlist + Compare quick actions */}
@@ -134,9 +151,16 @@ export default function RoomCard({ room }) {
 
                 {/* ── Body ── */}
                 <div className="flex flex-1 flex-col gap-3 p-6">
-                    <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-[#C9A24B]">
-                        <MapPin size={12} />
-                        {room.hotelName}
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-[#C9A24B]">
+                            <MapPin size={12} />
+                            {room.hotelName}{room.destinationName ? `, ${room.destinationName}` : ""}
+                        </div>
+                        {room.type && (
+                            <span className="rounded-full bg-[#1F3B64]/5 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#1F3B64]">
+                                {room.type}
+                            </span>
+                        )}
                     </div>
 
                     <h3 className="font-serif text-lg font-bold leading-snug text-[#1F3B64]">
@@ -163,18 +187,18 @@ export default function RoomCard({ room }) {
                     </div>
 
                     <div className="flex items-center gap-4 text-xs text-slate-500">
-                        <span className="flex items-center gap-1.5">
-                            <Users size={14} className="text-[#C9A24B]" />
-                            {room.capacity} Guests
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                            <BedDouble size={14} className="text-[#C9A24B]" />
-                            {room.bedType}
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                            <Maximize2 size={14} className="text-[#C9A24B]" />
-                            {room.roomSize}
-                        </span>
+                        <div className="flex items-center gap-1.5">
+                            <Users size={14} className="text-[#b45309]" />
+                            <span>{room.capacity || 2} Guests</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <BedDouble size={14} className="text-[#b45309]" />
+                            <span className="truncate">{room.bedType || "King"}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                            <Maximize2 size={14} className="text-[#b45309]" />
+                            <span>{room.roomSize} sq.ft</span>
+                        </div>
                     </div>
 
                     {room.amenities?.length > 0 && (
@@ -200,22 +224,22 @@ export default function RoomCard({ room }) {
                     </div>
 
                     <div className="flex gap-2">
-                        <button
-                            onClick={() => setIsQuickViewOpen(true)}
-                            className="flex-1 rounded-xl border border-[#1F3B64]/15 py-2.5 text-xs font-bold text-[#1F3B64] transition-colors hover:border-[#C9A24B] hover:text-[#C9A24B]"
+                        <Link
+                            to={`/rooms/${room.id}`}
+                            className="flex-1 rounded-xl border border-[#1F3B64]/15 py-2.5 text-center text-xs font-bold text-[#1F3B64] transition-colors hover:border-[#C9A24B] hover:text-[#C9A24B]"
                         >
-                            Quick View
-                        </button>
+                            View Details
+                        </Link>
                         <Link
                             to={`/book/${room.id}`}
                             state={{ type: "room", room }}
-                            aria-disabled={!room.availability}
-                            className={`flex-1 rounded-xl py-2.5 text-center text-xs font-bold transition-colors ${room.availability
+                            aria-disabled={room.status !== "Available"}
+                            className={`flex-1 rounded-xl py-2.5 text-center text-xs font-bold transition-colors ${room.status === "Available"
                                     ? "bg-[#C9A24B] text-[#1F3B64] hover:bg-[#dab766]"
                                     : "pointer-events-none cursor-not-allowed bg-slate-100 text-slate-400"
                                 }`}
                         >
-                            {room.availability ? "Book Now" : "Unavailable"}
+                            {room.status === "Available" ? "Book Now" : "Unavailable"}
                         </Link>
                     </div>
                 </div>

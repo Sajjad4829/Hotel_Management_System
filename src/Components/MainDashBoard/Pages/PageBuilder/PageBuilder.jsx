@@ -33,9 +33,10 @@ export default function PageBuilder() {
         { id: 'footer', name: 'Footer' },
       ]
     },
-    { id: 'hotels', name: 'Hotels Listing' },
-    { id: 'rooms', name: 'Rooms Listing' },
+    { id: 'about', name: 'About Us' },
     { id: 'contact', name: 'Contact Us' },
+    { id: 'faq', name: 'FAQ' },
+    { id: 'newsletter', name: 'Newsletter' }
   ];
 
   // Determine what data to edit based on whether the page has sections

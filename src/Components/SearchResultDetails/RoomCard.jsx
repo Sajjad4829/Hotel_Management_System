@@ -1,23 +1,28 @@
-import { Bed, Users, Maximize2, Coffee, X, Check, ArrowRight } from "lucide-react";
+import { Bed, Users, Maximize2, Check, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function RoomCard({ room }) {
   if (!room) return null;
 
   const {
+    id,
     roomName,
-    image,
+    thumbnailImage: image,
     bedType,
-    guests,
-    size,
+    maxAdults,
+    maxChildren,
+    roomSize: size,
     price,
-    breakfast,
-    freeCancellation,
+    amenities = [],
   } = room;
+  const guests = (maxAdults || 0) + (maxChildren || 0);
+  const breakfast = amenities.includes("Breakfast") || true; // Mocked for now
+  const freeCancellation = true; // Mocked for now
 
   return (
-    <div className="flex flex-col sm:flex-row bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
+    <div className="flex flex-col w-80 shrink-0 snap-start bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden transition-all duration-300 hover:shadow-md hover:-translate-y-0.5">
       {/* Room image */}
-      <div className="relative sm:w-48 flex-shrink-0 overflow-hidden h-44 sm:h-auto group">
+      <Link to={`/rooms/${id || ''}`} className="relative w-full h-48 overflow-hidden group block">
         {image ? (
           <img
             src={image}
@@ -30,12 +35,14 @@ export default function RoomCard({ room }) {
             No Image
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Room content */}
       <div className="flex flex-col flex-1 p-5 gap-3">
         {/* Name */}
-        <h3 className="text-[15px] font-bold text-[#1E2A38]">{roomName}</h3>
+        <Link to={`/rooms/${id || ''}`} className="block hover:text-[#2C4A6E] transition-colors">
+          <h3 className="text-[15px] font-bold text-[#1E2A38]">{roomName}</h3>
+        </Link>
 
         {/* Specs row */}
         <div className="flex flex-wrap gap-3">
@@ -54,7 +61,7 @@ export default function RoomCard({ room }) {
           {size && (
             <div className="flex items-center gap-1.5 text-[12px] text-slate-600">
               <Maximize2 size={13} className="text-[#2C4A6E]" />
-              {size}
+              {size} sq.ft
             </div>
           )}
         </div>
@@ -80,24 +87,34 @@ export default function RoomCard({ room }) {
         </div>
 
         {/* Price + CTA */}
-        <div className="mt-auto flex items-end justify-between gap-3 pt-3 border-t border-slate-50 flex-wrap">
-          <div>
-            <p className="text-[11px] text-slate-400">from</p>
-            <p className="text-[22px] font-bold text-[#1E2A38] leading-none">
-              ${price}
-              <span className="text-[12px] font-normal text-slate-400 ml-1">/night</span>
-            </p>
-            <p className="text-[10px] text-slate-400 mt-0.5">Includes taxes &amp; fees</p>
+        <div className="mt-auto flex flex-col gap-3 pt-3 border-t border-slate-50">
+          <div className="flex items-end justify-between flex-wrap">
+            <div>
+              <p className="text-[11px] text-slate-400">from</p>
+              <p className="text-[22px] font-bold text-[#1E2A38] leading-none">
+                ${price}
+                <span className="text-[12px] font-normal text-slate-400 ml-1">/night</span>
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Includes taxes &amp; fees</p>
+            </div>
           </div>
-          <button
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-[12px] font-bold text-white transition-all duration-200 hover:-translate-y-0.5 active:scale-95 flex-shrink-0"
-            style={{ background: "#2C4A6E", boxShadow: "0 6px 18px rgba(44,74,110,0.3)" }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = "#003580")}
-            onMouseLeave={(e) => (e.currentTarget.style.background = "#2C4A6E")}
-          >
-            Reserve
-            <ArrowRight size={13} />
-          </button>
+          <div className="flex gap-2">
+            <Link
+              to={`/rooms/${id || ''}`}
+              className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-[12px] font-bold text-[#1e3a5f] bg-slate-100 transition-all hover:bg-slate-200"
+            >
+              View Details
+            </Link>
+            <Link
+              to={`/book/${id || ''}`}
+              className="flex-1 flex items-center justify-center py-2.5 rounded-xl text-[12px] font-bold text-white transition-all hover:-translate-y-0.5 active:scale-95"
+              style={{ background: "#2C4A6E", boxShadow: "0 4px 12px rgba(44,74,110,0.2)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#003580")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#2C4A6E")}
+            >
+              Select Room
+            </Link>
+          </div>
         </div>
       </div>
     </div>

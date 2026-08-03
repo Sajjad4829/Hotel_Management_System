@@ -17,11 +17,10 @@ import {
 } from "react-icons/fi";
 import { MdOutlineKingBed, MdOutlineBathtub, MdOutlinePool } from "react-icons/md";
 import { TbMassage } from "react-icons/tb";
+import { useRoomContext } from "../../Context/RoomContext";
+import { usePageContext } from "../../Context/PageContext";
+import { usePropertyContext } from "../../Context/PropertyContext";
 import RoomCard from "./Roomcard";
-import {  roomsData, roomTypes, getFeaturedRoom } from "./Roomsdata";
-
-// import { roomsData, roomTypes, getFeaturedRoom } from "../data/roomsData";
-// import RoomCard from "../components/RoomCard";
 
 const featureCards = [
   {
@@ -49,55 +48,85 @@ const featureCards = [
 export default function RoomsPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
-  const [maxPrice, setMaxPrice] = useState(1500);
+  const [destinationFilter, setDestinationFilter] = useState("All");
+  const [hotelFilter, setHotelFilter] = useState("All");
+  const [bedTypeFilter, setBedTypeFilter] = useState("All");
+  const [minPrice, setMinPrice] = useState(0);
+  const [maxPrice, setMaxPrice] = useState(5000);
   const [capacityFilter, setCapacityFilter] = useState("Any");
-  const [availabilityFilter, setAvailabilityFilter] = useState("All");
+  const [availabilityFilter, setAvailabilityFilter] = useState("Available");
   const [activeFilters, setActiveFilters] = useState(null);
 
   const [searchParams] = useSearchParams();
 
-  const location = searchParams.get("location");
-  const adults = Number(searchParams.get("adults")) || 0;
+  const { rooms, categories } = useRoomContext();
+  const { pagesData } = usePageContext();
+  const { hotels, destinations } = usePropertyContext();
 
-  const filteredRooms = roomsData.filter((room) => {
-    const matchLocation =
-      !location || room.location.toLowerCase().includes(location.toLowerCase());
-    const matchCapacity = room.capacity >= adults;
-    return matchLocation && matchCapacity;
+  const adults = parseInt(searchParams.get("adults") || "1", 10);
+  
+  const roomTypes = ["All", ...categories.map(c => c.name)];
+  
+  // Attach location data to each room for filtering
+  const allRooms = rooms.map(room => {
+    const hotel = hotels.find(l => String(l.id) === String(room.propertyId));
+    const dest = hotel ? destinations.find(d => String(d.id) === String(hotel.destinationId)) : null;
+    return {
+      ...room,
+      hotelName: hotel ? hotel.name : "Unknown Hotel",
+      destinationName: dest ? dest.name : "Unknown Destination",
+      capacity: (room.maxAdults || 0) + (room.maxChildren || 0),
+    };
   });
 
+  const uniqueDestinations = ["All", ...new Set(allRooms.map(r => r.destinationName).filter(Boolean))];
+  const uniqueHotels = ["All", ...new Set(allRooms.map(r => r.hotelName).filter(Boolean))];
+  const uniqueBedTypes = ["All", ...new Set(allRooms.map(r => r.bedType).filter(Boolean))];
+
   const applySearch = () => {
-    setActiveFilters({ search, typeFilter, maxPrice, capacityFilter, availabilityFilter });
+    setActiveFilters({ search, typeFilter, destinationFilter, hotelFilter, bedTypeFilter, minPrice, maxPrice, capacityFilter, availabilityFilter });
   };
 
   const filters = activeFilters || {
-    search: "",
+    search,
     typeFilter: "All",
-    maxPrice: 1500,
+    destinationFilter: "All",
+    hotelFilter: "All",
+    bedTypeFilter: "All",
+    minPrice: 0,
+    maxPrice: 5000,
     capacityFilter: "Any",
-    availabilityFilter: "All",
+    availabilityFilter: "Available",
   };
 
-  const filtered = filteredRooms.filter((r) => {
-    const matchName = r.roomName.toLowerCase().includes(filters.search.toLowerCase());
-    const matchType = filters.typeFilter === "All" || r.roomType === filters.typeFilter;
-    const matchPrice = (r.discountPrice ?? r.price) <= filters.maxPrice;
+  const filtered = allRooms.filter((r) => {
+    if (!r.isActive) return false;
+    
+    const matchName = r.roomName?.toLowerCase().includes(filters.search.toLowerCase());
+    const matchType = filters.typeFilter === "All" || r.type === filters.typeFilter;
+    const matchDest = filters.destinationFilter === "All" || r.destinationName === filters.destinationFilter;
+    const matchHotel = filters.hotelFilter === "All" || r.hotelName === filters.hotelFilter;
+    const matchBed = filters.bedTypeFilter === "All" || r.bedType === filters.bedTypeFilter;
+    const matchPrice = (r.discountPrice ?? r.price) >= filters.minPrice && (r.discountPrice ?? r.price) <= filters.maxPrice;
+    
     const matchCap =
       filters.capacityFilter === "Any" ||
       (filters.capacityFilter === "1" && r.capacity >= 1) ||
       (filters.capacityFilter === "2" && r.capacity >= 2) ||
       (filters.capacityFilter === "3" && r.capacity >= 3) ||
       (filters.capacityFilter === "4+" && r.capacity >= 4);
+    
     const matchAvail =
       filters.availabilityFilter === "All" ||
-      (filters.availabilityFilter === "Available" && r.availability) ||
-      (filters.availabilityFilter === "Unavailable" && !r.availability);
-    return matchName && matchType && matchPrice && matchCap && matchAvail;
+      (filters.availabilityFilter === "Available" && r.status === "Available") ||
+      (filters.availabilityFilter === "Unavailable" && r.status !== "Available");
+      
+    return matchName && matchType && matchDest && matchHotel && matchBed && matchPrice && matchCap && matchAvail;
   });
 
-  // Presidential Suite banner is driven entirely by the shared data source —
-  // no hardcoded name, price, or image here.
-  const featuredSuite = getFeaturedRoom("Presidential Suite");
+  // Featured Room logic using PageContext Configuration
+  const featuredRoomIds = pagesData?.rooms?.featuredRoomIds || [];
+  const featuredSuite = featuredRoomIds.length > 0 ? allRooms.find(r => r.id === featuredRoomIds[0]) : null;
   const suiteHasDiscount =
     featuredSuite && featuredSuite.discountPrice && featuredSuite.discountPrice < featuredSuite.price;
   const suitePrice = featuredSuite
@@ -105,13 +134,15 @@ export default function RoomsPage() {
       ? featuredSuite.discountPrice
       : featuredSuite.price
     : null;
+    
+  const heroConfig = pagesData?.rooms || { heroTitle: "Luxurious Accommodations", heroSubtitle: "Rest in unmatched comfort", heroBgImage: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1600&q=85" };
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] font-sans antialiased">
       {/* ── HERO ── */}
       <section className="relative h-[540px] md:h-[620px] flex flex-col justify-end overflow-hidden">
         <img
-          src="https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1600&q=85"
+          src={heroConfig.heroBgImage || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1600&q=85"}
           alt="Luxury hotel lobby"
           className="absolute inset-0 w-full h-full object-cover object-center scale-105"
           style={{ filter: "brightness(0.45)" }}
@@ -129,10 +160,10 @@ export default function RoomsPage() {
             The Grandeur Collection
           </p>
           <h1 className="text-4xl md:text-6xl font-light text-white leading-[1.1] mb-4 max-w-2xl">
-            Discover Our <span className="italic text-amber-300">Luxury</span> Rooms & Suites
+            {heroConfig.heroTitle}
           </h1>
           <p className="text-white/60 text-base md:text-lg max-w-xl font-light">
-            Choose the perfect room for your stay — from serene classics to sky-high penthouses.
+            {heroConfig.heroSubtitle}
           </p>
         </div>
       </section>
@@ -141,7 +172,7 @@ export default function RoomsPage() {
       <section className="max-w-6xl mx-auto px-6 -mt-10 relative z-20 mb-16">
         <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.10)] p-6 md:p-8 border border-stone-100">
           <p className="text-xs text-amber-600 font-semibold uppercase tracking-widest mb-5">Search Rooms</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
             <div className="relative">
               <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4" />
               <input
@@ -152,6 +183,22 @@ export default function RoomsPage() {
                 className="w-full pl-10 pr-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition"
               />
             </div>
+            
+            <select
+              value={destinationFilter}
+              onChange={(e) => setDestinationFilter(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition appearance-none cursor-pointer"
+            >
+              {uniqueDestinations.map(d => <option key={d} value={d}>{d === "All" ? "All Destinations" : d}</option>)}
+            </select>
+
+            <select
+              value={hotelFilter}
+              onChange={(e) => setHotelFilter(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition appearance-none cursor-pointer"
+            >
+              {uniqueHotels.map(h => <option key={h} value={h}>{h === "All" ? "All Hotels" : h}</option>)}
+            </select>
 
             <select
               value={typeFilter}
@@ -174,24 +221,14 @@ export default function RoomsPage() {
               <option value="3">3+ Guests</option>
               <option value="4+">4+ Guests</option>
             </select>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-            <div>
-              <div className="flex justify-between text-xs text-stone-500 mb-2">
-                <span>Max Price / Night</span>
-                <span className="text-amber-600 font-semibold">${maxPrice}</span>
-              </div>
-              <input
-                type="range"
-                min={100}
-                max={1500}
-                step={50}
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="w-full accent-amber-500 cursor-pointer"
-              />
-            </div>
+            <select
+              value={bedTypeFilter}
+              onChange={(e) => setBedTypeFilter(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:border-amber-400 transition appearance-none cursor-pointer"
+            >
+              {uniqueBedTypes.map(b => <option key={b} value={b}>{b === "All" ? "All Bed Types" : b}</option>)}
+            </select>
 
             <select
               value={availabilityFilter}
@@ -203,12 +240,41 @@ export default function RoomsPage() {
               <option value="Unavailable">Unavailable</option>
             </select>
 
+            <div className="flex flex-col justify-center">
+              <div className="flex justify-between text-[10px] text-stone-500 mb-1 px-1">
+                <span>Min: ${minPrice}</span>
+                <span className="text-amber-600 font-semibold">Max: ${maxPrice}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="range"
+                  min={0}
+                  max={2500}
+                  step={50}
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(Number(e.target.value))}
+                  className="w-1/2 accent-stone-500 cursor-pointer"
+                />
+                <input
+                  type="range"
+                  min={0}
+                  max={5000}
+                  step={50}
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="w-1/2 accent-amber-500 cursor-pointer"
+                />
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex justify-end mt-4 border-t border-stone-100 pt-4">
             <button
               onClick={applySearch}
-              className="w-full flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm py-3 px-6 rounded-xl transition-all duration-200 shadow-md shadow-amber-200 active:scale-95"
+              className="flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-semibold text-sm py-2.5 px-8 rounded-xl transition-all duration-200 shadow-md shadow-amber-200 active:scale-95"
             >
               <FiSearch className="w-4 h-4" />
-              Search Rooms
+              Apply Filters
             </button>
           </div>
         </div>
@@ -250,7 +316,7 @@ export default function RoomsPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 rounded-3xl overflow-hidden shadow-2xl">
               <div className="relative h-72 lg:h-auto min-h-[460px]">
                 <img
-                  src={featuredSuite.mainImage}
+                  src={featuredSuite.thumbnailImage}
                   alt={featuredSuite.roomName}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -268,12 +334,12 @@ export default function RoomsPage() {
                   {featuredSuite.roomName}
                 </h2>
                 <p className="text-stone-400 text-sm leading-relaxed mb-8 font-light">
-                  {featuredSuite.description}
+                  {featuredSuite.shortDescription}
                 </p>
 
-                {featuredSuite.features?.length > 0 && (
+                {featuredSuite.amenities?.length > 0 && (
                   <div className="grid grid-cols-2 gap-3 mb-8">
-                    {featuredSuite.features.map((label, i) => (
+                    {featuredSuite.amenities.slice(0, 4).map((label, i) => (
                       <div key={i} className="flex items-center gap-2.5 text-stone-300 text-xs">
                         <span className="text-amber-400"><FiCheck className="w-4 h-4" /></span>
                         {label}

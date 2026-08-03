@@ -18,22 +18,28 @@ import Register from './Components/RegisterPage/Register'
 import ForgotPassword from './Components/ForgotPassword/ForgotPassword'
 import Dashboard from './Components/MainDashBoard/DashBoard/dashboard'
 import RoomManagement from './Components/MainDashBoard/Pages/Room_Management/RoomManagement'
+import RoomCategories from './Components/MainDashBoard/Pages/Room_Management/RoomCategories'
 import PublicLayout from './Components/PublicLayout.jsx'
 import DashboardRoute from './Components/DashboardRoute.jsx'
 import DestinationDetails from './Components/DestinationDetails/DestinationDetails'
 import { PageProvider } from './Context/PageContext.jsx'
 import PageBuilder from './Components/MainDashBoard/Pages/PageBuilder/PageBuilder.jsx'
+import Destinations from './Components/MainDashBoard/Pages/Property_Management/Destinations.jsx'
+import Hotels from './Components/MainDashBoard/Pages/Property_Management/Hotels.jsx'
+import Offers from './Components/MainDashBoard/Pages/Marketing_Management/Offers.jsx'
 import LocationsPage from './Components/Locations/LocationsPage.jsx'
 import HotelContactSection from './Components/Contact/Contact.jsx'
 import Gallery from './Components/Gallery/Gallery.jsx'
 import { RoomProvider } from './Context/RoomContext.jsx'
+import { PropertyProvider } from './Context/PropertyContext.jsx'
 
 function App() {
   return (
-    <PageProvider>
-      <RoomProvider>
-        <div className="min-h-screen bg-stone-50 overflow-x-hidden">
-          <ScrollToTop />
+    <PropertyProvider>
+      <PageProvider>
+        <RoomProvider>
+          <div className="min-h-screen bg-stone-50 overflow-x-hidden">
+            <ScrollToTop />
           <AIAssistant />
           <Routes>
             <Route path="/" element={<PublicLayout />}>
@@ -59,13 +65,18 @@ function App() {
 
             <Route element={<DashboardRoute />}>
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/destinations" element={<Destinations />} />
+              <Route path="/dashboard/hotels" element={<Hotels />} />
               <Route path="/dashboard/rooms" element={<RoomManagement />} />
+              <Route path="/dashboard/rooms/categories" element={<RoomCategories />} />
+              <Route path="/dashboard/offers" element={<Offers />} />
               <Route path="/dashboard/page-builder" element={<PageBuilder />} />
             </Route>
           </Routes>
         </div>
-      </RoomProvider>
-    </PageProvider>
+        </RoomProvider>
+      </PageProvider>
+    </PropertyProvider>
   )
 }
 

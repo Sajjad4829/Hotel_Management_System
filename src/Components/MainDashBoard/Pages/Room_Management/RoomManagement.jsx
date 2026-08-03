@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiEye, FiX, FiCheck } from "react-icons/fi";
 import { useRoomContext } from "../../../../Context/RoomContext";
-import { locationsData } from "../../../Locations/locationsData";
+import { usePropertyContext } from "../../../../Context/PropertyContext";
 
 const STATUS_OPTIONS = ["All", "Available", "Booked", "Occupied", "Maintenance"];
 const AMENITIES_LIST = ["WiFi", "AC", "TV", "Mini Bar", "Balcony", "Ocean View", "Room Service", "Coffee Maker"];
@@ -40,7 +40,8 @@ function Modal({ isOpen, onClose, title, children }) {
 }
 
 export default function RoomManagement() {
-  const { rooms, addRoom, updateRoom, deleteRoom } = useRoomContext();
+  const { rooms, categories, addRoom, updateRoom, deleteRoom } = useRoomContext();
+  const { hotels } = usePropertyContext();
   
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -49,11 +50,14 @@ export default function RoomManagement() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
+  // Default to first active category, or fallback to 'Standard'
+  const defaultCategory = categories.find(c => c.isActive)?.name || "Standard";
+
   const initialFormState = {
-    propertyId: locationsData[0]?.id || "",
+    propertyId: hotels.length > 0 ? hotels[0].id : "",
     roomNo: "",
     roomName: "",
-    type: "Standard",
+    type: defaultCategory,
     floor: "",
     price: 100,
     status: "Available",
@@ -91,6 +95,7 @@ export default function RoomManagement() {
   const handleOpenEdit = (room) => {
     setFormData({ 
       ...room,
+      amenities: room.amenities || [],
       galleryImages: Array.isArray(room.galleryImages) ? room.galleryImages.join(",\n") : (room.galleryImages || "")
     });
     setSelectedRoom(room);
@@ -132,18 +137,19 @@ export default function RoomManagement() {
 
   const handleAmenityToggle = (amenity) => {
     setFormData(prev => {
-      const isSelected = prev.amenities.includes(amenity);
+      const currentAmenities = prev.amenities || [];
+      const isSelected = currentAmenities.includes(amenity);
       return {
         ...prev,
         amenities: isSelected 
-          ? prev.amenities.filter(a => a !== amenity)
-          : [...prev.amenities, amenity]
+          ? currentAmenities.filter(a => a !== amenity)
+          : [...currentAmenities, amenity]
       };
     });
   };
 
   const getPropertyName = (propertyId) => {
-    const property = locationsData.find(loc => loc.id === propertyId);
+    const property = hotels.find(loc => loc.id === propertyId);
     return property ? property.name : "Unknown Property";
   };
 
@@ -229,7 +235,7 @@ export default function RoomManagement() {
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">Hotel Property</label>
                 <select name="propertyId" value={formData.propertyId} onChange={handleChange} required className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-amber-700 outline-none">
-                  {locationsData.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
+                  {hotels.map(loc => <option key={loc.id} value={loc.id}>{loc.name}</option>)}
                 </select>
               </div>
               <div>
@@ -237,13 +243,15 @@ export default function RoomManagement() {
                 <input type="text" name="roomNo" value={formData.roomNo} onChange={handleChange} required className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-amber-700 outline-none" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Type</label>
+                <label className="block text-xs font-medium text-slate-700 mb-1">Type / Category</label>
                 <select name="type" value={formData.type} onChange={handleChange} className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-amber-700 outline-none">
-                  <option value="Standard">Standard</option>
-                  <option value="Deluxe">Deluxe</option>
-                  <option value="Suite">Suite</option>
-                  <option value="Presidential">Presidential</option>
-                  <option value="Villa">Villa</option>
+                  {categories.filter(c => c.isActive).map(cat => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
+                  {/* Fallback if somehow a room has a deleted category */}
+                  {!categories.some(c => c.name === formData.type && c.isActive) && formData.type && (
+                    <option value={formData.type}>{formData.type} (Inactive)</option>
+                  )}
                 </select>
               </div>
             </div>
@@ -307,15 +315,18 @@ export default function RoomManagement() {
           <div className="bg-white p-5 rounded-lg shadow-sm border border-slate-200">
             <h3 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider">Amenities</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {AMENITIES_LIST.map(amenity => (
+              {AMENITIES_LIST.map(amenity => {
+                const isSelected = (formData.amenities || []).includes(amenity);
+                return (
                 <label key={amenity} className="flex items-center gap-2 cursor-pointer group">
-                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${formData.amenities.includes(amenity) ? 'bg-amber-700 border-amber-700 text-white' : 'border-slate-300 group-hover:border-amber-700'}`}>
-                    {formData.amenities.includes(amenity) && <FiCheck size={12} />}
+                  <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${isSelected ? 'bg-amber-700 border-amber-700 text-white' : 'border-slate-300 group-hover:border-amber-700'}`}>
+                    {isSelected && <FiCheck size={12} />}
                   </div>
                   <span className="text-sm text-slate-700 select-none">{amenity}</span>
-                  <input type="checkbox" className="hidden" checked={formData.amenities.includes(amenity)} onChange={() => handleAmenityToggle(amenity)} />
+                  <input type="checkbox" className="hidden" checked={isSelected} onChange={() => handleAmenityToggle(amenity)} />
                 </label>
-              ))}
+                );
+              })}
             </div>
           </div>
 

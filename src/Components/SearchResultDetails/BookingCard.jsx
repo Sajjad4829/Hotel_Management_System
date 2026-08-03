@@ -1,7 +1,7 @@
-import { Calendar, Users, ArrowRight, Shield, Tag,Pencil, ChevronUp, ChevronDown } from "lucide-react";
-import { useState } from "react";
+import { Calendar, Users, ArrowRight, Shield, Tag,Pencil, ChevronUp, ChevronDown, CheckCircle } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-export default function BookingCard({ hotel, checkIn, checkOut, guests, children, roomsCount }) {
+export default function BookingCard({ hotel, checkIn, checkOut, guests, children, roomsCount, selectedRooms = {}, rooms = [] }) {
 const [showSearchEdit, setShowSearchEdit] = useState(false);
   const navigate = useNavigate();
 
@@ -11,33 +11,66 @@ const [newGuests, setNewGuests] = useState(guests || 2);
 const [newChildren, setNewChildren] = useState(children || 0);
 const [newRoomsCount, setNewRoomsCount] = useState(roomsCount || 1);
 
+
+useEffect(() => {
+  if (checkIn) setNewCheckIn(checkIn);
+  if (checkOut) setNewCheckOut(checkOut);
+  if (guests) setNewGuests(guests);
+  if (children) setNewChildren(children);
+  if (roomsCount) setNewRoomsCount(roomsCount);
+}, [checkIn, checkOut, guests, children, roomsCount]);
+
 const handleUpdateSearch = () => {
   navigate(`/hotel/${hotel.id}`, {
     replace: true,
     state: {
-  checkIn: newCheckIn,
-  checkOut: newCheckOut,
-  adults: newGuests,
-  children: newChildren,
-  rooms: newRoomsCount,
-},
+      checkIn: newCheckIn,
+      checkOut: newCheckOut,
+      adults: newGuests,
+      children: newChildren,
+      rooms: newRoomsCount,
+    },
   });
   
-
   setShowSearchEdit(false);
 };
 
+const isFromSearch = Boolean(checkIn && checkOut);
+const hasSelections = Object.keys(selectedRooms).length > 0;
+
 const handleSelectRoom = () => {
-  navigate(`/hotel/${hotel.id}/rooms`, {
-    state: {
-      hotelId: hotel.id,
-      checkIn: newCheckIn,
-      checkOut: newCheckOut,
-      guests: newGuests,
-      children: newChildren,
-    },
-  });
+  if (hasSelections) {
+    // Map selectedRooms to the format expected by BookingPage
+    const mappedSelectedRooms = Object.entries(selectedRooms).map(([roomId, qty]) => {
+      const roomObj = rooms.find(r => String(r.id) === String(roomId));
+      return { room: roomObj, qty };
+    });
+
+    navigate(`/book`, {
+      state: {
+        hotelId: hotel.id,
+        checkIn: newCheckIn,
+        checkOut: newCheckOut,
+        guests: newGuests,
+        children: newChildren,
+        selectedRooms: mappedSelectedRooms,
+      },
+    });
+  } else {
+    // Fallback if no rooms selected, maybe scroll to rooms or just go to default book
+    navigate(`/book/${hotel?.id || ''}`);
+  }
 };
+
+  // Calculate dynamic total price
+  const dynamicTotal = useMemo(() => {
+    if (!hasSelections) return null;
+    return Object.entries(selectedRooms).reduce((total, [roomId, qty]) => {
+      const room = rooms.find(r => String(r.id) === String(roomId));
+      const roomPrice = room ? (Number(room.discountPrice) || Number(room.price) || 0) : 0;
+      return total + (roomPrice * qty);
+    }, 0);
+  }, [selectedRooms, rooms, hasSelections]);
 
   if (!hotel) return null;
   const { price, originalPrice, guestRating, ratingLabel, freeCancellation } = hotel;
@@ -47,11 +80,19 @@ const handleSelectRoom = () => {
       ? Math.round(((originalPrice - price) / originalPrice) * 100)
       : 0;
 
+  const displayPrice = hasSelections ? dynamicTotal : price;
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 space-y-5">
       {/* Price block */}
       <div>
-        {discount > 0 && originalPrice && (
+        {hasSelections && (
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-white bg-emerald-600 px-2 py-0.5 rounded-full mb-2">
+            <CheckCircle size={12} />
+            {Object.values(selectedRooms).reduce((a, b) => a + b, 0)} Room(s) Selected
+          </div>
+        )}
+        {!hasSelections && discount > 0 && originalPrice && (
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[12px] text-slate-400 line-through">${originalPrice}/night</span>
             <span className="text-[11px] font-bold text-white bg-rose-500 px-2 py-0.5 rounded-full">
@@ -59,9 +100,9 @@ const handleSelectRoom = () => {
             </span>
           </div>
         )}
-        {price != null && (
+        {displayPrice != null && (
           <p className="text-[28px] font-bold text-[#1E2A38] leading-none">
-            ${price}
+            ${displayPrice}
             <span className="text-[14px] font-normal text-slate-500 ml-1">/night</span>
           </p>
         )}
@@ -82,14 +123,20 @@ const handleSelectRoom = () => {
 
       {/* Date inputs */}
       <div className="grid grid-cols-2 gap-2">
-        <div className="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-[#2C4A6E] transition-colors">
+        <div 
+          onClick={() => isFromSearch && setShowSearchEdit(true)}
+          className={`border border-slate-200 rounded-xl p-3 transition-colors ${isFromSearch ? 'cursor-pointer hover:border-[#2C4A6E]' : 'opacity-75'}`}
+        >
           <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Check-in</p>
           <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
             <Calendar size={13} className="text-[#2C4A6E]" />
            {newCheckIn || "Select date"}
           </div>
         </div>
-        <div className="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-[#2C4A6E] transition-colors">
+        <div 
+          onClick={() => isFromSearch && setShowSearchEdit(true)}
+          className={`border border-slate-200 rounded-xl p-3 transition-colors ${isFromSearch ? 'cursor-pointer hover:border-[#2C4A6E]' : 'opacity-75'}`}
+        >
           <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Check-out</p>
           <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
             <Calendar size={13} className="text-[#2C4A6E]" />
@@ -99,28 +146,32 @@ const handleSelectRoom = () => {
       </div>
 
       {/* Guests */}
-      <div className="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-[#2C4A6E] transition-colors">
+      <div 
+        onClick={() => isFromSearch && setShowSearchEdit(true)}
+        className={`border border-slate-200 rounded-xl p-3 transition-colors ${isFromSearch ? 'cursor-pointer hover:border-[#2C4A6E]' : 'opacity-75'}`}
+      >
         <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Guests</p>
         <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
           <Users size={13} className="text-[#2C4A6E]" />
           {`${newGuests} Adults · ${newChildren} Children`}
         </div>
       </div>
-   {/* Modify Button */}
-
-<button
-  type="button"
-  onClick={() => setShowSearchEdit(!showSearchEdit)}
-  className="mt-4 mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#2C4A6E] bg-white py-3 text-sm font-semibold text-[#2C4A6E] transition-all duration-200 hover:bg-[#2C4A6E] hover:text-white"
->
-  <Pencil size={16} />
-  Modify Search
-  {showSearchEdit ? (
-    <ChevronUp size={16} />
-  ) : (
-    <ChevronDown size={16} />
-  )}
-</button>
+      {/* Modify Button */}
+      {isFromSearch && (
+        <button
+          type="button"
+          onClick={() => setShowSearchEdit(!showSearchEdit)}
+          className="mt-4 mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#2C4A6E] bg-white py-3 text-sm font-semibold text-[#2C4A6E] transition-all duration-200 hover:bg-[#2C4A6E] hover:text-white"
+        >
+          <Pencil size={16} />
+          Modify Search
+          {showSearchEdit ? (
+            <ChevronUp size={16} />
+          ) : (
+            <ChevronDown size={16} />
+          )}
+        </button>
+      )}
 
 {showSearchEdit && (
   <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
@@ -194,12 +245,9 @@ const handleSelectRoom = () => {
       {/* CTA */}
       <button
         onClick={handleSelectRoom}
-        className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[14px] font-bold text-white transition-all duration-200 hover:shadow-lg active:scale-95"
-        style={{ background: "#2C4A6E" }}
-      // onMouseEnter={(e) => (e.currentTarget.style.background = "#003580")}
-      // onMouseLeave={(e) => (e.currentTarget.style.background = "#2C4A6E")}
+        className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-[14px] font-bold text-white transition-all duration-200 hover:shadow-lg active:scale-95 ${hasSelections ? "bg-[#0071c2] hover:bg-[#005c9e]" : "bg-[#2C4A6E]"}`}
       >
-        Select Room
+        {hasSelections ? "Reserve Selected" : "Select Room"}
         <ArrowRight size={16} />
       </button>
 

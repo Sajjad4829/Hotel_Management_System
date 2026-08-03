@@ -13,7 +13,9 @@ import {
   ChevronDown,
 } from "lucide-react";
 
-import offersData, { getOfferById, getOfferByIdOrSlug, getSimilarOffers, } from "../OfferPage/offersData";
+import { usePageContext } from "../../Context/PageContext";
+import { usePropertyContext } from "../../Context/PropertyContext";
+import { useRoomContext } from "../../Context/RoomContext";
 
 import Breadcrumb from "./Breadcrumb";
 import CountdownTimer from "./CountdownTimer";
@@ -39,10 +41,50 @@ const OfferDetails = () => {
 
 
 
-  const offer = useMemo(() => getOfferByIdOrSlug(id), [id]);
+  const { pagesData } = usePageContext();
+  const { hotels } = usePropertyContext();
+  const { rooms } = useRoomContext();
+
+  const allProcessedOffers = useMemo(() => {
+    const rawOffers = pagesData?.offers?.items || [];
+    return rawOffers
+      .filter(o => o.status === 'Active')
+      .map(offer => {
+        const hotel = hotels.find(l => String(l.id) === String(offer.hotelId)) || {};
+        const room = rooms.find(r => String(r.id) === String(offer.roomId)) || rooms.find(r => String(r.propertyId) === String(offer.hotelId)) || {};
+        
+        const originalPrice = room.price || 0;
+        let discountPercent = 0;
+        const match = offer.discount?.match(/(\d+)%/);
+        if (match) discountPercent = parseInt(match[1]);
+        
+        const savings = Math.round(originalPrice * (discountPercent / 100));
+        const discountedPrice = originalPrice - savings;
+
+        return {
+          ...offer,
+          image: room.thumbnailImage || hotel.image || "",
+          mainImage: room.thumbnailImage || hotel.image || "",
+          gallery: room.gallery || [],
+          badge: offer.discount,
+          title: offer.offerTitle,
+          description: offer.description,
+          originalPrice,
+          discountedPrice,
+          savings,
+          expiry: offer.countdown,
+          category: 'all',
+          roomName: room.name || room.roomName,
+          hotelName: hotel.name,
+          features: room.amenities || room.features || [],
+        };
+      });
+  }, [pagesData, rooms, hotels]);
+
+  const offer = useMemo(() => allProcessedOffers.find(o => String(o.id) === String(id) || String(o.slug) === String(id)), [id, allProcessedOffers]);
   const similarOffers = useMemo(
-    () => (offer ? getSimilarOffers(offer.id, 3) : []),
-    [offer]
+    () => (offer ? allProcessedOffers.filter(o => String(o.id) !== String(offer.id)).slice(0, 3) : []),
+    [offer, allProcessedOffers]
   );
 
   useEffect(() => {

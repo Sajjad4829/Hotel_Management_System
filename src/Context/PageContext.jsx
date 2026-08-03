@@ -109,15 +109,15 @@ const defaultPagesData = {
           slug: "dhaka",
           description: "The vibrant capital of Bangladesh, known for its rich history, bustling streets, and cultural heritage.",
           image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=1200&q=80",
-          highlights: "Lalbagh Fort, Ahsan Manzil, National Museum",
-          hotelsCount: 15,
+          hotelsCount: 1,
           buttonText: "Explore Destination",
           buttonLink: "/destination/dhaka",
           isVisible: true,
+          displayOrder: 1,
+          includedHotels: ["dhaka-gulshan"],
           details: {
             hero: { bgImage: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=1920&q=80", pageLabel: "Destination", title: "Dhaka", description: "Dhaka is a city that never sleeps, offering a blend of rich history and modern lifestyle.", backButtonText: "Back", ctaButtonText: "Explore Options", ctaButtonLink: "#" },
             topHighlights: { sectionTitle: "Top Highlights", items: [{ name: "Lalbagh Fort", icon: "CheckCircle" }, { name: "Ahsan Manzil", icon: "CheckCircle" }, { name: "National Museum", icon: "CheckCircle" }] },
-            hotelsList: { sectionTitle: "Hotels in Dhaka", totalBadge: "15 Properties", items: [] },
             ctaBox: { title: "Ready to explore?", description: "Book your stay in Dhaka today.", buttonText: "Search Availability", buttonLink: "/search-results" },
             gallery: { items: [] },
             attractions: { items: [] },
@@ -143,15 +143,15 @@ const defaultPagesData = {
           slug: "coxs-bazar",
           description: "Home to the world's longest natural sea beach, a perfect getaway for ocean lovers and sun seekers.",
           image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1200&q=80",
-          highlights: "Inani Beach, Himchari National Park",
-          hotelsCount: 22,
+          hotelsCount: 1,
           buttonText: "Explore Destination",
           buttonLink: "/destination/coxs-bazar",
           isVisible: true,
+          displayOrder: 2,
+          includedHotels: ["coxs-bazar-resort"],
           details: {
             hero: { bgImage: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1920&q=80", pageLabel: "Destination", title: "Cox's Bazar", description: "Cox's Bazar is renowned for its golden sandy beach and breathtaking sunsets over the Bay of Bengal.", backButtonText: "Back", ctaButtonText: "Explore Options", ctaButtonLink: "#" },
             topHighlights: { sectionTitle: "Top Highlights", items: [{ name: "Inani Beach", icon: "CheckCircle" }, { name: "Himchari National Park", icon: "CheckCircle" }] },
-            hotelsList: { sectionTitle: "Hotels in Cox's Bazar", totalBadge: "22 Properties", items: [] },
             ctaBox: { title: "Ready to explore?", description: "Book your stay in Cox's Bazar.", buttonText: "Search Availability", buttonLink: "/search-results" },
             gallery: { items: [] },
             attractions: { items: [] },
@@ -177,15 +177,15 @@ const defaultPagesData = {
           slug: "sylhet",
           description: "A serene land of tea gardens, rolling hills, and breathtaking waterfalls in northeastern Bangladesh.",
           image: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80",
-          highlights: "Ratargul Swamp Forest, Bisanakandi",
-          hotelsCount: 12,
+          hotelsCount: 2,
           buttonText: "Explore Destination",
           buttonLink: "/destination/sylhet",
           isVisible: true,
+          displayOrder: 3,
+          includedHotels: ["sylhet-eco", "sreemangal-boutique"],
           details: {
             hero: { bgImage: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1920&q=80", pageLabel: "Destination", title: "Sylhet", description: "Experience the tranquility of Sylhet with its endless tea estates and lush green landscapes.", backButtonText: "Back", ctaButtonText: "Explore Options", ctaButtonLink: "#" },
             topHighlights: { sectionTitle: "Top Highlights", items: [{ name: "Ratargul Swamp Forest", icon: "CheckCircle" }, { name: "Bisanakandi", icon: "CheckCircle" }] },
-            hotelsList: { sectionTitle: "Hotels in Sylhet", totalBadge: "12 Properties", items: [] },
             ctaBox: { title: "Ready to explore?", description: "Book your serene getaway in Sylhet.", buttonText: "Search Availability", buttonLink: "/search-results" },
             gallery: { items: [] },
             attractions: { items: [] },
@@ -260,10 +260,46 @@ const defaultPagesData = {
   hotels: {
     heroTitle: "Our Premium Hotels",
     heroSubtitle: "Find your next getaway",
+    heroBgImage: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=1920&q=80"
   },
   rooms: {
     heroTitle: "Luxurious Accommodations",
     heroSubtitle: "Rest in unmatched comfort",
+    heroBgImage: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=1920&q=80",
+    featuredRoomIds: [] // References room IDs from RoomContext
+  },
+  offers: {
+    heroTitle: "Exclusive Offers",
+    heroSubtitle: "Discover our latest deals and packages tailored for you",
+    heroBgImage: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=1920&q=80",
+    items: [
+      {
+        id: "offer-1",
+        hotelId: "dhaka-gulshan", // From locationsData
+        roomId: 1, // From RoomContext (optional)
+        offerTitle: "Weekend Escape",
+        discount: "30% OFF",
+        countdown: "2026-12-31",
+        promoCode: "WEEKEND30",
+        validity: "Valid until Dec 31, 2026",
+        description: "Unwind with breakfast for two and a late checkout.",
+        status: "Active",
+        displayOrder: 1
+      }
+    ]
+  },
+  hotelDetails: {
+    configs: [
+      // Array of configuration objects keyed by hotelId
+      {
+        hotelId: "dhaka-gulshan",
+        highlights: ["Prime city-center location", "Rooftop infinity pool", "Award-winning spa"],
+        policies: "Check-in: 2:00 PM\nCheck-out: 12:00 PM\nNo smoking.",
+        customBlocks: [
+          { id: "block-1", title: "Dining", content: "Experience culinary excellence at our 3 signature restaurants." }
+        ]
+      }
+    ]
   },
   contact: {
     title: "Get In Touch",
@@ -309,6 +345,13 @@ export function PageProvider({ children }) {
             }
           };
         }
+
+        // Migrate new root sections (offers, hotelDetails, expanded rooms/hotels)
+        if (!parsed.offers) parsed.offers = defaultPagesData.offers;
+        if (!parsed.hotelDetails) parsed.hotelDetails = defaultPagesData.hotelDetails;
+        
+        parsed.rooms = { ...defaultPagesData.rooms, ...(parsed.rooms || {}) };
+        parsed.hotels = { ...defaultPagesData.hotels, ...(parsed.hotels || {}) };
 
         // Migrate navMenu if it lacks Offers (for older saved versions)
         if (parsed.home && parsed.home.navbar && parsed.home.navbar.navMenu) {
@@ -364,6 +407,8 @@ export function PageProvider({ children }) {
             // Always upgrade/merge the schema to the latest structure to ensure no missing fields
             return {
               ...dest,
+              displayOrder: dest.displayOrder || 1,
+              includedHotels: dest.includedHotels || [],
               details: {
                 hero: {
                   bgImage: oldDetails.hero?.bgImage || dest.image,
@@ -378,11 +423,6 @@ export function PageProvider({ children }) {
                   sectionTitle: oldDetails.topHighlights?.sectionTitle || "Top Highlights",
                   items: oldDetails.topHighlights?.items || 
                          (Array.isArray(oldDetails.highlights) ? oldDetails.highlights.map(h => ({ name: h, icon: "CheckCircle" })) : [])
-                },
-                hotelsList: {
-                  sectionTitle: oldDetails.hotelsList?.sectionTitle || oldDetails.hotelsList?.title || `Hotels in ${dest.name}`,
-                  totalBadge: oldDetails.hotelsList?.totalBadge || `${dest.hotelsCount || 0} Properties`,
-                  items: oldDetails.hotelsList?.items || []
                 },
                 ctaBox: {
                   title: oldDetails.ctaBox?.title || "Ready to explore?",

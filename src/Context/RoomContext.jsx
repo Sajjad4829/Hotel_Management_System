@@ -24,6 +24,14 @@ const defaultRooms = [
   }
 ];
 
+const defaultCategories = [
+  { id: "cat-1", name: "Standard", code: "STD", description: "Basic comfortable room for everyday stays.", displayOrder: 1, isActive: true },
+  { id: "cat-2", name: "Deluxe", code: "DLX", description: "Upgraded room with better views and amenities.", displayOrder: 2, isActive: true },
+  { id: "cat-3", name: "Suite", code: "SUI", description: "Spacious suite with separate living area.", displayOrder: 3, isActive: true },
+  { id: "cat-4", name: "Presidential", code: "PRS", description: "Top-tier luxury accommodation.", displayOrder: 4, isActive: true },
+  { id: "cat-5", name: "Villa", code: "VIL", description: "Private standalone villa.", displayOrder: 5, isActive: true }
+];
+
 const RoomContext = createContext();
 
 export function RoomProvider({ children }) {
@@ -39,13 +47,35 @@ export function RoomProvider({ children }) {
     return defaultRooms;
   });
 
+  const [categories, setCategories] = useState(() => {
+    const saved = localStorage.getItem('havenCategoriesData');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse categories data", e);
+      }
+    }
+    return defaultCategories;
+  });
+
   useEffect(() => {
     localStorage.setItem('havenRoomsData', JSON.stringify(rooms));
   }, [rooms]);
 
+  useEffect(() => {
+    localStorage.setItem('havenCategoriesData', JSON.stringify(categories));
+  }, [categories]);
+
+  const generateSlug = (name) => {
+    return (name || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  };
+
   const addRoom = (roomData) => {
+    const slug = generateSlug(roomData.roomName || roomData.name);
     const newRoom = {
       id: `rm-${Date.now()}`,
+      slug,
       ...roomData,
       price: Number(roomData.price) || 0,
       roomSize: Number(roomData.roomSize) || 0,
@@ -82,8 +112,36 @@ export function RoomProvider({ children }) {
     return rooms.filter(room => room.propertyId === propertyId);
   };
 
+  const addCategory = (catData) => {
+    const newCat = {
+      id: `cat-${Date.now()}`,
+      ...catData,
+      displayOrder: Number(catData.displayOrder) || 0,
+      isActive: Boolean(catData.isActive)
+    };
+    setCategories(prev => [...prev, newCat]);
+  };
+
+  const updateCategory = (id, updatedData) => {
+    setCategories(prev => prev.map(cat => 
+      cat.id === id ? { 
+        ...cat, 
+        ...updatedData,
+        displayOrder: Number(updatedData.displayOrder) || cat.displayOrder,
+        isActive: Boolean(updatedData.isActive)
+      } : cat
+    ));
+  };
+
+  const deleteCategory = (id) => {
+    setCategories(prev => prev.filter(cat => cat.id !== id));
+  };
+
   return (
-    <RoomContext.Provider value={{ rooms, addRoom, updateRoom, deleteRoom, getRoomsByProperty }}>
+    <RoomContext.Provider value={{ 
+      rooms, addRoom, updateRoom, deleteRoom, getRoomsByProperty,
+      categories, addCategory, updateCategory, deleteCategory
+    }}>
       {children}
     </RoomContext.Provider>
   );

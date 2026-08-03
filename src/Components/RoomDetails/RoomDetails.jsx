@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import hotelDetailsData from "../SearchResultDetails/HotelDetailsData";
+import { usePropertyContext } from "../../Context/PropertyContext";
+import { useRoomContext } from "../../Context/RoomContext";
 
 // ─── FEATHER ICONS (FI) ──────────────────────────────────────────────────────
 // এখান থেকে 'FiBed' বাদ দেওয়া হয়েছে
@@ -292,28 +293,37 @@ export default function RoomDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  let room = roomsData.find((r) => r.id === Number(id));
-  if (!room) {
+  const { hotels: hotelDetailsData } = usePropertyContext();
+  const { rooms: allRooms } = useRoomContext();
+  
+  let rawRoom = allRooms.find((r) => String(r.id) === String(id) || String(r.slug) === String(id));
+  
+  if (!rawRoom) {
     const allRoomsFromHotels = hotelDetailsData.flatMap((hotel) => hotel.rooms || []);
-    const foundRoom = allRoomsFromHotels.find((r) => r.id === Number(id));
-    if (foundRoom) {
-      room = {
-        id: foundRoom.id,
-        name: foundRoom.name,
-        type: foundRoom.roomType,
-        price: foundRoom.discountPrice || foundRoom.price,
-        rating: 4.8, 
-        reviews: 120, 
-        size: foundRoom.roomSize,
-        bed: foundRoom.bedType,
-        guests: foundRoom.maxGuests,
-        available: foundRoom.availableRooms > 0 || foundRoom.availability === true,
-        description: foundRoom.description,
-        images: foundRoom.gallery && foundRoom.gallery.length > 0 ? foundRoom.gallery : [foundRoom.image, foundRoom.image], 
-        highlights: foundRoom.features || foundRoom.facilities || ["Free WiFi", "City View"],
-        tag: foundRoom.badge || "Popular"
-      };
-    }
+    rawRoom = allRoomsFromHotels.find((r) => String(r.id) === String(id));
+  }
+
+  let room = null;
+  if (rawRoom) {
+    room = {
+      id: rawRoom.id,
+      name: rawRoom.roomName || rawRoom.name,
+      type: rawRoom.category || rawRoom.roomType || "Standard",
+      price: rawRoom.price || rawRoom.discountPrice || 0,
+      rating: rawRoom.rating || 4.8, 
+      reviews: rawRoom.reviews || 120, 
+      size: rawRoom.roomSize ? `${rawRoom.roomSize} sq.ft` : "Unknown size",
+      bed: rawRoom.bedType || "Standard Bed",
+      guests: (Number(rawRoom.maxAdults) || Number(rawRoom.maxGuests) || 2) + (Number(rawRoom.maxChildren) || 0),
+      available: rawRoom.status === 'Available' || rawRoom.availableRooms > 0 || rawRoom.availability === true,
+      description: rawRoom.description || "No description available.",
+      images: rawRoom.galleryImages?.length > 0 ? rawRoom.galleryImages : 
+              (rawRoom.thumbnailImage ? [rawRoom.thumbnailImage, rawRoom.thumbnailImage] : 
+              (rawRoom.gallery && rawRoom.gallery.length > 0 ? rawRoom.gallery : 
+              (rawRoom.image ? [rawRoom.image, rawRoom.image] : ["https://images.unsplash.com/photo-1631049552057-403cdb8f0658?w=1200"]))), 
+      highlights: rawRoom.amenities || rawRoom.features || rawRoom.facilities || ["Free WiFi", "City View"],
+      tag: rawRoom.badge || "Popular"
+    };
   }
 
   const [activeImage, setActiveImage] = useState(0);
@@ -339,7 +349,7 @@ export default function RoomDetails() {
     );
   }
 
-  const similarRooms = roomsData.filter((r) => r.id !== room.id).slice(0, 3);
+  const similarRooms = allRooms.filter((r) => String(r.id) !== String(room.id)).slice(0, 3);
 
   const features = [
     { icon: <FiWifi />, label: "High-Speed WiFi" },

@@ -1,12 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
-/* ─── DATA ──────────────────────────────────────────────── */
-import destinationData from "../DestinationDetails/DestinationData";
-
-const DESTINATIONS = destinationData;
-
-const FILTERS = ["All Destinations", "Dhaka", "Cox's Bazar", "Sylhet"];
+import { usePropertyContext } from "../../Context/PropertyContext";
 
 /* ─── DESTINATION CARD ──────────────────────────────────── */
 const DestinationCard = ({ destination }) => (
@@ -95,15 +90,29 @@ const DestinationCard = ({ destination }) => (
   </div>
 );
 
-/* ─── MAIN SECTION ───────────────────────────────────────── */
 export default function CuratedDestinations({ data = {} }) {
+  const { destinations: masterDestinations, hotels: masterHotels } = usePropertyContext();
   const [activeFilter, setActiveFilter] = useState("All Destinations");
 
   const config = {
     isVisible: data.isVisible !== false,
     title: data.title || "Curated Destinations",
     subtitle: data.subtitle || "Discover our most popular locations and hand-picked properties — each destination crafted to exceed every expectation.",
-    destinations: (data.destinations || []).filter(d => d.isVisible !== false)
+    destinations: (data.destinations || [])
+      .filter(d => d.isVisible !== false && d.destinationId)
+      .map(feat => {
+        const master = masterDestinations.find(m => m.id === feat.destinationId);
+        if (!master) return null;
+        return {
+          ...feat,
+          name: master.name,
+          image: master.image,
+          description: master.description,
+          hotelsCount: (feat.includedHotels || []).length,
+          slug: master.id,
+        };
+      })
+      .filter(Boolean)
   };
 
   // Generate dynamic filters based on visible destinations

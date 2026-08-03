@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
-import { useParams, useLocation, Link } from "react-router-dom";
+import { useParams, useLocation, Link, useNavigate } from "react-router-dom";
 import { Star, MapPin, ArrowLeft, BedDouble } from "lucide-react";
-import hotelDetailsData from "../SearchResultDetails/HotelDetailsData";
+import { usePropertyContext } from "../../Context/PropertyContext";
+import { useRoomContext } from "../../Context/RoomContext";
 
 import BookingSummary from "./BookingSummary";
 import RoomCard from "./Roomcard";
@@ -61,6 +62,7 @@ function HotelSummaryCard({ hotel }) {
 export default function RoomSelection() {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   console.log(location.state);
 
   const hotelId = id ? Number(id) : location.state?.hotelId ?? 1;
@@ -72,10 +74,21 @@ export default function RoomSelection() {
     children,
   } = location.state || {};
   console.log(checkIn, checkOut, guests, children);
-  const hotel = useMemo(
-    () => hotelDetailsData.find((h) => h.id === hotelId),
-    [hotelId]
+  const { hotels } = usePropertyContext();
+  const { rooms: allRooms } = useRoomContext();
+
+  const hotelBase = useMemo(
+    () => hotels.find((h) => String(h.id) === String(hotelId)),
+    [hotels, hotelId]
   );
+  
+  const hotel = useMemo(() => {
+    if (!hotelBase) return null;
+    return {
+      ...hotelBase,
+      rooms: allRooms.filter(r => String(r.propertyId) === String(hotelId) && r.isActive)
+    };
+  }, [hotelBase, allRooms, hotelId]);
 
   const rooms = hotel?.rooms || [];
 
@@ -104,13 +117,19 @@ export default function RoomSelection() {
 
         {/* Breadcrumb */}
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <Link
-            to={`/hotel/${hotelId}`}
-            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#1a3c5e] hover:text-[#003580] transition-colors"
+          <button
+            onClick={() => {
+              if (window.history.state && window.history.state.idx > 0) {
+                navigate(-1);
+              } else {
+                navigate(`/hotel/${hotelId}`, { state: location.state });
+              }
+            }}
+            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#1a3c5e] hover:text-[#003580] transition-colors bg-transparent border-0 cursor-pointer p-0"
           >
             <ArrowLeft size={15} />
             Back to hotel details
-          </Link>
+          </button>
           {totalSelected > 0 && (
             <span className="text-[12px] font-semibold text-white bg-[#1a3c5e] px-3 py-1.5 rounded-full">
               {totalSelected} room{totalSelected > 1 ? "s" : ""} selected

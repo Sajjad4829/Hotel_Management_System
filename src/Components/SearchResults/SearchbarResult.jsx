@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { getMockHotels } from "./Mockdata";
+import { usePropertyContext } from "../../Context/PropertyContext";
 import SearchResultHeader from "./SearchResultHeader";
 import FilterSidebar from "./FilterSidebar";
 import { EmptyState, LoadingSkeleton, Pagination } from "./Ui";
@@ -21,17 +21,48 @@ const DEFAULT_FILTERS = {
 
 
 /* ─── HELPERS ────────────────────────────────────────────── */
-const applyFilters = (hotels, filters) =>
+const applyFilters = (hotels, filters, searchData, destinations = []) =>
   hotels.filter((h) => {
-    if (h.price < filters.price.min || h.price > filters.price.max) return false;
-    if (filters.roomType && h.roomType !== filters.roomType) return false;
-    if (filters.stars.length > 0 && !filters.stars.includes(h.stars)) return false;
-    if (filters.guestRatingMin > 0 && h.guestRating < filters.guestRatingMin) return false;
-    if (filters.breakfast && !h.breakfast) return false;
-    if (filters.freeCancellation && !h.freeCancellation) return false;
+    // Filter by location if searchData has a location or destination
+    const searchTerm = searchData?.location || searchData?.destination;
+    if (searchTerm) {
+      const target = searchTerm.toLowerCase();
+      
+      // Find matching destination by name to catch dynamically created destination IDs
+      const matchedDest = destinations.find(d => (d.name || "").toLowerCase() === target);
+      const matchedDestId = matchedDest?.id?.toLowerCase();
+
+      const hotelCity = (h.city || "").toLowerCase();
+      const hotelAddress = (h.address || "").toLowerCase();
+      const hotelDestId = (h.destinationId || "").toLowerCase();
+      const destIdTarget = `dest-${target.replace(/[^a-z0-9]+/g, '-')}`;
+      
+      if (
+        !hotelCity.includes(target) && 
+        !hotelAddress.includes(target) && 
+        hotelDestId !== target && 
+        hotelDestId !== destIdTarget &&
+        (!matchedDestId || hotelDestId !== matchedDestId)
+      ) {
+        return false;
+      }
+    }
+
+    const price = h.price || Math.floor(Math.random() * 300) + 50; // Fallback price
+    if (price < filters.price.min || price > filters.price.max) return false;
+    if (filters.roomType && h.roomType && h.roomType !== filters.roomType) return false;
+    
+    const stars = Number(h.stars) || (h.category?.includes('5') ? 5 : h.category?.includes('4') ? 4 : 3);
+    if (filters.stars.length > 0 && !filters.stars.includes(stars)) return false;
+    
+    const rating = h.guestRating || (h.rating ? parseFloat(h.rating) : 8.0);
+    if (filters.guestRatingMin > 0 && rating < filters.guestRatingMin) return false;
+    
+    if (filters.breakfast && h.breakfast === false) return false;
+    if (filters.freeCancellation && h.freeCancellation === false) return false;
     if (
       filters.amenities.length > 0 &&
-      !filters.amenities.every((a) => h.amenities.includes(a))
+      !filters.amenities.every((a) => (h.amenities || []).some(ha => ha.toLowerCase().includes(a.toLowerCase())))
     )
       return false;
     return true;
@@ -60,42 +91,59 @@ const applySort = (hotels, sortBy) => {
    ════════════════════════════════════════════════════════ */
 export default function SearchbarResult() {
   const location = useLocation();
-
-  const [searchData] = useState(location.state || {});
-
-
-  /* ── State ── */
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const [searchData] = useState(() => {
+    if (location.state && Object.keys(location.state).length > 0) {
+      return location.state;
+    }
+    // Fallback to URL search parameters if location.state is null (e.g. on refresh or direct link)
+    return {
+      destination: searchParams.get("destination") || searchParams.get("location") || "",
+      location: searchParams.get("location") || searchParams.get("destination") || "",
+      checkIn: searchParams.get("checkIn") || "",
+      checkOut: searchParams.get("checkOut") || "",
+      adults: searchParams.get("adults") || "2",
+      children: searchParams.get("children") || "0",
+      rooms: searchParams.get("rooms") || "1",
+    };
+  });
 
   const pageFromUrl = Number(searchParams.get("page")) || 1;
 
+  const { hotels: liveHotels, destinations } = usePropertyContext();
+  const [hotels, setHotels] = useState(liveHotels);
 
+  // Sync with context if it changes
+  useEffect(() => {
+    setHotels(liveHotels);
+  }, [liveHotels]);
 
-  const [hotels] = useState(() => getMockHotels());
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [sortBy, setSortBy] = useState("recommended");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(pageFromUrl);
-  console.log("location.state =", location.state);
-  console.log("searchData =", searchData);
+
+  // Sync search state and pagination to URL parameters so it survives refreshes
   useEffect(() => {
-    searchParams.set("page", currentPage);
-    setSearchParams(searchParams);
-  }, [currentPage]);
-  // const searchData = location.state || {};
+    const newParams = new URLSearchParams(searchParams);
+    
+    newParams.set("page", currentPage);
+    
+    if (searchData.destination || searchData.location) {
+      newParams.set("destination", searchData.destination || searchData.location);
+    }
+    if (searchData.checkIn) newParams.set("checkIn", searchData.checkIn);
+    if (searchData.checkOut) newParams.set("checkOut", searchData.checkOut);
+    if (searchData.adults) newParams.set("adults", searchData.adults);
+    if (searchData.children) newParams.set("children", searchData.children);
+    if (searchData.rooms) newParams.set("rooms", searchData.rooms);
 
-  // const searchData = {
-  //   location: searchParams.get("location") || "",
-  //   checkIn: searchParams.get("checkIn") || "",
-  //   checkOut: searchParams.get("checkOut") || "",
-  //   adults: Number(searchParams.get("adults")) || 1,
-  //   children: Number(searchParams.get("children")) || 0,
-  //   rooms: Number(searchParams.get("rooms")) || 1,
-  // };
-
-
+    setSearchParams(newParams, { replace: true });
+  }, [currentPage, searchData]);
+  // Commented out code removed for brevity
 
   /* Simulate initial load */
   useEffect(() => {
@@ -113,8 +161,8 @@ export default function SearchbarResult() {
 
 
   const filteredHotels = useMemo(() => {
-    return applyFilters(hotels, filters);
-  }, [hotels, filters]);
+    return applyFilters(hotels, filters, searchData, destinations);
+  }, [hotels, filters, searchData, destinations]);
   const sortedHotels = useMemo(() => applySort(filteredHotels, sortBy), [filteredHotels, sortBy]);
   const totalPages = Math.ceil(sortedHotels.length / HOTELS_PER_PAGE);
   const paginatedHotels = useMemo(

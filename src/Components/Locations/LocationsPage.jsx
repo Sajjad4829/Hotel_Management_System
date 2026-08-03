@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { locationsData } from './locationsData';
+import { usePropertyContext } from '../../Context/PropertyContext';
 import { MapPin, Phone, Navigation } from 'lucide-react';
 import L from 'leaflet';
 
@@ -31,7 +31,10 @@ function MapUpdater({ center }) {
 }
 
 export default function LocationsPage() {
-  const [activeLocation, setActiveLocation] = useState(locationsData[0]);
+  const { hotels: locationsData } = usePropertyContext();
+  const [activeLocation, setActiveLocation] = useState(locationsData[0] || null);
+
+  if (!locationsData || locationsData.length === 0) return <div>No locations available.</div>;
 
   return (
     <div className="h-[calc(100vh-57px)] lg:h-[calc(100vh-106px)] bg-slate-50 flex flex-col md:flex-row overflow-hidden">
@@ -83,7 +86,7 @@ export default function LocationsPage() {
       {/* Right Panel - Map */}
       <div className="w-full md:w-2/3 lg:w-3/4 h-[50vh] md:h-full relative z-0">
         <MapContainer 
-          center={activeLocation.coordinates} 
+          center={activeLocation?.coordinates || [23.6850, 90.3563]} // default center
           zoom={6} 
           style={{ height: '100%', width: '100%' }}
           zoomControl={true}
@@ -92,9 +95,10 @@ export default function LocationsPage() {
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
-          <MapUpdater center={activeLocation.coordinates} />
+          <MapUpdater center={activeLocation?.coordinates || [23.6850, 90.3563]} />
           
           {locationsData.map((loc) => (
+            loc.coordinates ? (
             <Marker 
               key={loc.id} 
               position={loc.coordinates}
@@ -118,6 +122,7 @@ export default function LocationsPage() {
                 </div>
               </Popup>
             </Marker>
+            ) : null
           ))}
         </MapContainer>
       </div>

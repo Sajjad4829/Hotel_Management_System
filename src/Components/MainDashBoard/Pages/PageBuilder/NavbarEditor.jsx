@@ -45,7 +45,7 @@ export default function NavbarEditor({ data, onChange }) {
             onClick={() => handleArrayAdd(arrayName)}
             className="flex items-center gap-1 text-xs font-semibold text-[#b45309] bg-orange-100 hover:bg-orange-200 px-3 py-1.5 rounded-lg transition-colors"
           >
-            <Plus size={14} /> Add Item
+            <  room manage editor not Plus size={14} /> Add Item
           </button>
         </div>
         

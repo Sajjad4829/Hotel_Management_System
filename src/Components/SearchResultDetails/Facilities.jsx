@@ -10,22 +10,29 @@ const FACILITY_MAP = {
 };
 
 export default function Facilities({ facilities = [] }) {
-  if (!facilities.length) return null;
+  // Ensure facilities is an array to prevent .map crashes
+  const facilitiesArray = Array.isArray(facilities) 
+    ? facilities 
+    : typeof facilities === 'string' 
+      ? facilities.split(',').map(f => f.trim()) 
+      : [];
+
+  if (!facilitiesArray.length) return null;
 
   return (
     <div>
       <h2 className="text-[16px] font-bold text-[#1E2A38] mb-4">Popular Facilities</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {facilities.map((key) => {
-          const item = FACILITY_MAP[key];
-          if (!item) return null;
+        {facilitiesArray.map((key) => {
+          const item = FACILITY_MAP[key] || { icon: <CheckCircle size={18} />, label: key };
+          if (!item.label) return null;
           return (
             <div
               key={key}
               className="flex items-center gap-2.5 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100"
             >
               <span className="text-[#2C4A6E]">{item.icon}</span>
-              <span className="text-[13px] font-medium text-slate-700">{item.label}</span>
+              <span className="text-[13px] font-medium text-slate-700 capitalize">{item.label}</span>
             </div>
           );
         })}

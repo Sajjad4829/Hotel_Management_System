@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Plus, Trash2, Image as ImageIcon, Map as MapIcon, Globe, Calendar, Navigation, Info, Settings, Eye, EyeOff, ArrowUp, ArrowDown } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import RoomManager from './RoomManager';
 
 const AVAILABLE_ICONS = [
   "Wifi", "Waves", "Dumbbell", "Car", "Utensils", "Coffee", "Clock", "Star", 
@@ -15,7 +14,6 @@ const renderIcon = (iconName) => {
 
 export default function DestinationDetailsBuilder({ destination, onUpdate, onBack }) {
   const [activeTab, setActiveTab] = useState('hero');
-  const [editingRoomsForHotelIdx, setEditingRoomsForHotelIdx] = useState(null);
   const [editingFacilityIdx, setEditingFacilityIdx] = useState(null);
   const details = destination.details || {};
 
@@ -73,7 +71,6 @@ export default function DestinationDetailsBuilder({ destination, onUpdate, onBac
   const tabs = [
     { id: 'hero', label: 'Hero Section' },
     { id: 'highlights', label: 'Top Highlights' },
-    { id: 'hotels', label: 'Hotels List' },
     { id: 'facilities', label: 'Hotel Facilities' },
     { id: 'cta', label: 'Search Availability' },
     { id: 'gallery', label: 'Gallery' },
@@ -236,93 +233,6 @@ export default function DestinationDetailsBuilder({ destination, onUpdate, onBac
                     </button>
                   </div>
                 ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* HOTELS LIST TAB */}
-        {activeTab === 'hotels' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-semibold text-slate-600 mb-1">Section Title</label>
-                <input 
-                  type="text" 
-                  value={details.hotelsList?.sectionTitle || ''}
-                  onChange={(e) => handleUpdate('hotelsList', 'sectionTitle', e.target.value)}
-                  className="w-full p-2.5 border border-slate-300 rounded-lg"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-semibold text-slate-600 mb-1">Total Properties Badge Text</label>
-                <input 
-                  type="text" 
-                  value={details.hotelsList?.totalBadge || ''}
-                  onChange={(e) => handleUpdate('hotelsList', 'totalBadge', e.target.value)}
-                  className="w-full p-2.5 border border-slate-300 rounded-lg"
-                />
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <label className="block text-sm font-semibold text-slate-600">Dynamic Hotel List</label>
-                <button onClick={() => handleArrayAdd('hotelsList', 'items', { image: '', name: '', description: '', rating: '', category: '', buttonText: 'View Hotel', buttonLink: '' })} className="text-[#b45309] text-sm font-semibold flex items-center gap-1 hover:underline">
-                  <Plus size={14} /> Add Hotel
-                </button>
-              </div>
-              <div className="space-y-4">
-                {(details.hotelsList?.items || []).map((hotel, idx) => (
-                  <div key={idx} className="bg-white p-4 rounded-xl border border-slate-200 relative">
-                    <button onClick={() => handleArrayRemove('hotelsList', 'items', idx)} className="absolute top-2 right-2 text-red-500 hover:bg-red-50 p-1.5 rounded">
-                      <Trash2 size={18} />
-                    </button>
-                    <div className="grid grid-cols-2 gap-4 mb-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">Hotel Name</label>
-                        <input type="text" value={hotel.name || ''} onChange={(e) => handleArrayUpdate('hotelsList', 'items', idx, 'name', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">Image URL</label>
-                        <input type="text" value={hotel.image || ''} onChange={(e) => handleArrayUpdate('hotelsList', 'items', idx, 'image', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <label className="block text-xs font-semibold text-slate-500 mb-1">Short Description</label>
-                      <textarea value={hotel.description || ''} onChange={(e) => handleArrayUpdate('hotelsList', 'items', idx, 'description', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm h-16" />
-                    </div>
-                    <div className="grid grid-cols-4 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">Rating (e.g. 4.5/5)</label>
-                        <input type="text" value={hotel.rating || ''} onChange={(e) => handleArrayUpdate('hotelsList', 'items', idx, 'rating', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">Category (e.g. 5 Star)</label>
-                        <input type="text" value={hotel.category || ''} onChange={(e) => handleArrayUpdate('hotelsList', 'items', idx, 'category', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">Button Text</label>
-                        <input type="text" value={hotel.buttonText || ''} onChange={(e) => handleArrayUpdate('hotelsList', 'items', idx, 'buttonText', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-500 mb-1">Button Link</label>
-                        <input type="text" value={hotel.buttonLink || ''} onChange={(e) => handleArrayUpdate('hotelsList', 'items', idx, 'buttonLink', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
-                      </div>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center bg-slate-50 -mx-4 -mb-4 p-4 rounded-b-xl">
-                      <div className="text-sm text-slate-500">
-                        <span className="font-semibold text-slate-700">{hotel.rooms?.length || 0}</span> Rooms Configured
-                      </div>
-                      <button onClick={() => setEditingRoomsForHotelIdx(idx)} className="flex items-center gap-1.5 bg-[#b45309] hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
-                        <Settings size={14} /> Manage Rooms
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {(!details.hotelsList?.items || details.hotelsList.items.length === 0) && (
-                  <p className="text-slate-500 text-sm italic">No manually curated hotels added.</p>
-                )}
               </div>
             </div>
           </div>
@@ -582,6 +492,14 @@ export default function DestinationDetailsBuilder({ destination, onUpdate, onBac
                 <input type="text" value={details.travelInfo?.weather || ''} onChange={(e) => handleUpdate('travelInfo', 'weather', e.target.value)} className="w-full p-2.5 border border-slate-300 rounded-lg" />
               </div>
               <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 mb-1"><LucideIcons.Languages size={16}/> Primary Language</label>
+                <input type="text" value={details.travelInfo?.language || ''} onChange={(e) => handleUpdate('travelInfo', 'language', e.target.value)} className="w-full p-2.5 border border-slate-300 rounded-lg" />
+              </div>
+              <div>
+                <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 mb-1"><LucideIcons.Banknote size={16}/> Currency</label>
+                <input type="text" value={details.travelInfo?.currency || ''} onChange={(e) => handleUpdate('travelInfo', 'currency', e.target.value)} className="w-full p-2.5 border border-slate-300 rounded-lg" />
+              </div>
+              <div>
                 <label className="flex items-center gap-2 text-sm font-semibold text-slate-600 mb-1"><Navigation size={16}/> Transportation</label>
                 <textarea value={details.travelInfo?.transportation || ''} onChange={(e) => handleUpdate('travelInfo', 'transportation', e.target.value)} className="w-full p-2.5 border border-slate-300 rounded-lg h-24" />
               </div>
@@ -625,18 +543,6 @@ export default function DestinationDetailsBuilder({ destination, onUpdate, onBac
           </div>
         )}
       </div>
-
-      {editingRoomsForHotelIdx !== null && (
-        <RoomManager
-          hotel={details.hotelsList.items[editingRoomsForHotelIdx]}
-          onUpdateRooms={(newRooms) => {
-            const arr = [...(details.hotelsList?.items || [])];
-            arr[editingRoomsForHotelIdx] = { ...arr[editingRoomsForHotelIdx], rooms: newRooms };
-            handleUpdate('hotelsList', 'items', arr);
-          }}
-          onClose={() => setEditingRoomsForHotelIdx(null)}
-        />
-      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Clock, AlertCircle } from "lucide-react";
-import hotelDetailsData from "./Hoteldetailsdata";
+import { usePropertyContext } from "../../Context/PropertyContext";
+import { useRoomContext } from "../../Context/RoomContext";
 import HotelGallery from "./Hotelgallery";
 import HotelInfo from "./Hotelinfo";
 import Facilities from "./Facilities";
@@ -90,7 +91,14 @@ export default function HotelDetails() {
 
   const page = searchParams.get("page") || 1;
 
-  const hotel = hotelDetailsData.find((h) => h.id === Number(id));
+  const { hotels } = usePropertyContext();
+  const { rooms: allRooms } = useRoomContext();
+  
+  const hotelBase = hotels.find((h) => String(h.id) === String(id));
+  const hotel = hotelBase ? {
+    ...hotelBase,
+    rooms: allRooms.filter(r => String(r.propertyId) === String(id) && r.isActive)
+  } : null;
 
   if (!hotel) return <NotFound />;
 

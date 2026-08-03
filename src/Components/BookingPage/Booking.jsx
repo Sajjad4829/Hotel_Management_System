@@ -5,7 +5,8 @@ import { calculatePricing } from "../../utils/pricing";
 import {
   FiCalendar, FiUsers, FiHome, FiMaximize2, FiPhone, FiMail, FiMapPin, FiShield, FiCreditCard, FiStar, FiHeadphones, FiCheckCircle, FiClock,
   FiChevronRight, FiArrowLeft, FiWifi, FiCoffee, FiTruck, FiTag, FiLock,
-} from "react-icons/fi"; import { roomsData } from "../Roompage/Roomsdata";
+} from "react-icons/fi"; 
+import { useRoomContext } from "../../Context/RoomContext";
 
 function BookingInput({
   label,
@@ -141,6 +142,7 @@ function SectionCard({ title, subtitle, children, className = "" }) {
 
 export default function BookingPage() {
   const location = useLocation();
+  const { rooms: allRooms } = useRoomContext();
   const [arrivalTime, setArrivalTime] = useState("");
   const [occasion, setOccasion] = useState("");
   const {
@@ -163,7 +165,7 @@ export default function BookingPage() {
   const room =
     location.state?.room ||
     location.state?.selectedRooms?.[0]?.room ||
-    roomsData.find((r) => String(r.id) === String(id));
+    allRooms.find((r) => String(r.id) === String(id));
 
   const bookingItem = offer || room;
   const bookingRooms = location.state?.selectedRooms || [];

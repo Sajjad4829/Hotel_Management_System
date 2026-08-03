@@ -14,33 +14,54 @@ import { MdOutlineBed } from "react-icons/md";
 import { NavLink } from "react-router-dom";
 // `children` (optional) turns an item into a nested/expandable menu.
 const NAV_ITEMS = [
-  { label: "Overview", icon: FiGrid, href: "#" },
+  { label: "Overview", icon: FiGrid, path: "/dashboard" },
   {
-    label: "Page Builder",
+    label: "Content Management",
     icon: FiLayout,
-    path: "/dashboard/page-builder",
-    children: []
-  },
-  {
-    label: "Bookings",
-    icon: FiCalendar,
     children: [
-      { label: "All Bookings", href: "#" },
-      { label: "New Booking", href: "#" },
-      { label: "Cancellations", href: "#" },
+      { label: "Homepage", path: "/dashboard/page-builder?page=home" },
+      { label: "About", path: "/dashboard/page-builder?page=about" },
+      { label: "Contact", path: "/dashboard/page-builder?page=contact" },
+      { label: "FAQ", path: "/dashboard/page-builder?page=faq" },
+      { label: "Newsletter", path: "/dashboard/page-builder?page=newsletter" },
     ],
   },
   {
-    label: "Rooms",
+    label: "Property Management",
     icon: MdOutlineBed,
     children: [
-      { label: "All Rooms", path: "/dashboard/rooms" },
-      { label: "Room Types", path: "/dashboard/rooms/types" },
-      { label: "Availability", path: "/dashboard/rooms/availability" },
+      { label: "Destinations", path: "/dashboard/destinations" },
+      { label: "Hotels", path: "/dashboard/hotels" },
+      { label: "Room Management", path: "/dashboard/rooms" },
+      { label: "Room Categories", path: "/dashboard/rooms/categories" },
     ],
   },
-  { label: "Guests", icon: FiUsers, href: "#" },
-  { label: "Settings", icon: FiSettings, href: "#" },
+  {
+    label: "Booking Management",
+    icon: FiCalendar,
+    children: [
+      { label: "Bookings", path: "/dashboard/bookings" },
+      { label: "Guests", path: "/dashboard/guests" },
+    ],
+  },
+  {
+    label: "Marketing",
+    icon: FiUsers, // Placeholder icon
+    children: [
+      { label: "Offers", path: "/dashboard/offers" },
+      { label: "Reviews", path: "/dashboard/reviews" },
+    ],
+  },
+  {
+    label: "Settings",
+    icon: FiSettings,
+    children: [
+      { label: "Website Settings", path: "/dashboard/settings/website" },
+      { label: "SEO", path: "/dashboard/settings/seo" },
+      { label: "Footer", path: "/dashboard/page-builder?page=footer" },
+      { label: "Menu", path: "/dashboard/settings/menu" },
+    ],
+  },
 ];
 
 export default function Sidebar({ isOpen, onClose }) {

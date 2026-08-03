@@ -1,9 +1,6 @@
 import { motion } from "framer-motion";
-import { Clock } from "lucide-react";
+import { Clock, MapPin, Tag } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-
-
-
 
 const badgeStyles = {
   "30% OFF": "bg-[#C9A24B] text-[#1F3B64]",
@@ -12,6 +9,7 @@ const badgeStyles = {
 };
 
 function formatExpiry(dateStr) {
+  if (!dateStr) return "N/A";
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -24,8 +22,6 @@ function formatExpiry(dateStr) {
  * Glass-effect card used across the Featured Offers slider / grid.
  */
 export default function OfferCard({ offer, index = 0 }) {
-
-  
   const navigate = useNavigate();
   return (
     <motion.article
@@ -43,7 +39,7 @@ export default function OfferCard({ offer, index = 0 }) {
           loading="lazy"
           className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
 
         <motion.span
           initial={{ opacity: 0, scale: 0.85 }}
@@ -55,13 +51,20 @@ export default function OfferCard({ offer, index = 0 }) {
         >
           {offer.badge}
         </motion.span>
+
+        {offer.hotelName && (
+          <div className="absolute bottom-4 left-4 flex items-center gap-1.5 text-white">
+            <MapPin size={14} className="text-[#C9A24B]" />
+            <span className="text-sm font-semibold">{offer.hotelName}</span>
+          </div>
+        )}
       </div>
 
       <div className="flex flex-1 flex-col gap-3 p-6">
-        <h3 className="font-serif text-lg font-bold text-[#1F3B64] leading-snug">
+        <h3 className="font-serif text-lg font-bold text-[#1F3B64] leading-snug line-clamp-1">
           {offer.title}
         </h3>
-        <p className="text-sm text-slate-500 leading-relaxed">{offer.description}</p>
+        <p className="text-sm text-slate-500 leading-relaxed line-clamp-2">{offer.description}</p>
 
         <div className="mt-1 flex items-end gap-2">
           <span className="text-2xl font-extrabold text-[#1F3B64]">
@@ -73,15 +76,20 @@ export default function OfferCard({ offer, index = 0 }) {
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-xs text-slate-400">
-          <Clock size={13} />
-          <span>Expires {formatExpiry(offer.expiry)}</span>
+        <div className="flex flex-col gap-2 mt-1">
+          <div className="flex items-center gap-1.5 text-xs text-slate-400">
+            <Clock size={13} />
+            <span>Expires {formatExpiry(offer.expiry)}</span>
+          </div>
+          {offer.promoCode && (
+            <div className="flex items-center gap-1.5 text-xs text-slate-600 font-semibold">
+              <Tag size={13} className="text-[#C9A24B]" />
+              <span>Use Code: <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[#1F3B64] uppercase tracking-widest">{offer.promoCode}</span></span>
+            </div>
+          )}
         </div>
 
-
-
         <Link
-
           className="mt-2 w-full rounded-xl bg-[#1F3B64] py-3 text-center text-sm font-bold text-white transition-colors hover:bg-[#152a49] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C9A24B]"
           to="/book"
           state={{
@@ -90,9 +98,6 @@ export default function OfferCard({ offer, index = 0 }) {
         >
           Book Now
         </Link>
-
-
-        
       </div>
     </motion.article>
   );
