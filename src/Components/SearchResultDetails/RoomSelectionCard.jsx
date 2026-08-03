@@ -1,7 +1,8 @@
-import { Bed, Users, Maximize2, Check, Minus, Plus } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Bed, Users, Maximize2, Check, Minus, Plus, X } from "lucide-react";
+import { useState } from "react";
 
 export default function RoomSelectionCard({ room, qty, onQtyChange }) {
+  const [showModal, setShowModal] = useState(false);
   if (!room) return null;
 
   const guests = (room.maxAdults || 0) + (room.maxChildren || 0);
@@ -75,9 +76,12 @@ export default function RoomSelectionCard({ room, qty, onQtyChange }) {
         </div>
         
         {/* View Details Link */}
-        <Link to={`/rooms/${room.id || ''}`} className="inline-flex text-[12px] font-semibold text-[#0071c2] hover:underline mt-auto">
+        <button 
+          onClick={() => setShowModal(true)} 
+          className="inline-flex text-[12px] font-semibold text-[#0071c2] hover:underline mt-auto cursor-pointer border-0 bg-transparent p-0 text-left"
+        >
           View all room details &amp; photos
-        </Link>
+        </button>
       </div>
 
       {/* Right Column: Price and Qty */}
@@ -115,6 +119,103 @@ export default function RoomSelectionCard({ room, qty, onQtyChange }) {
         </div>
 
       </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col overflow-hidden relative shadow-2xl">
+            {/* Close Button */}
+            <button 
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-white rounded-full text-slate-800 shadow-sm transition-colors border-0 cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+            
+            {/* Content Container (Scrollable) */}
+            <div className="overflow-y-auto w-full h-full">
+              {/* Image Header */}
+              <div className="w-full h-64 sm:h-80 relative bg-slate-100">
+                {room.thumbnailImage || room.galleryImages?.[0] ? (
+                  <img src={room.thumbnailImage || room.galleryImages?.[0]} alt={room.roomName} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium">No Image Available</div>
+                )}
+              </div>
+
+              {/* Details Body */}
+              <div className="p-6 sm:p-8 space-y-6">
+                <div>
+                  <h2 className="text-[24px] font-bold text-[#1E2A38] mb-2">{room.roomName}</h2>
+                  <div className="flex flex-wrap gap-x-4 gap-y-2">
+                    {room.bedType && (
+                      <div className="flex items-center gap-1.5 text-sm text-slate-600 font-medium">
+                        <Bed size={16} className="text-[#0071c2]" />
+                        <span>1 {room.bedType}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 text-sm text-slate-600 font-medium">
+                      <Users size={16} className="text-[#0071c2]" />
+                      <span>{guests} {guests === 1 ? 'guest' : 'guests'} max</span>
+                    </div>
+                    {room.roomSize && (
+                      <div className="flex items-center gap-1.5 text-sm text-slate-600 font-medium">
+                        <Maximize2 size={16} className="text-[#0071c2]" />
+                        <span>{room.roomSize} sq.ft</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {(room.description || room.roomDescription) && (
+                  <div>
+                    <h3 className="text-[16px] font-bold text-[#1E2A38] mb-2">About this room</h3>
+                    <p className="text-slate-600 leading-relaxed text-[14px]">{room.description || room.roomDescription}</p>
+                  </div>
+                )}
+
+                <div>
+                  <h3 className="text-[16px] font-bold text-[#1E2A38] mb-3">Room Highlights</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {breakfast && (
+                      <div className="flex items-center gap-2 text-sm text-[#008009] font-medium">
+                        <Check size={16} /> Breakfast included
+                      </div>
+                    )}
+                    {freeCancellation && (
+                      <div className="flex items-center gap-2 text-sm text-[#008009] font-medium">
+                        <Check size={16} /> Free cancellation
+                      </div>
+                    )}
+                    {room.amenities && Array.isArray(room.amenities) && room.amenities.map((amenity, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                        <Check size={16} className="text-[#0071c2]" /> {amenity}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-between items-center shrink-0">
+              <div>
+                <p className="text-[12px] text-slate-500 font-medium">1 night</p>
+                <p className="text-[20px] font-bold text-[#1E2A38]">US${room.price}</p>
+              </div>
+              <button 
+                onClick={() => {
+                  if (qty === 0) onQtyChange(1);
+                  setShowModal(false);
+                }}
+                className="bg-[#0071c2] hover:bg-[#005c9e] text-white px-6 py-2.5 rounded-xl font-bold transition-colors shadow-sm cursor-pointer border-0"
+              >
+                Select Room
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

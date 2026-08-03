@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useParams, Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { calculatePricing } from "../../utils/pricing";
 import {
   FiCalendar, FiUsers, FiHome, FiMaximize2, FiPhone, FiMail, FiMapPin, FiShield, FiCreditCard, FiStar, FiHeadphones, FiCheckCircle, FiClock,
@@ -142,18 +141,13 @@ function SectionCard({ title, subtitle, children, className = "" }) {
 
 export default function BookingPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { rooms: allRooms } = useRoomContext();
   const [arrivalTime, setArrivalTime] = useState("");
   const [occasion, setOccasion] = useState("");
-  const {
-    hotel,
-    checkIn,
-    checkOut,
-    guests,
-    children,
-    selectedRooms,
-    //pricing,
-  } = location.state || {};
+  const [selectedRoomForModal, setSelectedRoomForModal] = useState(null);
+  
+  const { hotel, selectedRooms } = location.state || {};
   const { id } = useParams();
 
   // const room = location.state?.room || roomsData.find(r => String(r.id) === String(id));
@@ -169,14 +163,12 @@ export default function BookingPage() {
 
   const bookingItem = offer || room;
   const bookingRooms = location.state?.selectedRooms || [];
-
-  console.log(bookingRooms);
-
-  console.log("Received in Booking:", location.state);
-  console.log("Booking Item:", bookingItem);
-
-  console.log(location.state.selectedRooms);
-
+  
+  // ---------- Stay state ----------
+  const [checkIn, setCheckIn] = useState(location.state?.checkIn || "");
+  const [checkOut, setCheckOut] = useState(location.state?.checkOut || "");
+  const [guests, setGuests] = useState(location.state?.guests || bookingItem?.capacity || bookingItem?.maxGuests || bookingItem?.maxAdults || 2);
+  const [children, setChildren] = useState(location.state?.children || bookingItem?.maxChildren || 0);
 
   // ---------- Guest information state ----------
   const [guestInfo, setGuestInfo] = useState({
@@ -326,32 +318,14 @@ export default function BookingPage() {
           }}
         />
         <div className="relative mx-auto max-w-6xl">
-          {/* Breadcrumb */}
-          <nav className="mb-6 flex flex-wrap items-center gap-1.5 text-xs font-medium text-stone-500">
-            <Link to="/" className="transition hover:text-[#C89B3C]">
-              Home
-            </Link>
-            <FiChevronRight className="text-stone-300" />
-            <Link
-              to={location.state?.offer ? "/offers" : "/rooms"}
-              className="transition hover:text-[#C89B3C]"
-            >
-              {location.state?.offer ? "Offers" : "Rooms"}
-            </Link>
-            <FiChevronRight className="text-stone-300" />
-            <Link
-              to={
-                location.state?.offer
-                  ? `/offers/${location.state.offer.id}`
-                  : `/rooms/${bookingItem.id}`
-              }
-              className="transition hover:text-[#C89B3C]"
-            >
-              {location.state?.offer ? "Offer Details" : "Room Details"}
-            </Link>
-            <FiChevronRight className="text-stone-300" />
-            <span className="text-stone-800">Booking</span>
-          </nav>
+          {/* Back Button */}
+          <button 
+            onClick={() => navigate(-1)}
+            className="mb-6 flex items-center gap-2 text-sm font-semibold text-stone-500 transition hover:text-[#C89B3C]"
+          >
+            <FiArrowLeft />
+            Back to Room Selection
+          </button>
 
           <InfoBadge icon={FiStar}>Luxury Reservation</InfoBadge>
 
@@ -384,8 +358,8 @@ export default function BookingPage() {
       {/* Image */}
       <div className="md:w-64">
         <img
-          src={item.room.mainImage || item.room.image}
-          alt={item.room.name}
+          src={item.room.mainImage || item.room.image || item.room.thumbnailImage || item.room.galleryImages?.[0]}
+          alt={item.room.name || item.room.roomName}
           className="h-52 w-full object-cover"
         />
       </div>
@@ -395,35 +369,39 @@ export default function BookingPage() {
 
         <div>
           <span className="rounded-full bg-[#C89B3C]/10 px-3 py-1 text-xs font-semibold text-[#8a6a23]">
-            {item.room.roomType}
+            {item.room.roomType || item.room.category || "Room"}
           </span>
 
           <div className="flex items-center gap-2 mt-2">
             <h3 className="text-xl font-semibold">
-              {item.room.name}
+              {item.room.name || item.room.roomName}
             </h3>
-            <Link to={`/rooms/${item.room.id}`} className="text-[11px] font-medium text-[#C89B3C] hover:text-white hover:bg-[#C89B3C] bg-[#C89B3C]/10 px-2 py-0.5 rounded-full border border-[#C89B3C]/30 transition-colors">
+            <button 
+              type="button" 
+              onClick={() => setSelectedRoomForModal(item.room)} 
+              className="text-[11px] font-medium text-[#C89B3C] hover:text-white hover:bg-[#C89B3C] bg-[#C89B3C]/10 px-2 py-0.5 rounded-full border border-[#C89B3C]/30 transition-colors cursor-pointer"
+            >
               View Details
-            </Link>
+            </button>
           </div>
 
           <p className="mt-2 text-sm text-gray-500">
-            {item.room.description}
+            {item.room.description || item.room.roomDescription || "Luxury accommodation with premium amenities."}
           </p>
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
 
           <span>
-            📐 {item.room.roomSize} m²
+            📐 {item.room.roomSize || item.room.size || "Standard"} {item.room.roomSize ? "sq.ft" : ""}
           </span>
 
           <span>
-            👤 {item.room.capacity || item.room.maxGuests} Guests
+            👤 {item.room.capacity || item.room.maxGuests || ((item.room.maxAdults || 0) + (item.room.maxChildren || 0)) || 2} Guests
           </span>
 
           <span>
-            🛏 {item.room.bedType}
+            🛏 {item.room.bedType || item.room.bed || "King Bed"}
           </span>
 
           <span className="ml-auto font-bold text-lg">
@@ -444,7 +422,7 @@ export default function BookingPage() {
 
 
           {/* Stay Details */}
-          {!location.state?.selectedRooms && (<SectionCard
+          <SectionCard
             title="Stay Information"
             subtitle="Tell us when you'd like to arrive and how many will be staying."
           >
@@ -455,10 +433,9 @@ export default function BookingPage() {
                 type="date"
                 icon={FiCalendar}
                 value={checkIn}
+                onChange={(e) => setCheckIn(e.target.value)}
                 required
               />
-
-
 
               <BookingInput
                 label="Check-out"
@@ -466,6 +443,8 @@ export default function BookingPage() {
                 type="date"
                 icon={FiCalendar}
                 value={checkOut}
+                min={checkIn || undefined}
+                onChange={(e) => setCheckOut(e.target.value)}
                 required
               />
               <BookingInput
@@ -474,6 +453,7 @@ export default function BookingPage() {
                 as="select"
                 icon={FiUsers}
                 value={guests}
+                onChange={(e) => setGuests(Number(e.target.value))}
                 options={guestSelectOptions}
               />
               <BookingInput
@@ -491,6 +471,7 @@ export default function BookingPage() {
                 as="select"
                 icon={FiUsers}
                 value={children}
+                onChange={(e) => setChildren(Number(e.target.value))}
                 options={childrenSelectOptions}
               />
               <BookingInput
@@ -525,7 +506,7 @@ export default function BookingPage() {
                 ]}
               />
             </div>
-          </SectionCard>)}
+          </SectionCard>
 
           {/* Guest Information */}
           <SectionCard
@@ -676,14 +657,14 @@ export default function BookingPage() {
               ).map((item, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <img
-                    src={item.room.panoramaImage || item.room.mainImage || item.room.image}
+                    src={item.room.panoramaImage || item.room.mainImage || item.room.image || item.room.thumbnailImage || item.room.galleryImages?.[0]}
                     alt={item.room.roomName || item.room.name}
                     className="h-16 w-16 flex-none rounded-xl object-cover"
                   />
                   <div className="min-w-0">
-                    {item.room.roomType && (
+                    {(item.room.roomType || item.room.category) && (
                       <span className="inline-block rounded-full bg-[#C89B3C]/10 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#8a6a23]">
-                        {item.room.roomType}
+                        {item.room.roomType || item.room.category}
                       </span>
                     )}
                     <h4 className="mt-1 truncate text-sm font-semibold text-stone-900">
@@ -856,6 +837,91 @@ export default function BookingPage() {
           </div>
         </div>
       </section>
+
+      {/* Room Details Modal */}
+      {selectedRoomForModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden relative shadow-2xl">
+            {/* Close Button */}
+            <button 
+              type="button"
+              onClick={() => setSelectedRoomForModal(null)}
+              className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center bg-white/80 backdrop-blur hover:bg-white rounded-full text-stone-800 shadow-sm transition-colors cursor-pointer border-0"
+            >
+              ✕
+            </button>
+            
+            {/* Content Container (Scrollable) */}
+            <div className="overflow-y-auto w-full h-full">
+              {/* Image Header */}
+              <div className="w-full h-64 relative bg-stone-100">
+                {(selectedRoomForModal.mainImage || selectedRoomForModal.image || selectedRoomForModal.thumbnailImage || selectedRoomForModal.galleryImages?.[0]) ? (
+                  <img 
+                    src={selectedRoomForModal.mainImage || selectedRoomForModal.image || selectedRoomForModal.thumbnailImage || selectedRoomForModal.galleryImages?.[0]} 
+                    alt={selectedRoomForModal.name || selectedRoomForModal.roomName} 
+                    className="w-full h-full object-cover" 
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-stone-400 font-medium">No Image Available</div>
+                )}
+              </div>
+
+              {/* Details Body */}
+              <div className="p-6 sm:p-8 space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold text-stone-900 mb-2">{selectedRoomForModal.name || selectedRoomForModal.roomName}</h2>
+                  <div className="flex flex-wrap gap-4 text-sm text-stone-600 font-medium mt-3">
+                    {selectedRoomForModal.bedType && (
+                      <span className="flex items-center gap-1.5 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-100">
+                        🛏 {selectedRoomForModal.bedType}
+                      </span>
+                    )}
+                    <span className="flex items-center gap-1.5 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-100">
+                      👤 {selectedRoomForModal.capacity || selectedRoomForModal.maxGuests || ((selectedRoomForModal.maxAdults || 0) + (selectedRoomForModal.maxChildren || 0))} Guests max
+                    </span>
+                    {(selectedRoomForModal.roomSize || selectedRoomForModal.size) && (
+                      <span className="flex items-center gap-1.5 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-100">
+                        📐 {selectedRoomForModal.roomSize || selectedRoomForModal.size} {selectedRoomForModal.roomSize ? "sq.ft" : ""}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {(selectedRoomForModal.description || selectedRoomForModal.roomDescription) && (
+                  <div>
+                    <h3 className="text-lg font-bold text-stone-900 mb-2">About this room</h3>
+                    <p className="text-stone-600 leading-relaxed text-sm">{selectedRoomForModal.description || selectedRoomForModal.roomDescription}</p>
+                  </div>
+                )}
+
+                {selectedRoomForModal.amenities && Array.isArray(selectedRoomForModal.amenities) && selectedRoomForModal.amenities.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-stone-900 mb-3">Room Amenities</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {selectedRoomForModal.amenities.map((amenity, i) => (
+                        <div key={i} className="flex items-center gap-2 text-sm text-stone-600 font-medium">
+                          ✓ {amenity}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Footer */}
+            <div className="p-4 border-t border-stone-200 bg-stone-50 flex justify-end shrink-0">
+              <button 
+                type="button"
+                onClick={() => setSelectedRoomForModal(null)}
+                className="bg-[#C89B3C] hover:bg-[#a68032] text-white px-6 py-2 rounded-xl font-bold transition-colors cursor-pointer border-0"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { Calendar, Users, ArrowRight, Shield, Tag,Pencil, ChevronUp, ChevronDown
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 export default function BookingCard({ hotel, checkIn, checkOut, guests, children, roomsCount, selectedRooms = {}, rooms = [] }) {
-const [showSearchEdit, setShowSearchEdit] = useState(false);
+const [showGuestPopup, setShowGuestPopup] = useState(false);
   const navigate = useNavigate();
 
 const [newCheckIn, setNewCheckIn] = useState(checkIn || "");
@@ -10,6 +10,7 @@ const [newCheckOut, setNewCheckOut] = useState(checkOut || "");
 const [newGuests, setNewGuests] = useState(guests || 2);
 const [newChildren, setNewChildren] = useState(children || 0);
 const [newRoomsCount, setNewRoomsCount] = useState(roomsCount || 1);
+
 
 
 useEffect(() => {
@@ -20,22 +21,6 @@ useEffect(() => {
   if (roomsCount) setNewRoomsCount(roomsCount);
 }, [checkIn, checkOut, guests, children, roomsCount]);
 
-const handleUpdateSearch = () => {
-  navigate(`/hotel/${hotel.id}`, {
-    replace: true,
-    state: {
-      checkIn: newCheckIn,
-      checkOut: newCheckOut,
-      adults: newGuests,
-      children: newChildren,
-      rooms: newRoomsCount,
-    },
-  });
-  
-  setShowSearchEdit(false);
-};
-
-const isFromSearch = Boolean(checkIn && checkOut);
 const hasSelections = Object.keys(selectedRooms).length > 0;
 
 const handleSelectRoom = () => {
@@ -57,8 +42,11 @@ const handleSelectRoom = () => {
       },
     });
   } else {
-    // Fallback if no rooms selected, maybe scroll to rooms or just go to default book
-    navigate(`/book/${hotel?.id || ''}`);
+    // If no rooms selected, scroll to the rooms section smoothly
+    const roomsSection = document.getElementById('rooms-section');
+    if (roomsSection) {
+      roomsSection.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 };
 
@@ -121,126 +109,85 @@ const handleSelectRoom = () => {
         </div>
       )}
 
-      {/* Date inputs */}
-      <div className="grid grid-cols-2 gap-2">
+      {/* Date Selectors */}
+      <div className="flex items-center gap-3 mb-2">
+        <div className="flex-1">
+          <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Check-in</label>
+          <input 
+            type="date"
+            className="w-full border border-slate-200 rounded-lg p-2 text-[13px] font-semibold text-[#1E2A38] focus:border-[#2C4A6E] outline-none"
+            value={newCheckIn}
+            onChange={(e) => setNewCheckIn(e.target.value)}
+          />
+        </div>
+        <div className="flex-1">
+          <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">Check-out</label>
+          <input 
+            type="date"
+            className="w-full border border-slate-200 rounded-lg p-2 text-[13px] font-semibold text-[#1E2A38] focus:border-[#2C4A6E] outline-none"
+            value={newCheckOut}
+            min={newCheckIn || undefined}
+            onChange={(e) => setNewCheckOut(e.target.value)}
+          />
+        </div>
+      </div>
+
+      {/* Unified Guests Box */}
+      <div className="relative">
         <div 
-          onClick={() => isFromSearch && setShowSearchEdit(true)}
-          className={`border border-slate-200 rounded-xl p-3 transition-colors ${isFromSearch ? 'cursor-pointer hover:border-[#2C4A6E]' : 'opacity-75'}`}
+          onClick={() => setShowGuestPopup(!showGuestPopup)}
+          className="relative flex items-center justify-between border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-[#2C4A6E] transition-colors bg-white"
         >
-          <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Check-in</p>
-          <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
-            <Calendar size={13} className="text-[#2C4A6E]" />
-           {newCheckIn || "Select date"}
+          <div className="flex items-center">
+            <Users size={22} className="text-[#2C4A6E] mr-3" />
+            <div className="flex flex-col">
+              <p className="text-[12px] text-slate-500 font-medium">Select occupancy</p>
+              <div className="text-[14px] font-bold text-[#1E2A38] mt-0.5">
+                {`${newGuests} adults · ${newChildren} children · ${newRoomsCount} room`}
+              </div>
+            </div>
           </div>
+          <ChevronDown size={18} className="text-[#2C4A6E]" />
         </div>
-        <div 
-          onClick={() => isFromSearch && setShowSearchEdit(true)}
-          className={`border border-slate-200 rounded-xl p-3 transition-colors ${isFromSearch ? 'cursor-pointer hover:border-[#2C4A6E]' : 'opacity-75'}`}
-        >
-          <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Check-out</p>
-          <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
-            <Calendar size={13} className="text-[#2C4A6E]" />
-            {newCheckOut || "Select date"}
+
+        {/* Guest Popup */}
+        {showGuestPopup && (
+          <div className="absolute top-full left-0 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-4">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-700">Adults</span>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setNewGuests(Math.max(1, newGuests - 1))} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">-</button>
+                  <span className="w-4 text-center text-sm font-semibold">{newGuests}</span>
+                  <button onClick={() => setNewGuests(newGuests + 1)} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">+</button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-700">Children</span>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setNewChildren(Math.max(0, newChildren - 1))} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">-</button>
+                  <span className="w-4 text-center text-sm font-semibold">{newChildren}</span>
+                  <button onClick={() => setNewChildren(newChildren + 1)} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">+</button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-700">Rooms</span>
+                <div className="flex items-center gap-3">
+                  <button onClick={() => setNewRoomsCount(Math.max(1, newRoomsCount - 1))} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">-</button>
+                  <span className="w-4 text-center text-sm font-semibold">{newRoomsCount}</span>
+                  <button onClick={() => setNewRoomsCount(newRoomsCount + 1)} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">+</button>
+                </div>
+              </div>
+            </div>
+            <button 
+              onClick={() => setShowGuestPopup(false)}
+              className="mt-5 w-full py-2.5 bg-[#0071c2] text-white rounded-lg text-sm font-bold hover:bg-[#005c9e] transition-colors"
+            >
+              Done
+            </button>
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Guests */}
-      <div 
-        onClick={() => isFromSearch && setShowSearchEdit(true)}
-        className={`border border-slate-200 rounded-xl p-3 transition-colors ${isFromSearch ? 'cursor-pointer hover:border-[#2C4A6E]' : 'opacity-75'}`}
-      >
-        <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1">Guests</p>
-        <div className="flex items-center gap-1.5 text-[13px] font-semibold text-[#1E2A38]">
-          <Users size={13} className="text-[#2C4A6E]" />
-          {`${newGuests} Adults · ${newChildren} Children`}
-        </div>
-      </div>
-      {/* Modify Button */}
-      {isFromSearch && (
-        <button
-          type="button"
-          onClick={() => setShowSearchEdit(!showSearchEdit)}
-          className="mt-4 mb-4 flex w-full items-center justify-center gap-2 rounded-xl border border-[#2C4A6E] bg-white py-3 text-sm font-semibold text-[#2C4A6E] transition-all duration-200 hover:bg-[#2C4A6E] hover:text-white"
-        >
-          <Pencil size={16} />
-          Modify Search
-          {showSearchEdit ? (
-            <ChevronUp size={16} />
-          ) : (
-            <ChevronDown size={16} />
-          )}
-        </button>
-      )}
-
-{showSearchEdit && (
-  <div className="mb-4 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-slate-500">
-          Check In
-        </label>
-        <input
-          type="date"
-          value={newCheckIn}
-         onChange={(e) => setNewCheckIn(e.target.value)}
-          className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:border-[#2C4A6E] focus:outline-none"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-slate-500">
-          Check Out
-        </label>
-        <input
-          type="date"
-         value={newCheckOut}
-          onChange={(e) => setNewCheckOut(e.target.value)}
-          className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:border-[#2C4A6E] focus:outline-none"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-slate-500">
-          Adults
-        </label>
-        <input
-          type="number"
-          min="1"
-          value={newGuests}
-          onChange={(e) => setNewGuests(Number(e.target.value))}
-          className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:border-[#2C4A6E] focus:outline-none"
-        />
-      </div>
-
-      <div>
-        <label className="mb-1 block text-xs font-semibold text-slate-500">
-          Children
-        </label>
-        <input
-          type="number"
-          min="0"
-          value={newChildren}
-          onChange={(e) => setNewChildren(Number(e.target.value))}
-          className="w-full rounded-xl border border-slate-300 px-3 py-2 focus:border-[#2C4A6E] focus:outline-none"
-        />
-      </div>
-
-      
-
-    </div>
-
-    <button
-     onClick={handleUpdateSearch}
-      className="mt-4 w-full rounded-xl bg-[#2C4A6E] py-3 font-semibold text-white hover:bg-[#1E3553]"
-      
-    >
-      Update Search
-    </button>
-  </div>
-)}
-
 
       {/* CTA */}
       <button
