@@ -16,14 +16,23 @@ import { NavLink } from "react-router-dom";
 const NAV_ITEMS = [
   { label: "Overview", icon: FiGrid, path: "/dashboard" },
   {
-    label: "Content Management",
+    label: "Appearance",
     icon: FiLayout,
     children: [
-      { label: "Homepage", path: "/dashboard/page-builder?page=home" },
-      { label: "About", path: "/dashboard/page-builder?page=about" },
-      { label: "Contact", path: "/dashboard/page-builder?page=contact" },
-      { label: "FAQ", path: "/dashboard/page-builder?page=faq" },
-      { label: "Newsletter", path: "/dashboard/page-builder?page=newsletter" },
+      { label: "Hero", path: "/dashboard/appearance/hero" },
+      { label: "Navbar", path: "/dashboard/appearance/navbar" },
+    ],
+  },
+  {
+    label: "Content Management",
+    icon: FiGrid,
+    children: [
+      { label: "Homepage", path: "/dashboard/content/homepage" },
+      { label: "Offer Page", path: "/dashboard/content/offer" },
+      { label: "About Page", path: "/dashboard/content/about" },
+      { label: "Room Page", path: "/dashboard/content/room" },
+      { label: "Gallery Page", path: "/dashboard/content/gallery" },
+      { label: "Contact Page", path: "/dashboard/content/contact" },
     ],
   },
   {

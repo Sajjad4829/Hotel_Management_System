@@ -381,9 +381,9 @@ export function PageProvider({ children }) {
                 parsed.home.navbar.navMenu.push({ id: newId, label: 'Contact', link: '/contact' });
             }
 
-            // Ensure "Home" is removed from navMenu for all existing users
+            // Ensure the default "Home" link is removed for all existing users, but don't remove other links
             parsed.home.navbar.navMenu = parsed.home.navbar.navMenu.filter(
-                item => item.label.toLowerCase() !== 'home' && item.link !== '/'
+                item => !(item.label.toLowerCase() === 'home' && item.link === '/')
             );
             
             // Also migrate Gallery to be before Offers if it doesn't exist
@@ -485,6 +485,21 @@ export function PageProvider({ children }) {
     localStorage.setItem('havenPagesData', JSON.stringify(pagesData));
   }, [pagesData]);
 
+  // Listen for changes from other tabs to sync state automatically
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'havenPagesData' && e.newValue) {
+        try {
+          setPagesData(JSON.parse(e.newValue));
+        } catch (err) {
+          console.error("Failed to parse pages data from storage event", err);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Update a specific field for a specific page/section
   const updatePageData = (pageId, sectionId, field, value) => {
     setPagesData(prev => {
@@ -493,9 +508,9 @@ export function PageProvider({ children }) {
         return {
           ...prev,
           [pageId]: {
-            ...prev[pageId],
+            ...(prev[pageId] || {}),
             [sectionId]: {
-              ...prev[pageId][sectionId],
+              ...(prev[pageId]?.[sectionId] || {}),
               [field]: value
             }
           }
@@ -513,8 +528,13 @@ export function PageProvider({ children }) {
     });
   };
 
+  const resetPageData = () => {
+    setPagesData(defaultPagesData);
+    localStorage.removeItem('havenPagesData');
+  };
+
   return (
-    <PageContext.Provider value={{ pagesData, updatePageData }}>
+    <PageContext.Provider value={{ pagesData, updatePageData, resetPageData }}>
       {children}
     </PageContext.Provider>
   );

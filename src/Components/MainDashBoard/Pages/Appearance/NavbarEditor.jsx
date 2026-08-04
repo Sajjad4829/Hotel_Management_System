@@ -1,5 +1,5 @@
 import React from 'react';
-import { Type, Image as ImageIcon, Plus, Trash2, ArrowUp, ArrowDown, Settings, Palette } from 'lucide-react';
+import { Type, Image as ImageIcon, Plus, Trash2, ArrowUp, ArrowDown, Settings, Palette, Upload } from 'lucide-react';
 
 export default function NavbarEditor({ data, onChange }) {
   
@@ -34,6 +34,17 @@ export default function NavbarEditor({ data, onChange }) {
     }
   };
 
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        onChange('logoImage', reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Common UI for array items (navMenu or headerButtons)
   const renderArrayList = (arrayName, title) => {
     const items = data[arrayName] || [];
@@ -45,7 +56,7 @@ export default function NavbarEditor({ data, onChange }) {
             onClick={() => handleArrayAdd(arrayName)}
             className="flex items-center gap-1 text-xs font-semibold text-[#b45309] bg-orange-100 hover:bg-orange-200 px-3 py-1.5 rounded-lg transition-colors"
           >
-            <  room manage editor not Plus size={14} /> Add Item
+            <Plus size={14} /> Add Item
           </button>
         </div>
         
@@ -168,6 +179,15 @@ export default function NavbarEditor({ data, onChange }) {
                 placeholder="https://..."
                 className="flex-1 p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#b45309] outline-none"
               />
+              <label className="cursor-pointer flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-xl transition-colors">
+                <Upload size={18} className="text-slate-600" />
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={handleImageUpload} 
+                />
+              </label>
               {data.logoImage && (
                 <div className="w-12 h-12 rounded border border-slate-200 shrink-0 overflow-hidden bg-slate-100 flex items-center justify-center">
                   <img src={data.logoImage} alt="Logo" className="max-w-full max-h-full object-contain" />

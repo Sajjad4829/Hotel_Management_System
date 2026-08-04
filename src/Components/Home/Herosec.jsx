@@ -7,19 +7,22 @@ export default function HeroSection({ data = {} }) {
 
   const config = {
     isVisible: data.isVisible !== false,
-    badgeText: data.badgeText || "Aurum Hotel & Resort",
-    titlePrefix: data.titlePrefix || "Experience",
-    highlightText: data.highlightText || "Luxury",
-    titleSuffix: data.titleSuffix || "& Comfort",
+    badgeText: data.hotelTagline || data.badgeText || "Aurum Hotel & Resort",
+    titlePrefix: data.mainTitle || data.titlePrefix || "Experience",
+    highlightText: data.highlightedWord || data.highlightText || "Luxury",
+    titleSuffix: data.secondLineTitle || data.titleSuffix || "& Comfort",
     description: data.description || "Book your perfect stay with us and enjoy world-class hospitality crafted for every detail of your journey.",
     primaryButtonText: data.primaryButtonText || "Book Now",
     primaryButtonLink: data.primaryButtonLink || "/booking",
     primaryButtonColor: data.primaryButtonColor || "#d97706",
     secondaryButtonText: data.secondaryButtonText || "Explore Rooms",
-    secondaryButtonLink: data.secondaryButtonLink || "/rooms",
+    secondaryButtonLink: data.secondaryButtonVideoUrl || data.secondaryButtonLink || "/rooms",
     overlayIntensity: data.overlayIntensity || "medium",
     sliderInterval: parseInt(data.sliderInterval) || 5000,
-    slides: data.slides && data.slides.length > 0 ? data.slides : [
+    backgroundVideo: data.backgroundVideo || null,
+    slides: data.backgroundGallery && data.backgroundGallery.length > 0
+      ? data.backgroundGallery.map(img => ({ image: img, label: "" }))
+      : data.slides && data.slides.length > 0 ? data.slides : [
       {
         image: "https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1920&q=80",
         label: "Luxury Resort"
@@ -62,14 +65,25 @@ export default function HeroSection({ data = {} }) {
   return (
     <section className="relative w-full h-screen min-h-[600px] overflow-hidden">
 
-      {/* Background image */}
-      <div
-        className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ${
-          fading ? "opacity-0" : "opacity-100"
-        }`}
-        style={{ backgroundImage: `url(${config.slides[current]?.image || ''})` }}
-        aria-hidden="true"
-      />
+      {/* Background image or video */}
+      {config.backgroundVideo ? (
+        <video
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+          src={config.backgroundVideo}
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+      ) : (
+        <div
+          className={`absolute inset-0 bg-cover bg-center transition-opacity duration-700 ${
+            fading ? "opacity-0" : "opacity-100"
+          }`}
+          style={{ backgroundImage: `url(${config.slides[current]?.image || ''})` }}
+          aria-hidden="true"
+        />
+      )}
 
       {/* Layered overlay */}
       <div

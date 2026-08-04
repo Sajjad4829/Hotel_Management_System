@@ -75,6 +75,20 @@ export const PropertyProvider = ({ children }) => {
     localStorage.setItem('property_hotels', JSON.stringify(hotels));
   }, [hotels]);
 
+  // Sync state across tabs
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'property_destinations' && e.newValue) {
+        try { setDestinations(JSON.parse(e.newValue)); } catch (err) {}
+      }
+      if (e.key === 'property_hotels' && e.newValue) {
+        try { setHotels(JSON.parse(e.newValue)); } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   const generateSlug = (name) => {
     return (name || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };

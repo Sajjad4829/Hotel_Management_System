@@ -107,7 +107,7 @@ export default function FilterSidebar({ filters, onFilterChange, onReset, isMobi
       <input
         type="range"
         min={0}
-        max={1000}
+        max={1000000}
         value={filters.price.max}
         onChange={(e) => handlePriceChange("max", e.target.value)}
         className="w-full accent-[#2C4A6E] cursor-pointer"

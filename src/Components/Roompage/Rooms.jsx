@@ -135,18 +135,31 @@ export default function RoomsPage() {
       : featuredSuite.price
     : null;
     
-  const heroConfig = pagesData?.rooms || { heroTitle: "Luxurious Accommodations", heroSubtitle: "Rest in unmatched comfort", heroBgImage: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1600&q=85" };
+  const heroConfig = pagesData?.rooms?.hero || pagesData?.rooms || {};
+  const bgImg = heroConfig.backgroundGallery?.[0] || heroConfig.heroBgImage || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1600&q=85";
+  const heroTitle = heroConfig.mainTitle || heroConfig.heroTitle || "Luxurious Accommodations";
+  const heroSubtitle = heroConfig.description || heroConfig.heroSubtitle || "Rest in unmatched comfort";
+  const tagline = heroConfig.hotelTagline || "The Grandeur Collection";
 
   return (
     <div className="min-h-screen bg-[#FAFAF8] font-sans antialiased">
       {/* ── HERO ── */}
       <section className="relative h-[540px] md:h-[620px] flex flex-col justify-end overflow-hidden">
-        <img
-          src={heroConfig.heroBgImage || "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=1600&q=85"}
-          alt="Luxury hotel lobby"
-          className="absolute inset-0 w-full h-full object-cover object-center scale-105"
-          style={{ filter: "brightness(0.45)" }}
-        />
+        {heroConfig.backgroundVideo ? (
+          <video
+            src={heroConfig.backgroundVideo}
+            autoPlay loop muted playsInline
+            className="absolute inset-0 w-full h-full object-cover object-center scale-105"
+            style={{ filter: "brightness(0.45)" }}
+          />
+        ) : (
+          <img
+            src={bgImg}
+            alt="Luxury hotel lobby"
+            className="absolute inset-0 w-full h-full object-cover object-center scale-105"
+            style={{ filter: "brightness(0.45)" }}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
         <div className="relative z-10 max-w-6xl mx-auto px-6 pb-14 md:pb-20 w-full">
@@ -157,13 +170,13 @@ export default function RoomsPage() {
           </nav>
 
           <p className="text-amber-400 text-xs font-semibold uppercase tracking-[0.3em] mb-3">
-            The Grandeur Collection
+            {tagline}
           </p>
           <h1 className="text-4xl md:text-6xl font-light text-white leading-[1.1] mb-4 max-w-2xl">
-            {heroConfig.heroTitle}
+            {heroTitle}
           </h1>
           <p className="text-white/60 text-base md:text-lg max-w-xl font-light">
-            {heroConfig.heroSubtitle}
+            {heroSubtitle}
           </p>
         </div>
       </section>

@@ -197,9 +197,8 @@ export default function BookingSearchEditor({ data, onChange }) {
             
             {renderToggle('showAdults', 'Show Adults')}
             {data.showAdults !== false && (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="mt-2">
                 {renderTextInput('adultsLabel', 'Label', 'Adults')}
-                {renderNumberInput('adultsMax', 'Max Limit', 1, 10)}
               </div>
             )}
 
@@ -207,9 +206,8 @@ export default function BookingSearchEditor({ data, onChange }) {
             
             {renderToggle('showChildren', 'Show Children')}
             {data.showChildren !== false && (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="mt-2">
                 {renderTextInput('childrenLabel', 'Label', 'Children')}
-                {renderNumberInput('childrenMax', 'Max Limit', 0, 10)}
               </div>
             )}
 
@@ -217,9 +215,8 @@ export default function BookingSearchEditor({ data, onChange }) {
 
             {renderToggle('showRooms', 'Show Rooms')}
             {data.showRooms !== false && (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="mt-2">
                 {renderTextInput('roomsLabel', 'Label', 'Rooms')}
-                {renderNumberInput('roomsMax', 'Max Limit', 1, 10)}
               </div>
             )}
           </div>

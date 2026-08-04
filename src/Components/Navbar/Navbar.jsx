@@ -59,29 +59,35 @@ const IconClose = () => (
 );
 
 /* ─── LOGO ───────────────────────────────────────────────── */
-const Logo = () => (
+const Logo = ({ data = {} }) => (
   <NavLink to="/" className="flex items-center gap-2.5 select-none group shrink-0">
-    <div className="w-8 h-8 rounded-sm flex items-center justify-center"
-      style={{ background: "linear-gradient(135deg,#b45309 0%,#d97706 100%)" }}>
-      <svg viewBox="0 0 24 24" fill="none" className="w-4.5 h-4.5" width="18" height="18">
-        <path d="M3 21V9L12 3L21 9V21H15V15H9V21H3Z" fill="white" opacity="0.95" />
-        <rect x="10" y="10" width="4" height="4" rx="0.5" fill="#d97706" />
-      </svg>
-    </div>
+    {data.logoImage ? (
+      <img src={data.logoImage} alt={data.websiteName || "Logo"} className="h-8 w-auto object-contain" />
+    ) : (
+      <div className="w-8 h-8 rounded-sm flex items-center justify-center"
+        style={{ background: "linear-gradient(135deg,#b45309 0%,#d97706 100%)" }}>
+        <svg viewBox="0 0 24 24" fill="none" className="w-4.5 h-4.5" width="18" height="18">
+          <path d="M3 21V9L12 3L21 9V21H15V15H9V21H3Z" fill="white" opacity="0.95" />
+          <rect x="10" y="10" width="4" height="4" rx="0.5" fill="#d97706" />
+        </svg>
+      </div>
+    )}
     <div className="leading-none">
-      <div className="text-[13px] font-semibold tracking-[0.18em] uppercase text-stone-900">
-        Aurum
+      <div className="text-[13px] font-semibold tracking-[0.18em] uppercase text-stone-900" style={{ color: data.textColor || "#1c1917" }}>
+        {data.websiteName || "Aurum"}
       </div>
-      <div className="text-[9px] tracking-[0.22em] uppercase font-medium" style={{ color: "#b45309" }}>
-        Hotels & Resorts
-      </div>
+      {!data.logoImage && (
+        <div className="text-[9px] tracking-[0.22em] uppercase font-medium" style={{ color: "#b45309" }}>
+          Hotels & Resorts
+        </div>
+      )}
     </div>
   </NavLink>
 );
 
 
 /* ─── MOBILE DRAWER ──────────────────────────────────────── */
-const MobileDrawer = ({ open, onClose, links }) => {
+const MobileDrawer = ({ open, onClose, links, data = {} }) => {
   const [openAccordion, setOpenAccordion] = useState(null);
 
   useEffect(() => {
@@ -116,7 +122,7 @@ const MobileDrawer = ({ open, onClose, links }) => {
       >
         {/* Drawer header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
-          <Logo />
+          <Logo data={data} />
           <button onClick={onClose} className="text-stone-500 hover:text-stone-800 p-1">
             <IconClose />
           </button>
@@ -171,7 +177,7 @@ const MobileDrawer = ({ open, onClose, links }) => {
         {/* Drawer footer CTAs */}
         <div className="px-6 py-5 border-t border-stone-100 space-y-3">
           <button className="w-full py-3 text-[12px] font-semibold tracking-widest uppercase text-white transition-colors duration-200"
-            style={{ background: "#b45309", borderRadius: "2px" }}>
+            style={{ background: data.buttonColor || "#b45309", borderRadius: "2px" }}>
             Join Now
           </button>
           <button className="w-full py-3 text-[12px] font-semibold tracking-widest uppercase text-stone-700 border border-stone-300 hover:border-stone-500 transition-colors duration-200"
@@ -227,22 +233,46 @@ export default function Navbar({ data = {} }) {
               <span>Trips</span>
             </button>
             <div className="w-px h-4 bg-stone-200" />
-            <button className="text-[11px] font-semibold tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors">
-              Sign In
-            </button>
-            <button
-              className="text-[11px] font-semibold tracking-widest uppercase px-4 py-1.5 text-white transition-colors duration-200"
-              style={{ background: data.buttonColor || "#b45309", borderRadius: "2px" }}
-            >
-              Join Now
-            </button>
+            <div className="w-px h-4 bg-stone-200" />
+            
+            {data.headerButtons && data.headerButtons.length > 0 ? (
+              data.headerButtons.map((btn, idx) => (
+                <button
+                  key={idx}
+                  className={`text-[11px] font-semibold tracking-widest uppercase transition-colors duration-200 ${
+                    idx === data.headerButtons.length - 1 
+                      ? "px-4 py-1.5 text-white" 
+                      : "text-stone-600 hover:text-stone-900"
+                  }`}
+                  style={{
+                    background: idx === data.headerButtons.length - 1 ? (data.buttonColor || "#b45309") : "transparent",
+                    borderRadius: "2px"
+                  }}
+                  onClick={() => window.location.href = btn.link || '#'}
+                >
+                  {btn.label}
+                </button>
+              ))
+            ) : (
+              <>
+                <button className="text-[11px] font-semibold tracking-widest uppercase text-stone-600 hover:text-stone-900 transition-colors">
+                  Sign In
+                </button>
+                <button
+                  className="text-[11px] font-semibold tracking-widest uppercase px-4 py-1.5 text-white transition-colors duration-200"
+                  style={{ background: data.buttonColor || "#b45309", borderRadius: "2px" }}
+                >
+                  Join Now
+                </button>
+              </>
+            )}
           </div>
         </div>
 
         {/* Main nav bar */}
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center justify-between h-14 lg:h-16">
-            <Logo />
+            <Logo data={data} />
 
             {/* Desktop nav links */}
            <nav className="hidden lg:flex items-center gap-1">
@@ -288,7 +318,12 @@ export default function Navbar({ data = {} }) {
        
       </header>
 
-      <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} links={displayLinks} />
+      <MobileDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        links={displayLinks}
+        data={data}
+      />
 
       {/* Spacer */}
       <div className="h-[57px] lg:h-[106px]" aria-hidden="true" />

@@ -10,7 +10,7 @@ import HotelCard from "./Hotelcard";
 const HOTELS_PER_PAGE = 5;
 
 const DEFAULT_FILTERS = {
-  price: { min: 0, max: 1000 },
+  price: { min: 0, max: 1000000 },
   roomType: "",
   stars: [],
   guestRatingMin: 0,

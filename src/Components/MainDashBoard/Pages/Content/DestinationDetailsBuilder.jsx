@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Plus, Trash2, Image as ImageIcon, Map as MapIcon, Globe, Calendar, Navigation, Info, Settings, Eye, EyeOff, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Image as ImageIcon, Map as MapIcon, Globe, Calendar, Navigation, Info, Settings, Eye, EyeOff, ArrowUp, ArrowDown, Upload } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 
 const AVAILABLE_ICONS = [
@@ -62,10 +62,33 @@ export default function DestinationDetailsBuilder({ destination, onUpdate, onBac
     handleUpdate(section, field, arr);
   };
 
-  const handleArrayRemove = (section, field, index) => {
-    const arr = [...(details[section]?.[field] || [])];
-    arr.splice(index, 1);
-    handleUpdate(section, field, arr);
+  const handleArrayRemove = (section, arrayField, index) => {
+    const currentArray = details[section]?.[arrayField] || [];
+    const newArray = [...currentArray];
+    newArray.splice(index, 1);
+    handleUpdate(section, arrayField, newArray);
+  };
+
+  const handleImageUpload = (section, field, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleUpdate(section, field, reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleArrayImageUpload = (section, arrayField, index, field, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleArrayUpdate(section, arrayField, index, field, reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const tabs = [
@@ -125,12 +148,23 @@ export default function DestinationDetailsBuilder({ destination, onUpdate, onBac
             <h3 className="font-semibold text-slate-800 mb-4">Hero Section Settings</h3>
             <div>
               <label className="block text-sm font-semibold text-slate-600 mb-1">Hero Background Image URL</label>
-              <input 
-                type="text" 
-                value={details.hero?.bgImage || ''}
-                onChange={(e) => handleUpdate('hero', 'bgImage', e.target.value)}
-                className="w-full p-2.5 border border-slate-300 rounded-lg"
-              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  value={details.hero?.bgImage || ''}
+                  onChange={(e) => handleUpdate('hero', 'bgImage', e.target.value)}
+                  className="w-full p-2.5 border border-slate-300 rounded-lg flex-1"
+                />
+                <label className="cursor-pointer flex items-center justify-center px-3 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition-colors">
+                  <Upload size={16} className="text-slate-600" />
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={(e) => handleImageUpload('hero', 'bgImage', e)} 
+                  />
+                </label>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -429,7 +463,18 @@ export default function DestinationDetailsBuilder({ destination, onUpdate, onBac
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {(details.gallery?.items || []).map((item, idx) => (
                 <div key={idx} className="bg-white p-3 border border-slate-200 rounded-xl space-y-2">
-                  <input type="text" placeholder="Image URL" value={item.image || ''} onChange={(e) => handleArrayUpdate('gallery', 'items', idx, 'image', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
+                  <div className="flex gap-2">
+                    <input type="text" placeholder="Image URL" value={item.image || ''} onChange={(e) => handleArrayUpdate('gallery', 'items', idx, 'image', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm flex-1" />
+                    <label className="cursor-pointer flex items-center justify-center px-3 bg-slate-100 hover:bg-slate-200 border border-slate-300 rounded-lg transition-colors">
+                      <Upload size={16} className="text-slate-600" />
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => handleArrayImageUpload('gallery', 'items', idx, 'image', e)} 
+                      />
+                    </label>
+                  </div>
                   <input type="text" placeholder="Image Title (Optional)" value={item.title || ''} onChange={(e) => handleArrayUpdate('gallery', 'items', idx, 'title', e.target.value)} className="w-full p-2 border border-slate-300 rounded-lg text-sm" />
                   <div className="flex justify-between items-center">
                     <div className="h-20 w-32 bg-slate-100 rounded overflow-hidden">

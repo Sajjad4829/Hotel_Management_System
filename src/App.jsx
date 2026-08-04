@@ -23,7 +23,9 @@ import PublicLayout from './Components/PublicLayout.jsx'
 import DashboardRoute from './Components/DashboardRoute.jsx'
 import DestinationDetails from './Components/DestinationDetails/DestinationDetails'
 import { PageProvider } from './Context/PageContext.jsx'
-import PageBuilder from './Components/MainDashBoard/Pages/PageBuilder/PageBuilder.jsx'
+import ContentManagerWrapper from './Components/MainDashBoard/Pages/Content/ContentManagerWrapper.jsx'
+import HeroWrapper from './Components/MainDashBoard/Pages/Appearance/HeroWrapper.jsx'
+import NavbarWrapper from './Components/MainDashBoard/Pages/Appearance/NavbarWrapper.jsx'
 import Destinations from './Components/MainDashBoard/Pages/Property_Management/Destinations.jsx'
 import Hotels from './Components/MainDashBoard/Pages/Property_Management/Hotels.jsx'
 import Offers from './Components/MainDashBoard/Pages/Marketing_Management/Offers.jsx'
@@ -70,7 +72,9 @@ function App() {
               <Route path="/dashboard/rooms" element={<RoomManagement />} />
               <Route path="/dashboard/rooms/categories" element={<RoomCategories />} />
               <Route path="/dashboard/offers" element={<Offers />} />
-              <Route path="/dashboard/page-builder" element={<PageBuilder />} />
+              <Route path="/dashboard/appearance/hero" element={<HeroWrapper />} />
+              <Route path="/dashboard/appearance/navbar" element={<NavbarWrapper />} />
+              <Route path="/dashboard/content/:page" element={<ContentManagerWrapper />} />
             </Route>
           </Routes>
         </div>

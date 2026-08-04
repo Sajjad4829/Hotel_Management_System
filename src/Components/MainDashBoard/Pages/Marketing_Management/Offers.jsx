@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, Tag, Calendar, Percent } from 'lucide-react';
-import UniversalEntitySelector from '../PageBuilder/UniversalEntitySelector';
+import UniversalEntitySelector from '../Content/UniversalEntitySelector';
 import { usePageContext } from '../../../../Context/PageContext';
 
 export default function Offers() {
