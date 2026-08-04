@@ -3,14 +3,14 @@ import { usePageContext } from '../../../../Context/PageContext';
 import { Plus, Trash2, GripVertical, Settings, Save, ArrowUp, ArrowDown } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 
-export default function OffersGenericArrayEditor({ sectionKey, fields, defaultItem = {} }) {
+export default function OffersGenericArrayEditor({ sectionKey, fields, defaultItem = {}, pageKey = 'offers' }) {
   const { pagesData, updatePageData } = usePageContext();
-  const rawItems = pagesData.offers?.[sectionKey];
+  const rawItems = pagesData[pageKey]?.[sectionKey];
   const items = Array.isArray(rawItems) ? rawItems : (rawItems?.null || []);
   const [editingCardIdx, setEditingCardIdx] = useState(null);
 
   const handleUpdate = (value) => {
-    updatePageData('offers', null, sectionKey, value);
+    updatePageData(pageKey, null, sectionKey, value);
   };
 
   const handleArrayUpdate = (index, field, value) => {

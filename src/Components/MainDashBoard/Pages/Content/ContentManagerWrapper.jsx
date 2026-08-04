@@ -209,6 +209,73 @@ export default function ContentManagerWrapper() {
             ]}
           />
         </div>
+      ) : page === 'room' || page === 'rooms' ? (
+        <div className="space-y-6">
+          <OffersGenericArrayEditor 
+            pageKey="rooms"
+            sectionKey="whyChooseUs"
+            fields={[
+              { name: 'title', label: 'Feature Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+              { name: 'icon', label: 'Icon', type: 'icon' },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            pageKey="rooms"
+            sectionKey="exclusiveExperiences"
+            fields={[
+              { name: 'title', label: 'Experience Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+              { name: 'image', label: 'Background Image URL', type: 'text', fullWidth: true },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            pageKey="rooms"
+            sectionKey="guestReviews"
+            fields={[
+              { name: 'name', label: 'Guest Name', type: 'text' },
+              { name: 'location', label: 'Location', type: 'text' },
+              { name: 'rating', label: 'Rating (1-5)', type: 'number' },
+              { name: 'text', label: 'Review Text', type: 'textarea' },
+              { name: 'image', label: 'Guest Avatar URL', type: 'text', fullWidth: true },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            pageKey="rooms"
+            sectionKey="faqSection"
+            fields={[
+              { name: 'question', label: 'Question', type: 'text', fullWidth: true },
+              { name: 'answer', label: 'Answer', type: 'textarea' },
+            ]}
+          />
+
+          <OffersSimpleSectionEditor 
+            pageKey="rooms"
+            sectionKey="newsletter"
+            title="Newsletter Configuration"
+            fields={[
+              { name: 'tag', label: 'Small Tag', type: 'text' },
+              { name: 'title', label: 'Main Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+            ]}
+          />
+
+          <OffersSimpleSectionEditor 
+            pageKey="rooms"
+            sectionKey="premiumBookingCTA"
+            title="Premium Booking CTA Configuration"
+            fields={[
+              { name: 'tag', label: 'Small Tag', type: 'text' },
+              { name: 'title', label: 'Main Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+              { name: 'buttonText', label: 'Button Text', type: 'text' },
+              { name: 'image', label: 'Background Image URL', type: 'text', fullWidth: true },
+            ]}
+          />
+        </div>
       ) : (
         <div className="bg-white p-12 text-center rounded-2xl shadow-sm border border-slate-100">
           <h3 className="text-lg font-medium text-slate-600 mb-2">Editor Coming Soon</h3>

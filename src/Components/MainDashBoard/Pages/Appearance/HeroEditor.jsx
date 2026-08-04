@@ -11,6 +11,7 @@ import {
   GripVertical 
 } from 'lucide-react';
 
+
 export default function HeroEditor({ data = {}, onChange }) {
   const [openSection, setOpenSection] = useState('content');
   const [draggedIdx, setDraggedIdx] = useState(null);

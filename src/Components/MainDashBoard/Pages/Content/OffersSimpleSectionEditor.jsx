@@ -1,12 +1,12 @@
 import React from 'react';
 import { usePageContext } from '../../../../Context/PageContext';
 
-export default function OffersSimpleSectionEditor({ sectionKey, title, fields }) {
+export default function OffersSimpleSectionEditor({ sectionKey, title, fields, pageKey = 'offers' }) {
   const { pagesData, updatePageData } = usePageContext();
-  const sectionData = pagesData.offers?.[sectionKey] || {};
+  const sectionData = pagesData[pageKey]?.[sectionKey] || {};
 
   const handleUpdate = (field, value) => {
-    updatePageData('offers', sectionKey, field, value);
+    updatePageData(pageKey, sectionKey, field, value);
   };
 
   return (
