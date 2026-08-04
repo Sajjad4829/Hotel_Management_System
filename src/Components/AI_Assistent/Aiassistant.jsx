@@ -1,8 +1,10 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import FloatingButton from "./FloatingButton";
 import ChatWindow from "./ChatWindow";
 import { getAIResponse, makeMessage } from "./AIUtils";
 import { WELCOME_MESSAGE } from "./AIResponses";
+import { usePropertyContext } from "../../Context/PropertyContext";
+import { useRoomContext } from "../../Context/RoomContext";
 
 const AI_THINK_DELAY = 900;
 
@@ -11,6 +13,8 @@ export default function AIAssistant() {
   const [messages, setMessages] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
+  const { hotels } = usePropertyContext();
+  const { rooms } = useRoomContext();
 
   // Seed the welcome message the first time the chat is opened.
   useEffect(() => {
@@ -27,17 +31,17 @@ export default function AIAssistant() {
 
     // Simulate "thinking" — purely local, no network call.
     setTimeout(() => {
-      const { text: replyText, hotels } = getAIResponse(text);
-      const aiMsg = makeMessage({ sender: "ai", text: replyText, hotels });
+      const { text: replyText, hotels: matchedHotels } = getAIResponse(text, hotels, rooms);
+      const aiMsg = makeMessage({ sender: "ai", text: replyText, hotels: matchedHotels });
       setMessages((prev) => [...prev, aiMsg]);
       setIsTyping(false);
       setHasUnread((prev) => !isOpenRef.current);
     }, AI_THINK_DELAY);
-  }, []);
+  }, [hotels, rooms]);
 
   // Track open state in a ref so the setTimeout closure above reads the
   // latest value without needing to be re-created every render.
-  const isOpenRef = React.useRef(isOpen);
+  const isOpenRef = useRef(isOpen);
   useEffect(() => {
     isOpenRef.current = isOpen;
   }, [isOpen]);

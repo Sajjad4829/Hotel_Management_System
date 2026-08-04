@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { usePageContext } from '../../Context/PageContext';
 
-const galleryData = [
+const defaultGalleryData = [
   { id: 1, src: "https://images.unsplash.com/photo-1542314831-c6a4d27ce66f?auto=format&fit=crop&w=1200&q=80", title: "Luxury Suite", category: "Rooms" },
   { id: 2, src: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80", title: "Tranquil Spa", category: "Wellness" },
   { id: 3, src: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80", title: "Eco Resort Exterior", category: "Exterior" },
@@ -16,6 +17,11 @@ const galleryData = [
 
 export default function Gallery() {
   const [activeImage, setActiveImage] = useState(null);
+  
+  const { pagesData } = usePageContext();
+  const rawImages = pagesData.gallery?.images;
+  const galleryData = Array.isArray(rawImages) && rawImages.length > 0 ? rawImages : defaultGalleryData;
+  const headerData = pagesData.gallery?.header || {};
 
   return (
     <div className="pt-24 lg:pt-32 pb-20 min-h-screen bg-slate-50">
@@ -26,15 +32,15 @@ export default function Gallery() {
           <div className="inline-flex items-center gap-3 mb-4 justify-center">
             <span className="h-px w-8 bg-amber-700" />
             <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-amber-700">
-              Visual Journey
+              {headerData.tag || "Visual Journey"}
             </span>
             <span className="h-px w-8 bg-amber-700" />
           </div>
           <h1 className="text-4xl md:text-5xl font-light text-slate-900 mb-4" style={{ fontFamily: "Georgia, serif" }}>
-            The <span className="italic text-slate-700">Aurum</span> Experience
+            {headerData.title ? headerData.title : <>The <span className="italic text-slate-700">Aurum</span> Experience</>}
           </h1>
           <p className="text-slate-500 max-w-xl mx-auto">
-            Immerse yourself in the world of Aurum Hotels & Resorts. From award-winning dining to tranquil spas, every detail is designed for perfection.
+            {headerData.description || "Immerse yourself in the world of Aurum Hotels & Resorts. From award-winning dining to tranquil spas, every detail is designed for perfection."}
           </p>
         </div>
 
@@ -42,13 +48,13 @@ export default function Gallery() {
         <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
           {galleryData.map((item, index) => (
             <div 
-              key={item.id} 
+              key={item.id || index} 
               className="relative group overflow-hidden rounded-2xl cursor-pointer break-inside-avoid shadow-sm hover:shadow-xl transition-all duration-500"
               onClick={() => setActiveImage(item)}
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <img 
-                src={item.src} 
+                src={item.src || item.image} 
                 alt={item.title} 
                 className="w-full h-auto object-cover transform group-hover:scale-110 transition-transform duration-700"
                 loading="lazy"
@@ -80,7 +86,7 @@ export default function Gallery() {
               <X size={32} />
             </button>
             <img 
-              src={activeImage.src} 
+              src={activeImage.src || activeImage.image} 
               alt={activeImage.title} 
               className="max-w-full max-h-[85vh] rounded-lg shadow-2xl"
               onClick={(e) => e.stopPropagation()} 

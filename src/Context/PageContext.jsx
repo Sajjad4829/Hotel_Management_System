@@ -7,6 +7,7 @@ const defaultPagesData = {
       "bookingSearch",
       "hero",
       "featuredCollection",
+      "aiRecommended",
       "facilities",
       "reviews",
       "contact"
@@ -210,6 +211,39 @@ const defaultPagesData = {
     curatedCollection: { title: "Curated Rooms" },
     aiSection: { title: "AI Assistant" },
     curatedDestinations: { title: "Explore Destinations", description: "Our Curated Destinations" },
+    aiRecommended: {
+      isVisible: true,
+      badgeText: "AI Recommendations",
+      title: "Smart",
+      titleHighlight: "Matches",
+      subtitle: "Destinations curated exclusively for your travel profile by our intelligent engine.",
+      destinations: [
+        {
+          id: "ai-1",
+          name: "Maldives Resort",
+          image: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=80",
+          matchScore: 98,
+          reason: "Perfect match for your preference for tropical luxury and ocean-front villas.",
+          link: "/destination/maldives"
+        },
+        {
+          id: "ai-2",
+          name: "Swiss Alps Retreat",
+          image: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80",
+          matchScore: 94,
+          reason: "Based on your interest in serene landscapes and wellness spas.",
+          link: "/destination/swiss-alps"
+        },
+        {
+          id: "ai-3",
+          name: "Tokyo City Center",
+          image: "https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=800&q=80",
+          matchScore: 89,
+          reason: "Aligns with your recent searches for vibrant culture and culinary experiences.",
+          link: "/destination/tokyo"
+        }
+      ]
+    },
     facilities: { 
       isVisible: true,
       badgeText: "Premium Amenities",
@@ -338,6 +372,10 @@ export function PageProvider({ children }) {
             featuredCollection: {
                 ...defaultPagesData.home.featuredCollection,
                 ...(existingHome.featuredCollection || {})
+            },
+            aiRecommended: {
+                ...defaultPagesData.home.aiRecommended,
+                ...(existingHome.aiRecommended || {})
             },
             facilities: {
                 ...defaultPagesData.home.facilities,
@@ -470,6 +508,21 @@ export function PageProvider({ children }) {
         // Force layout update if they have the old layout where hero is before bookingSearch
         if (parsed.home && parsed.home.layout && parsed.home.layout[0] === 'hero' && parsed.home.layout[1] === 'bookingSearch') {
            parsed.home.layout = defaultPagesData.home.layout;
+        }
+
+        // Add aiRecommended to layout if it's not there
+        if (parsed.home && parsed.home.layout && !parsed.home.layout.includes('aiRecommended')) {
+           const featuredIdx = parsed.home.layout.indexOf('featuredCollection');
+           if (featuredIdx !== -1) {
+               parsed.home.layout.splice(featuredIdx + 1, 0, 'aiRecommended');
+           } else {
+               parsed.home.layout.push('aiRecommended');
+           }
+        }
+        
+        // Add aiRecommended data if not there
+        if (parsed.home && !parsed.home.aiRecommended) {
+           parsed.home.aiRecommended = defaultPagesData.home.aiRecommended;
         }
         
         return parsed;

@@ -11,6 +11,8 @@ import Facilities from "./Facilities";
 import RoomSelectionCard from "./RoomSelectionCard";
 import BookingCard from "./BookingCard";
 import Reviews from "./Reviews";
+import AiRecommendedHotels from "./AiRecommendedHotels";
+
 console.log("=== HOTEL DETAILS FILE LOADED ===");
 /* ─── NOT FOUND FALLBACK ────────────────────────────────── */
 const NotFound = () => (
@@ -329,6 +331,8 @@ export default function SearchHotelDetails() {
 
         </div>
       </div>
+
+      <AiRecommendedHotels currentHotelId={id} />
     </div>
   );
 }

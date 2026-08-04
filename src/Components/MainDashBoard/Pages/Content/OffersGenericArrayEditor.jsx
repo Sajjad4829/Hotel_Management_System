@@ -5,12 +5,22 @@ import * as LucideIcons from 'lucide-react';
 
 export default function OffersGenericArrayEditor({ sectionKey, fields, defaultItem = {}, pageKey = 'offers' }) {
   const { pagesData, updatePageData } = usePageContext();
-  const rawItems = pagesData[pageKey]?.[sectionKey];
-  const items = Array.isArray(rawItems) ? rawItems : (rawItems?.null || []);
+  const keys = sectionKey.split('.');
+  
+  let rawItems = pagesData[pageKey];
+  keys.forEach(k => {
+    if (rawItems) rawItems = rawItems[k];
+  });
+  
+  const items = Array.isArray(rawItems) ? rawItems : [];
   const [editingCardIdx, setEditingCardIdx] = useState(null);
 
   const handleUpdate = (value) => {
-    updatePageData(pageKey, null, sectionKey, value);
+    if (keys.length === 1) {
+      updatePageData(pageKey, null, keys[0], value);
+    } else if (keys.length === 2) {
+      updatePageData(pageKey, keys[0], keys[1], value);
+    }
   };
 
   const handleArrayUpdate = (index, field, value) => {
@@ -58,7 +68,7 @@ export default function OffersGenericArrayEditor({ sectionKey, fields, defaultIt
   return (
     <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
       <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-2">
-        <h3 className="font-semibold text-slate-800 capitalize">{sectionKey.replace(/([A-Z])/g, ' $1').trim()}</h3>
+        <h3 className="font-semibold text-slate-800 capitalize">{keys[keys.length - 1].replace(/([A-Z])/g, ' $1').trim()}</h3>
         <button 
           onClick={handleArrayAdd}
           className="flex items-center gap-1.5 text-sm bg-[#b45309] hover:bg-orange-700 text-white px-3 py-1.5 rounded-lg transition-colors font-semibold"

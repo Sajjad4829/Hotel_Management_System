@@ -91,6 +91,35 @@ export default function ContentManagerWrapper() {
           </div>
 
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
+            <h2 className="text-xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6">AI Recommendations</h2>
+            <div className="space-y-6">
+              <OffersSimpleSectionEditor 
+                pageKey="home"
+                sectionKey="aiRecommended"
+                title="AI Section Header"
+                fields={[
+                  { name: 'badgeText', label: 'Badge Text', type: 'text' },
+                  { name: 'title', label: 'Main Title', type: 'text' },
+                  { name: 'titleHighlight', label: 'Highlighted Title', type: 'text' },
+                  { name: 'subtitle', label: 'Subtitle', type: 'textarea' },
+                ]}
+              />
+
+              <OffersGenericArrayEditor 
+                pageKey="home"
+                sectionKey="aiRecommended.destinations"
+                fields={[
+                  { name: 'name', label: 'Destination Name', type: 'text' },
+                  { name: 'matchScore', label: 'Match Score (%)', type: 'number' },
+                  { name: 'reason', label: 'AI Reason', type: 'textarea' },
+                  { name: 'image', label: 'Image URL', type: 'text', fullWidth: true },
+                  { name: 'link', label: 'Link', type: 'text', fullWidth: true },
+                ]}
+              />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
             <h2 className="text-xl font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6">Facilities Section</h2>
             <FacilitiesEditor 
               data={pagesData['home']?.['facilities'] || {}} 
@@ -273,6 +302,29 @@ export default function ContentManagerWrapper() {
               { name: 'description', label: 'Description', type: 'textarea' },
               { name: 'buttonText', label: 'Button Text', type: 'text' },
               { name: 'image', label: 'Background Image URL', type: 'text', fullWidth: true },
+            ]}
+          />
+        </div>
+      ) : page === 'gallery' ? (
+        <div className="space-y-6">
+          <OffersSimpleSectionEditor 
+            pageKey="gallery"
+            sectionKey="header"
+            title="Gallery Header Configuration"
+            fields={[
+              { name: 'tag', label: 'Small Tag', type: 'text' },
+              { name: 'title', label: 'Main Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            pageKey="gallery"
+            sectionKey="images"
+            fields={[
+              { name: 'title', label: 'Image Title', type: 'text' },
+              { name: 'category', label: 'Category', type: 'text' },
+              { name: 'image', label: 'Image URL', type: 'text', fullWidth: true },
             ]}
           />
         </div>
