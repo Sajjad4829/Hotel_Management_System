@@ -1,9 +1,13 @@
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { Link } from "react-router-dom";
-import { featuredOffer } from "./premiumOfferData";
+import { featuredOffer as fallbackFeaturedOffer } from "./premiumOfferData";
+import { usePageContext } from "../../../Context/PageContext";
 
 export default function FeaturedLuxuryOffer() {
+  const { pagesData } = usePageContext();
+  const featuredOffer = pagesData.offers?.featuredOffer?.title ? pagesData.offers.featuredOffer : fallbackFeaturedOffer;
+
   return (
     <section className="relative w-full min-h-[90vh] flex items-center justify-center overflow-hidden bg-slate-900">
       {/* Immersive Background Image */}

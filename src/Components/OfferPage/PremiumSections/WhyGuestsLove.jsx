@@ -1,14 +1,14 @@
 import { motion } from "framer-motion";
-import { whyGuestsLove } from "./premiumOfferData";
-import { Tag, Star, CalendarCheck } from "lucide-react";
-
-const iconMap = {
-  Tag: Tag,
-  Star: Star,
-  CalendarCheck: CalendarCheck,
-};
+import * as LucideIcons from "lucide-react";
+import { whyGuestsLove as fallbackWhyGuestsLove } from "./premiumOfferData";
+import { usePageContext } from "../../../Context/PageContext";
 
 export default function WhyGuestsLove() {
+  const { pagesData } = usePageContext();
+  const whyGuestsLove = pagesData.offers?.whyGuestsLove?.length > 0
+    ? pagesData.offers.whyGuestsLove
+    : fallbackWhyGuestsLove;
+
   return (
     <section className="py-24 bg-slate-50">
       <div className="max-w-7xl mx-auto px-6">
@@ -35,7 +35,7 @@ export default function WhyGuestsLove() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {whyGuestsLove.map((item, index) => {
-            const Icon = iconMap[item.icon];
+            const Icon = LucideIcons[item.icon] || LucideIcons.Heart;
             
             return (
               <motion.div

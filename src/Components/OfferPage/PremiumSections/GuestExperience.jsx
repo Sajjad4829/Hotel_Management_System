@@ -1,8 +1,14 @@
 import { motion } from "framer-motion";
-import { guestReviews } from "./premiumOfferData";
+import { guestReviews as fallbackGuestReviews } from "./premiumOfferData";
 import { Star } from "lucide-react";
+import { usePageContext } from "../../../Context/PageContext";
 
 export default function GuestExperience() {
+  const { pagesData } = usePageContext();
+  const guestReviews = pagesData.offers?.guestReviews?.length > 0
+    ? pagesData.offers.guestReviews
+    : fallbackGuestReviews;
+
   return (
     <section className="py-24 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">

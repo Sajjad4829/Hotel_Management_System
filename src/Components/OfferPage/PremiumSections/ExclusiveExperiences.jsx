@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { exclusiveExperiences } from "./premiumOfferData";
-import { Heart, Sparkles, Users, Briefcase, ArrowRight } from "lucide-react";
-
-const iconMap = {
-  Heart: Heart,
-  Sparkles: Sparkles,
-  Users: Users,
-  Briefcase: Briefcase,
-};
+import * as LucideIcons from "lucide-react";
+import { exclusiveExperiences as fallbackExperiences } from "./premiumOfferData";
+import { usePageContext } from "../../../Context/PageContext";
+import { ArrowRight } from "lucide-react";
 
 export default function ExclusiveExperiences() {
+  const { pagesData } = usePageContext();
+  const exclusiveExperiences = pagesData.offers?.exclusiveExperiences?.length > 0 
+    ? pagesData.offers.exclusiveExperiences 
+    : fallbackExperiences;
+
   return (
     <section className="py-24 bg-slate-50 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 relative z-10">
@@ -44,7 +44,7 @@ export default function ExclusiveExperiences() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {exclusiveExperiences.map((exp, index) => {
-            const Icon = iconMap[exp.icon];
+            const Icon = LucideIcons[exp.icon];
             
             return (
               <motion.div

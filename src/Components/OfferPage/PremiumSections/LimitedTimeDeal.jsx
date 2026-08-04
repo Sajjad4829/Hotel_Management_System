@@ -1,8 +1,19 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { usePageContext } from "../../../Context/PageContext";
 
 export default function LimitedTimeDeal() {
+  const { pagesData } = usePageContext();
+  const fallbackDealData = {
+    tag: "Flash Sale",
+    title: "Book 3 Nights, \n Get 1 Free",
+    description: "Secure your luxury getaway now and enjoy an extra night on us. Valid for all premium suites.",
+    buttonText: "Claim Offer Now",
+    image: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?q=80&w=2070&auto=format&fit=crop"
+  };
+  const dealData = { ...fallbackDealData, ...(pagesData.offers?.limitedTimeDeal || {}) };
+
   const [timeLeft, setTimeLeft] = useState({
     days: 3,
     hours: 14,
@@ -47,7 +58,7 @@ export default function LimitedTimeDeal() {
           {/* Background Image */}
           <div className="absolute inset-0">
             <img 
-              src="https://images.unsplash.com/photo-1578683010236-d716f9a3f461?q=80&w=2070&auto=format&fit=crop" 
+              src={dealData.image} 
               alt="Luxury suite" 
               className="w-full h-full object-cover opacity-40"
             />
@@ -63,7 +74,7 @@ export default function LimitedTimeDeal() {
                 viewport={{ once: true }}
                 className="inline-flex px-4 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-bold tracking-widest uppercase mb-6"
               >
-                Flash Sale
+                {dealData.tag}
               </motion.div>
               <motion.h3
                 initial={{ opacity: 0, y: 20 }}
@@ -72,7 +83,9 @@ export default function LimitedTimeDeal() {
                 transition={{ delay: 0.1 }}
                 className="text-4xl md:text-5xl font-serif text-white mb-4 leading-tight"
               >
-                Book 3 Nights, <br /> Get 1 Free
+                {dealData.title.split('\n').map((line, i) => (
+                  <span key={i}>{line}<br /></span>
+                ))}
               </motion.h3>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
@@ -81,7 +94,7 @@ export default function LimitedTimeDeal() {
                 transition={{ delay: 0.2 }}
                 className="text-slate-300 text-lg mb-8"
               >
-                Secure your luxury getaway now and enjoy an extra night on us. Valid for all premium suites.
+                {dealData.description}
               </motion.p>
               
               <motion.div
@@ -91,7 +104,7 @@ export default function LimitedTimeDeal() {
                 transition={{ delay: 0.3 }}
               >
                 <Link to="/rooms" className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-white text-slate-900 font-semibold tracking-wide hover:bg-slate-100 transition-colors">
-                  Claim Offer Now
+                  {dealData.buttonText}
                 </Link>
               </motion.div>
             </div>

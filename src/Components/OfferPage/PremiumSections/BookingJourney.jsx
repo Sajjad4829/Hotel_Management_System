@@ -1,30 +1,36 @@
 import { motion } from "framer-motion";
-import { Search, CreditCard, CheckCircle, Coffee } from "lucide-react";
+import { usePageContext } from "../../../Context/PageContext";
+import * as LucideIcons from "lucide-react";
 
-const steps = [
+const fallbackSteps = [
   {
-    icon: Search,
+    icon: "Search",
     title: "Choose Offer",
     description: "Browse our curated selection of premium experiences and seasonal escapes.",
   },
   {
-    icon: CreditCard,
+    icon: "CreditCard",
     title: "Book Suite",
     description: "Secure your luxury reservation instantly with our seamless booking system.",
   },
   {
-    icon: CheckCircle,
+    icon: "CheckCircle",
     title: "Confirmation",
     description: "Receive a personalized itinerary and welcome guide via email.",
   },
   {
-    icon: Coffee,
+    icon: "Coffee",
     title: "Enjoy Stay",
     description: "Arrive at The Haven and let our VIP concierge take care of everything.",
   }
 ];
 
 export default function BookingJourney() {
+  const { pagesData } = usePageContext();
+  const steps = pagesData.offers?.bookingJourney?.length > 0 
+    ? pagesData.offers.bookingJourney 
+    : fallbackSteps;
+
   return (
     <section className="py-24 bg-white relative">
       <div className="max-w-7xl mx-auto px-6">
@@ -63,7 +69,7 @@ export default function BookingJourney() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
             {steps.map((step, index) => {
-              const Icon = step.icon;
+              const Icon = LucideIcons[step.icon] || LucideIcons.Heart;
               return (
                 <motion.div 
                   key={index}

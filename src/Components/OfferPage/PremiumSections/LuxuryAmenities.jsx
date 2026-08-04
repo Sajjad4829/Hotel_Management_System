@@ -1,15 +1,15 @@
 import { motion } from "framer-motion";
-import { luxuryAmenities } from "./premiumOfferData";
+import * as LucideIcons from "lucide-react";
+import { luxuryAmenities as fallbackAmenities } from "./premiumOfferData";
+import { usePageContext } from "../../../Context/PageContext";
 import { Waves, UtensilsCrossed, Sun, Car } from "lucide-react";
 
-const iconMap = {
-  Waves: Waves,
-  UtensilsCrossed: UtensilsCrossed,
-  Sun: Sun,
-  Car: Car,
-};
-
 export default function LuxuryAmenities() {
+  const { pagesData } = usePageContext();
+  const luxuryAmenities = pagesData.offers?.luxuryAmenities?.length > 0 
+    ? pagesData.offers.luxuryAmenities 
+    : fallbackAmenities;
+
   return (
     <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
       {/* Decorative background elements */}
@@ -41,7 +41,7 @@ export default function LuxuryAmenities() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {luxuryAmenities.map((amenity, index) => {
-            const Icon = iconMap[amenity.icon];
+            const Icon = LucideIcons[amenity.icon] || LucideIcons.Heart;
             
             return (
               <motion.div

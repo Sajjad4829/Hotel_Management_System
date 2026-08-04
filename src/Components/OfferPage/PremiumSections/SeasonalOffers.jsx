@@ -1,9 +1,15 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { seasonalOffers } from "./premiumOfferData";
+import { seasonalOffers as fallbackSeasonalOffers } from "./premiumOfferData";
+import { usePageContext } from "../../../Context/PageContext";
 import { Calendar } from "lucide-react";
 
 export default function SeasonalOffers() {
+  const { pagesData } = usePageContext();
+  const seasonalOffers = pagesData.offers?.seasonalOffers?.length > 0 
+    ? pagesData.offers.seasonalOffers 
+    : fallbackSeasonalOffers;
+
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-6">

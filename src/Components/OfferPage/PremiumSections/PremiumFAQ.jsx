@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { premiumFaqs } from "./premiumOfferData";
+import { premiumFaqs as fallbackPremiumFaqs } from "./premiumOfferData";
+import { usePageContext } from "../../../Context/PageContext";
 import { Plus, Minus } from "lucide-react";
 
 export default function PremiumFAQ() {
   const [openIndex, setOpenIndex] = useState(0); // First item open by default
+  const { pagesData } = usePageContext();
+  const premiumFaqs = pagesData.offers?.premiumFaqs?.length > 0
+    ? pagesData.offers.premiumFaqs
+    : fallbackPremiumFaqs;
 
   const toggleFaq = (index) => {
     setOpenIndex(openIndex === index ? null : index);

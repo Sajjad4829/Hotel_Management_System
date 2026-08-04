@@ -1,8 +1,18 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { usePageContext } from "../../../Context/PageContext";
 
 export default function FinalBookingCTA() {
+  const { pagesData } = usePageContext();
+  const fallbackCtaData = {
+    title: "Your Extraordinary Stay Awaits",
+    tag: "Discover a world of unparalleled luxury and unforgettable moments. Reserve your preferred suite today.",
+    buttonText: "Book Your Stay",
+    image: "https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop"
+  };
+  const ctaData = { ...fallbackCtaData, ...(pagesData.offers?.finalBookingCTA || {}) };
+
   return (
     <section className="relative py-32 overflow-hidden">
       {/* Background Image with Parallax Effect */}
@@ -12,7 +22,7 @@ export default function FinalBookingCTA() {
           whileInView={{ scale: 1 }}
           transition={{ duration: 1.5, ease: "easeOut" }}
           viewport={{ once: true }}
-          src="https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=2070&auto=format&fit=crop" 
+          src={ctaData.image} 
           alt="Luxury Resort Evening" 
           className="w-full h-full object-cover"
         />
@@ -31,7 +41,7 @@ export default function FinalBookingCTA() {
           transition={{ duration: 0.8 }}
           className="text-4xl md:text-6xl lg:text-7xl font-light text-white font-serif leading-tight mb-6"
         >
-          Your Extraordinary Stay Awaits
+          {ctaData.title}
         </motion.h2>
         
         <motion.p
@@ -41,8 +51,7 @@ export default function FinalBookingCTA() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-lg md:text-xl text-slate-200 font-light mb-12 max-w-2xl mx-auto"
         >
-          Discover a world of unparalleled luxury and unforgettable moments. 
-          Reserve your preferred suite today.
+          {ctaData.tag}
         </motion.p>
 
         <motion.div
@@ -56,7 +65,7 @@ export default function FinalBookingCTA() {
             className="group relative inline-flex items-center gap-4 bg-amber-500 hover:bg-amber-400 px-10 py-5 rounded-full text-slate-900 overflow-hidden transition-all duration-300 shadow-[0_0_30px_rgba(245,158,11,0.3)] hover:shadow-[0_0_40px_rgba(245,158,11,0.5)] hover:-translate-y-1"
           >
             <span className="relative z-10 text-base font-bold tracking-widest uppercase">
-              Book Your Stay
+              {ctaData.buttonText}
             </span>
             <span className="relative z-10 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-2">
               <ArrowRight size={20} strokeWidth={2.5} />

@@ -7,6 +7,9 @@ import FeaturedCollectionEditor from './FeaturedCollectionEditor';
 import FacilitiesEditor from './FacilitiesEditor';
 import ReviewsEditor from './ReviewsEditor';
 import StatisticsEditor from './StatisticsEditor';
+import OffersFeaturedEditor from './OffersFeaturedEditor';
+import OffersGenericArrayEditor from './OffersGenericArrayEditor';
+import OffersSimpleSectionEditor from './OffersSimpleSectionEditor';
 
 export default function ContentManagerWrapper() {
   const { page } = useParams(); // 'homepage', 'about', 'offer', etc.
@@ -110,6 +113,101 @@ export default function ContentManagerWrapper() {
               onChange={(f, v) => handleInputChange('statistics', f, v)} 
             />
           </div>
+        </div>
+      ) : page === 'offer' || page === 'offers' ? (
+        <div className="space-y-6">
+          <OffersFeaturedEditor />
+          
+          <OffersGenericArrayEditor 
+            sectionKey="exclusiveExperiences"
+            fields={[
+              { name: 'title', label: 'Experience Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+              { name: 'image', label: 'Background Image URL', type: 'text', fullWidth: true },
+              { name: 'icon', label: 'Icon', type: 'icon' },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            sectionKey="seasonalOffers"
+            fields={[
+              { name: 'title', label: 'Offer Title', type: 'text' },
+              { name: 'validity', label: 'Validity Text', type: 'text' },
+              { name: 'price', label: 'Current Price', type: 'text' },
+              { name: 'originalPrice', label: 'Original Price', type: 'text' },
+              { name: 'discount', label: 'Discount Tag', type: 'text' },
+              { name: 'image', label: 'Background Image URL', type: 'text', fullWidth: true },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            sectionKey="luxuryAmenities"
+            fields={[
+              { name: 'title', label: 'Amenity Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+              { name: 'icon', label: 'Icon', type: 'icon' },
+            ]}
+          />
+
+          <OffersSimpleSectionEditor 
+            sectionKey="limitedTimeDeal"
+            title="Flash Sale Configuration"
+            fields={[
+              { name: 'tag', label: 'Small Tag', type: 'text', placeholder: 'e.g. Flash Sale' },
+              { name: 'title', label: 'Main Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+              { name: 'buttonText', label: 'Button Text', type: 'text' },
+              { name: 'image', label: 'Background Image URL', type: 'text' },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            sectionKey="whyGuestsLove"
+            fields={[
+              { name: 'title', label: 'Feature Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+              { name: 'icon', label: 'Icon', type: 'icon' },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            sectionKey="guestReviews"
+            fields={[
+              { name: 'name', label: 'Guest Name', type: 'text' },
+              { name: 'location', label: 'Location', type: 'text' },
+              { name: 'rating', label: 'Rating (1-5)', type: 'number' },
+              { name: 'text', label: 'Review Text', type: 'textarea' },
+              { name: 'image', label: 'Guest Avatar URL', type: 'text', fullWidth: true },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            sectionKey="bookingJourney"
+            fields={[
+              { name: 'title', label: 'Step Title', type: 'text' },
+              { name: 'description', label: 'Description', type: 'textarea' },
+              { name: 'icon', label: 'Icon', type: 'icon' },
+            ]}
+          />
+
+          <OffersGenericArrayEditor 
+            sectionKey="premiumFaqs"
+            fields={[
+              { name: 'question', label: 'Question', type: 'text', fullWidth: true },
+              { name: 'answer', label: 'Answer', type: 'textarea' },
+            ]}
+          />
+
+          <OffersSimpleSectionEditor 
+            sectionKey="finalBookingCTA"
+            title="Final Booking CTA Configuration"
+            fields={[
+              { name: 'tag', label: 'Small Tag', type: 'text', placeholder: 'e.g. Ready for an unforgettable experience?' },
+              { name: 'title', label: 'Main Title', type: 'text' },
+              { name: 'buttonText', label: 'Button Text', type: 'text' },
+              { name: 'image', label: 'Background Image URL', type: 'text' },
+            ]}
+          />
         </div>
       ) : (
         <div className="bg-white p-12 text-center rounded-2xl shadow-sm border border-slate-100">
