@@ -190,56 +190,25 @@ export const getHotelById = async (req, res) => {
 // ============================================================================
 export const createHotel = async (req, res) => {
   try {
-    const {
-      name,
-      description,
-      location,
-      address,
-      destination,
-      starRating,
-      contactInfo,
-      checkInTime,
-      checkOutTime,
-      facilities,
-      amenities,
-      mainImage,
-      image,
-      galleryImages,
-      gallery,
-      price,
-      originalPrice,
-      reviewCount,
-      isActive,
-    } = req.body;
+    const { name, mainImage, image, rating, starRating } = req.body;
 
-    if (!name || (!mainImage && !image)) {
+    if (!name) {
       return res.status(400).json({
         success: false,
-        message: 'Hotel Name and Main Image URL are required parameters.',
+        message: 'Hotel Name is required to create a new property.',
       });
     }
 
+    const assignedImage = mainImage || image || 'https://images.unsplash.com/photo-1540518614846-7eded433c457?auto=format&fit=crop&w=800&q=80';
+    const numRating = !isNaN(Number(starRating)) && Number(starRating) > 0 ? Number(starRating) : 5;
+
     const newHotel = await Hotel.create({
-      name,
-      description: description || 'Premium luxury hotel resort.',
-      location: location || 'Bangladesh',
-      address: address || location || 'City Center',
-      destination: destination || 'dest-dhaka',
-      starRating: Number(starRating) || 5,
-      rating: `${Number(starRating) || 5}/5`,
-      contactInfo: contactInfo || { phone: '+880 1711-000000', email: 'reservations@aurum.com' },
-      checkInTime: checkInTime || '2:00 PM (14:00)',
-      checkOutTime: checkOutTime || '12:00 PM (12:00)',
-      facilities: facilities || amenities || [],
-      amenities: amenities || facilities || [],
-      mainImage: mainImage || image,
-      image: image || mainImage,
-      galleryImages: galleryImages || gallery || [],
-      gallery: gallery || galleryImages || [],
-      price: Number(price) || 150,
-      originalPrice: Number(originalPrice) || 200,
-      reviewCount: Number(reviewCount) || 0,
-      isActive: isActive !== undefined ? isActive : true,
+      ...req.body,
+      name: name.trim(),
+      mainImage: assignedImage,
+      image: assignedImage,
+      starRating: numRating,
+      rating: rating || `${numRating}/5`,
     });
 
     return res.status(201).json({
@@ -251,11 +220,12 @@ export const createHotel = async (req, res) => {
     console.error('Create Hotel Error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Server error while creating hotel.',
+      message: error.message || 'Server error while creating hotel.',
       error: error.message,
     });
   }
 };
+
 
 // ============================================================================
 // @desc    Update existing hotel details

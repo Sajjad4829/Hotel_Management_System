@@ -26,7 +26,6 @@ const roomSchema = new mongoose.Schema(
     },
     roomType: {
       type: String,
-      enum: ['Standard', 'Deluxe', 'Suite', 'Presidential', 'Villa', 'Executive'],
       default: 'Deluxe',
     },
     type: {
@@ -43,7 +42,6 @@ const roomSchema = new mongoose.Schema(
     },
     pricePerNight: {
       type: Number,
-      required: [true, 'Price Per Night is required'],
       default: 150,
     },
     price: {
@@ -68,11 +66,10 @@ const roomSchema = new mongoose.Schema(
     },
     bedType: {
       type: String,
-      enum: ['King', 'Queen', 'Twin', 'Double', 'Single'],
       default: 'King',
     },
     roomSize: {
-      type: Number, // Square feet or square meters
+      type: Number,
       default: 450,
     },
     amenities: [
@@ -86,12 +83,21 @@ const roomSchema = new mongoose.Schema(
       },
     ],
     thumbnailImage: {
-      type: String, // Backward compatible thumbnail field
+      type: String,
       default: 'https://images.unsplash.com/photo-1542314831-c6a4d27ce66f?auto=format&fit=crop&w=800&q=80',
+    },
+    totalRooms: {
+      type: Number,
+      default: 5, // Total units of this room type in the hotel inventory
+      min: 0,
+    },
+    availableRooms: {
+      type: Number,
+      default: 5, // Active inventory quantity available for booking
+      min: 0,
     },
     availabilityStatus: {
       type: String,
-      enum: ['Available', 'Booked', 'Maintenance'],
       default: 'Available',
     },
     status: {
@@ -116,17 +122,23 @@ const roomSchema = new mongoose.Schema(
   }
 );
 
-// Pre-save validation to sync aliases and string representations
-roomSchema.pre('save', function (next) {
+// Pre-save validation to sync aliases and string representations (Synchronous Mongoose 8 compatible)
+roomSchema.pre('save', function () {
   if (!this.price && this.pricePerNight) this.price = this.pricePerNight;
   if (!this.pricePerNight && this.price) this.pricePerNight = this.price;
+  if (this.availableRooms !== undefined && this.availableRooms <= 0) {
+    this.availabilityStatus = 'Booked';
+    this.status = 'Booked';
+  } else if (this.availableRooms > 0 && this.availabilityStatus === 'Booked') {
+    this.availabilityStatus = 'Available';
+    this.status = 'Available';
+  }
   if (this.availabilityStatus && !this.status) this.status = this.availabilityStatus;
   if (this.status && !this.availabilityStatus) this.availabilityStatus = this.status;
   if (this.roomType && !this.type) this.type = this.roomType;
   if (this.hotelId && (!this.propertyId || this.propertyId === '')) {
     this.propertyId = this.hotelId.toString();
   }
-  next();
 });
 
 const Room = mongoose.models.Room || mongoose.model('Room', roomSchema);

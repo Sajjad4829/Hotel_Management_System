@@ -163,15 +163,18 @@ export default function RoomSelection() {
                 <p className="text-[13px] text-slate-400 mt-1">Try selecting a different hotel.</p>
               </div>
             ) : (
-              rooms.map((room) => (
-                <RoomCard
-                  key={room.id}
-                  room={room}
-                  count={selectedRooms[room.id] ?? 0}
-                  onDecrement={() => handleDecrement(room.id)}
-                  onIncrement={() => handleIncrement(room.id, room.availableRooms)}
-                />
-              ))
+              rooms.map((room) => {
+                const rId = String(room.id || room._id || '');
+                return (
+                  <RoomCard
+                    key={rId}
+                    room={room}
+                    count={selectedRooms[rId] ?? 0}
+                    onDecrement={() => handleDecrement(rId)}
+                    onIncrement={() => handleIncrement(rId, room.availableRooms || 5)}
+                  />
+                );
+              })
             )}
           </div>
 

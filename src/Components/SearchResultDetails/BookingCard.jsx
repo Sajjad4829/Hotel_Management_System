@@ -7,17 +7,27 @@ const [showGuestPopup, setShowGuestPopup] = useState(false);
 
 const [newCheckIn, setNewCheckIn] = useState(checkIn || "");
 const [newCheckOut, setNewCheckOut] = useState(checkOut || "");
-const [newGuests, setNewGuests] = useState(guests || 2);
-const [newChildren, setNewChildren] = useState(children || 0);
+const [newGuests, setNewGuests] = useState(typeof guests === "object" && guests !== null ? (Number(guests.adults) || 2) : (Number(guests) || 2));
+const [newChildren, setNewChildren] = useState(typeof guests === "object" && guests !== null ? (Number(guests.children) || 0) : (Number(children) || 0));
 const [newRoomsCount, setNewRoomsCount] = useState(roomsCount || 1);
+const [dateError, setDateError] = useState(false);
 
-
+useEffect(() => {
+  if (newCheckIn && newCheckOut) setDateError(false);
+}, [newCheckIn, newCheckOut]);
 
 useEffect(() => {
   if (checkIn) setNewCheckIn(checkIn);
   if (checkOut) setNewCheckOut(checkOut);
-  if (guests) setNewGuests(guests);
-  if (children) setNewChildren(children);
+  if (guests) {
+    if (typeof guests === "object" && guests !== null) {
+      setNewGuests(Number(guests.adults) || 2);
+      if (guests.children !== undefined) setNewChildren(Number(guests.children) || 0);
+    } else {
+      setNewGuests(Number(guests) || 2);
+    }
+  }
+  if (children && typeof guests !== "object") setNewChildren(Number(children) || 0);
   if (roomsCount) setNewRoomsCount(roomsCount);
 }, [checkIn, checkOut, guests, children, roomsCount]);
 
@@ -25,11 +35,16 @@ const hasSelections = Object.keys(selectedRooms).length > 0;
 
 const handleSelectRoom = () => {
   if (hasSelections) {
+    if (!newCheckIn || !newCheckOut) {
+      setDateError(true);
+      return;
+    }
+    setDateError(false);
     // Map selectedRooms to the format expected by BookingPage
     const mappedSelectedRooms = Object.entries(selectedRooms).map(([roomId, qty]) => {
-      const roomObj = rooms.find(r => String(r.id) === String(roomId));
+      const roomObj = rooms.find(r => String(r.id || r._id) === String(roomId));
       return { room: roomObj, qty };
-    });
+    }).filter(item => item.room);
 
     navigate(`/book`, {
       state: {
@@ -38,6 +53,7 @@ const handleSelectRoom = () => {
         checkOut: newCheckOut,
         guests: newGuests,
         children: newChildren,
+        fromSelectRoom: Boolean(newCheckIn && newCheckOut),
         selectedRooms: mappedSelectedRooms,
       },
     });
@@ -143,7 +159,7 @@ const handleSelectRoom = () => {
             <div className="flex flex-col">
               <p className="text-[12px] text-slate-500 font-medium">Select occupancy</p>
               <div className="text-[14px] font-bold text-[#1E2A38] mt-0.5">
-                {`${newGuests} adults · ${newChildren} children · ${newRoomsCount} room`}
+                {`${typeof newGuests === 'object' ? (newGuests?.adults || 2) : newGuests} adults · ${typeof newChildren === 'object' ? 0 : newChildren} children · ${newRoomsCount} room`}
               </div>
             </div>
           </div>
@@ -157,9 +173,9 @@ const handleSelectRoom = () => {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-slate-700">Adults</span>
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setNewGuests(Math.max(1, newGuests - 1))} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">-</button>
-                  <span className="w-4 text-center text-sm font-semibold">{newGuests}</span>
-                  <button onClick={() => setNewGuests(newGuests + 1)} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">+</button>
+                  <button onClick={() => setNewGuests(Math.max(1, (typeof newGuests === 'object' ? (newGuests?.adults || 2) : newGuests) - 1))} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">-</button>
+                  <span className="w-4 text-center text-sm font-semibold">{typeof newGuests === 'object' ? (newGuests?.adults || 2) : newGuests}</span>
+                  <button onClick={() => setNewGuests((typeof newGuests === 'object' ? (newGuests?.adults || 2) : newGuests) + 1)} className="w-8 h-8 rounded-full border border-slate-300 flex items-center justify-center text-slate-600 hover:border-[#2C4A6E] transition-colors">+</button>
                 </div>
               </div>
               <div className="flex items-center justify-between">
@@ -197,6 +213,12 @@ const handleSelectRoom = () => {
         {hasSelections ? "Reserve Selected" : "Select Room"}
         <ArrowRight size={16} />
       </button>
+
+      {hasSelections && (!newCheckIn || !newCheckOut) && (
+        <p className={`text-[12px] font-semibold transition-colors duration-200 mt-1 ${dateError ? "text-red-600 animate-pulse" : "text-amber-600"}`}>
+          ⚠️ Please select check-in and check-out dates above to reserve.
+        </p>
+      )}
 
       {/* Trust badges */}
       <div className="space-y-2 pt-1">

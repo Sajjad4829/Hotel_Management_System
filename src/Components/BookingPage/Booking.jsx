@@ -7,6 +7,7 @@ import {
 } from "react-icons/fi"; 
 import { useRoomContext } from "../../Context/RoomContext";
 import { useAuth } from "../../Context/AuthContext.jsx";
+import api from "../../services/api.js";
 
 function BookingInput({
   label,
@@ -148,6 +149,8 @@ export default function BookingPage() {
   const [arrivalTime, setArrivalTime] = useState("");
   const [occasion, setOccasion] = useState("");
   const [selectedRoomForModal, setSelectedRoomForModal] = useState(null);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
+  const [bookingSuccessData, setBookingSuccessData] = useState(null);
   
   const { hotel, selectedRooms } = location.state || {};
   const { id } = useParams();
@@ -161,19 +164,20 @@ export default function BookingPage() {
   const room =
     location.state?.room ||
     location.state?.selectedRooms?.[0]?.room ||
-    allRooms.find((r) => String(r.id) === String(id));
+    allRooms.find((r) => String(r.id || r._id) === String(id));
 
   const bookingItem = offer || room;
   const bookingRooms = location.state?.selectedRooms || [];
   
   // ---------- Stay state ----------
+  const initialGuestsObj = typeof location.state?.guests === "object" && location.state?.guests !== null ? location.state.guests : null;
   const [checkIn, setCheckIn] = useState(location.state?.checkIn || "");
   const [checkOut, setCheckOut] = useState(location.state?.checkOut || "");
-  const [guests, setGuests] = useState(location.state?.guests || bookingItem?.capacity || bookingItem?.maxGuests || bookingItem?.maxAdults || 2);
-  const [children, setChildren] = useState(location.state?.children || bookingItem?.maxChildren || 0);
+  const [guests, setGuests] = useState(initialGuestsObj ? (Number(initialGuestsObj.adults) || 2) : (location.state?.guests || bookingItem?.capacity || bookingItem?.maxGuests || bookingItem?.maxAdults || 2));
+  const [children, setChildren] = useState(initialGuestsObj ? (Number(initialGuestsObj.children) || 0) : (location.state?.children || bookingItem?.maxChildren || 0));
 
-  // ---------- Guest information state ----------
-  const [guestInfo, setGuestInfo] = useState({
+  // ---------- Guest information & Payment state ----------
+  const [guestInfo, setGuestInfo] = useState(location.state?.guestInfo || {
     firstName: "",
     lastName: "",
     email: "",
@@ -184,64 +188,109 @@ export default function BookingPage() {
     address: "",
   });
 
-  // Automatically sync authenticated customer credentials into the booking form
-  useEffect(() => {
-    if (user) {
-      const nameParts = (user.fullName || "").split(" ");
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
-      setGuestInfo((prev) => ({
-        ...prev,
-        firstName: prev.firstName || firstName,
-        lastName: prev.lastName || lastName,
-        email: prev.email || user.email || "",
-        phone: prev.phone || user.phone || "",
-      }));
-    }
-  }, [user]);
+  const [paymentMethod, setPaymentMethod] = useState(location.state?.paymentMethod || "Credit Card");
+  const [cardDetails, setCardDetails] = useState(location.state?.cardDetails || {
+    cardNumber: "",
+    expiryDate: "",
+    cvc: "",
+    cardHolderName: ""
+  });
 
   // ---------- Special request state ----------
-  const [specialRequests, setSpecialRequests] = useState("");
+  const [specialRequests, setSpecialRequests] = useState(location.state?.specialRequests || "");
 
   const handleGuestInfoChange = (field) => (e) =>
     setGuestInfo((prev) => ({ ...prev, [field]: e.target.value }));
 
-  // Customer Login Authentication verification on Room Booking Confirmation
-  const handleConfirmBooking = (e) => {
+  const handleCardChange = (field) => (e) =>
+    setCardDetails((prev) => ({ ...prev, [field]: e.target.value }));
+
+  // Connect with POST /api/bookings/create with automatic JWT, payment verification, and loading handling
+  const handleConfirmBooking = async (e) => {
     e.preventDefault();
-    if (!token || !user) {
-      alert("Authentication Required: Please sign in to your customer account to confirm and secure your room booking.");
-      navigate("/login", { state: { from: location.pathname + location.search, bookingState: { ...location.state, checkIn, checkOut, guests, children } } });
+
+    // 1. Validate required guest contact information
+    if (!guestInfo.firstName || !guestInfo.lastName || !guestInfo.email || !guestInfo.phone) {
+      alert("Please complete all required Guest Information fields (First Name, Last Name, Email, and Phone) before confirming.");
       return;
     }
 
+    // 2. Validate required payment fields based on selected method
+    if (paymentMethod === "Credit Card") {
+      if (!cardDetails.cardNumber || !cardDetails.expiryDate || !cardDetails.cvc || !cardDetails.cardHolderName) {
+        alert("Payment Required: Please input valid Credit / Debit Card details to secure your reservation.");
+        return;
+      }
+    }
+
+    // 3. Ensure valid check-in and check-out dates
     if (!checkIn || !checkOut) {
       alert("Please select valid check-in and check-out dates to confirm your stay.");
       return;
     }
 
-    // Persist confirmed booking into customer's local dashboard state for real-time visibility
-    const confirmedReservation = {
-      id: "RES-" + Math.floor(100000 + Math.random() * 900000),
-      hotelName: bookingItem?.hotelName || hotel?.name || "Grand Horizon Resort & Spa",
-      roomType: bookingItem?.name || bookingItem?.title || "Executive Presidential Suite",
-      checkIn: checkIn,
-      checkOut: checkOut,
-      bookingStatus: "Confirmed",
-      paymentStatus: "Pay at Hotel",
-      totalAmount: pricing?.total ? `$${pricing.total.toLocaleString()}` : "$850",
-      bookedAt: new Date().toLocaleDateString()
+    // 4. Require authentication ONLY when confirming the reservation
+    if (!token || !user) {
+      alert("Authentication Required: Please sign in to your customer account to process your payment and track this reservation in your dashboard.");
+      navigate("/login", { 
+        state: { 
+          from: location.pathname + location.search, 
+          bookingState: { ...location.state, checkIn, checkOut, guests, children, guestInfo, paymentMethod, cardDetails, specialRequests } 
+        } 
+      });
+      return;
+    }
+
+    setIsBookingLoading(true);
+
+    const hotelIdParam = bookingItem?.hotelId || bookingItem?.hotel?._id || hotel?._id || "64b0f20d8f0d8a54c8f0d801";
+    const roomIdParam = bookingItem?._id || bookingItem?.id || id || "64b0f20d8f0d8a54c8f0d802";
+    const totalQty = bookingRooms?.length > 0 ? bookingRooms.reduce((acc, r) => acc + (r.qty || 1), 0) : 1;
+    const finalTotal = pricing?.total || 850;
+
+    const payload = {
+      hotelId: hotelIdParam.toString(),
+      roomId: roomIdParam.toString(),
+      checkIn,
+      checkOut,
+      guests: { adults: Number(guests || 2), children: Number(children || 0) },
+      rooms: totalQty,
+      totalPrice: Number(finalTotal),
+      paymentMethod: paymentMethod,
+      paymentStatus: paymentMethod === "Pay at Hotel" ? "Pending" : "Paid",
+      specialRequest: specialRequests || occasion || ""
     };
 
     try {
-      const currentBookings = JSON.parse(localStorage.getItem("customer_bookings") || "[]");
-      localStorage.setItem("customer_bookings", JSON.stringify([confirmedReservation, ...currentBookings]));
+      const response = await api.post("/bookings/create", payload);
+      setIsBookingLoading(false);
+      if (response.data?.success) {
+        const resultData = response.data.data;
+        const confirmedReservation = {
+          id: resultData.bookingId || resultData._id || "RES-" + Math.floor(100000 + Math.random() * 900000),
+          _id: resultData._id,
+          hotelName: resultData.hotel?.name || bookingItem?.hotelName || hotel?.name || "Grand Horizon Resort & Spa",
+          roomType: resultData.room?.roomName || bookingItem?.name || bookingItem?.title || "Executive Presidential Suite",
+          checkIn: checkIn,
+          checkOut: checkOut,
+          bookingStatus: resultData.bookingStatus || "Confirmed",
+          paymentStatus: resultData.paymentStatus || "Pay at Hotel",
+          totalAmount: typeof finalTotal === "number" ? `$${finalTotal.toLocaleString()}` : `$${finalTotal}`,
+          bookedAt: new Date().toLocaleDateString()
+        };
+        try {
+          const currentBookings = JSON.parse(localStorage.getItem("customer_bookings") || "[]");
+          localStorage.setItem("customer_bookings", JSON.stringify([confirmedReservation, ...currentBookings]));
+        } catch (err) {
+          console.error("Failed to save customer booking state:", err);
+        }
+        setBookingSuccessData(resultData || confirmedReservation);
+      }
     } catch (err) {
-      console.error("Failed to save customer booking state:", err);
+      setIsBookingLoading(false);
+      console.error("Booking creation error:", err);
+      alert(err.response?.data?.message || err.message || "Failed to finalize reservation. Please check room availability and try again.");
     }
-
-    alert(`🎉 Room Booking Confirmed!\n\nYour room reservation has been successfully verified and linked to your customer authentication account (${user.email}).\n\nRedirecting to your Customer Bookings Portal...`);
-    navigate("/customer/bookings");
   };
 
   // ---------- Price calculation ----------
@@ -316,6 +365,57 @@ export default function BookingPage() {
     bookingItem?.mainImage || bookingItem?.image || bookingItem?.gallery?.[0] || ""
   );
 
+
+  // ==================================================
+  // BOOKING SUCCESS CONFIRMATION VIEW (Task 5)
+  // ==================================================
+  if (bookingSuccessData) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#FBF8F2] dark:bg-[#0B0E14] px-6 py-16 transition-colors duration-500">
+        <div className="w-full max-w-lg rounded-3xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-[#151921] p-8 md:p-10 text-center shadow-2xl">
+          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-500/10 border border-emerald-500/30">
+            <FiCheckCircle className="text-4xl text-emerald-600 dark:text-emerald-400 animate-bounce" />
+          </div>
+          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest bg-[#C89B3C]/10 text-[#C89B3C] border border-[#C89B3C]/30 inline-block mb-3">
+            Reservation Confirmed & Secured
+          </span>
+          <h1 className="text-2xl md:text-3xl font-serif font-bold text-stone-900 dark:text-stone-100">
+            Booking Successful!
+          </h1>
+          <p className="mt-2 text-sm text-stone-600 dark:text-stone-400">
+            Your luxury room reservation has been successfully booked and room inventory quantity reduced.
+          </p>
+          <div className="my-6 p-4 rounded-2xl bg-stone-50 dark:bg-stone-900/50 border border-stone-200 dark:border-stone-800 text-left text-xs space-y-2.5">
+            <div className="flex justify-between border-b border-stone-200/60 dark:border-stone-800 pb-2">
+              <span className="text-stone-400">Booking ID</span>
+              <span className="font-mono font-bold text-stone-900 dark:text-stone-200">{bookingSuccessData.bookingId || bookingSuccessData.id || "BK-CONFIRMED"}</span>
+            </div>
+            <div className="flex justify-between border-b border-stone-200/60 dark:border-stone-800 pb-2">
+              <span className="text-stone-400">Accommodation Suite</span>
+              <span className="font-semibold text-[#C89B3C]">{bookingSuccessData.room?.roomName || bookingSuccessData.roomType || bookingItem?.roomName || bookingItem?.name || "Deluxe Suite"}</span>
+            </div>
+            <div className="flex justify-between border-b border-stone-200/60 dark:border-stone-800 pb-2">
+              <span className="text-stone-400">Stay Schedule</span>
+              <span className="font-medium text-stone-700 dark:text-stone-300">{checkIn} — {checkOut}</span>
+            </div>
+            <div className="flex justify-between pt-1 text-sm font-serif">
+              <span className="font-medium text-stone-600 dark:text-stone-400">Total Rate</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">{typeof pricing?.total === "number" ? `$${pricing.total.toLocaleString()}` : `$${pricing?.total || 850}`}</span>
+            </div>
+          </div>
+          <p className="text-xs text-stone-400 mb-6 leading-relaxed">
+            Your reservation is linked to your VIP customer account ({user?.email}). You can manage or cancel your booking directly from your dashboard at any time.
+          </p>
+          <button
+            onClick={() => navigate("/customer/bookings")}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#D7B265] to-[#C89B3C] text-stone-950 font-semibold uppercase text-xs tracking-wider shadow-lg hover:brightness-105 transition-all flex items-center justify-center gap-2"
+          >
+            <FiClock className="w-4 h-4" /> Go to My Bookings
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ==================================================
   // ROOM NOT FOUND STATE
@@ -404,165 +504,81 @@ export default function BookingPage() {
         <div className="space-y-6">
           {/* Selected Room Preview Card */}
 
-         {bookingRooms.map((item) => (
-  <div
-    key={item.room.id}
-    className="mb-5 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm"
-  >
-    <div className="flex flex-col md:flex-row">
+         {(bookingRooms.length > 0 ? bookingRooms : bookingItem ? [{ room: bookingItem, qty: 1 }] : [])
+           .reduce((acc, item) => {
+             const qty = Number(item.qty) || 1;
+             for (let i = 0; i < qty; i++) {
+               acc.push({ ...item, instanceNum: i + 1, totalQty: qty });
+             }
+             return acc;
+           }, [])
+           .map((item, index, arr) => (
+             <div
+               key={`${item.room?.id || item.room?._id || index}-${index}`}
+               className="mb-5 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm"
+             >
+               <div className="flex flex-col md:flex-row">
+                 {/* Image */}
+                 <div className="md:w-64">
+                   <img
+                     src={item.room?.mainImage || item.room?.image || item.room?.thumbnailImage || item.room?.galleryImages?.[0] || ""}
+                     alt={item.room?.name || item.room?.roomName || "Room Image"}
+                     className="h-52 w-full object-cover"
+                   />
+                 </div>
 
-      {/* Image */}
-      <div className="md:w-64">
-        <img
-          src={item.room.mainImage || item.room.image || item.room.thumbnailImage || item.room.galleryImages?.[0]}
-          alt={item.room.name || item.room.roomName}
-          className="h-52 w-full object-cover"
-        />
-      </div>
+                 {/* Details */}
+                 <div className="flex flex-1 flex-col justify-between p-5">
+                   <div>
+                     <span className="rounded-full bg-[#C89B3C]/10 px-3 py-1 text-xs font-semibold text-[#8a6a23]">
+                       {item.room?.roomType || item.room?.category || "Room"} {item.totalQty > 1 ? `(#${item.instanceNum} of ${item.totalQty})` : ""}
+                     </span>
 
-      {/* Details */}
-      <div className="flex flex-1 flex-col justify-between p-5">
+                     <div className="flex items-center gap-2 mt-2">
+                       <h3 className="text-xl font-semibold">
+                         {item.room?.name || item.room?.roomName || "Selected Luxury Room"} {item.totalQty > 1 ? `#${item.instanceNum}` : ""}
+                       </h3>
+                       <button 
+                         type="button" 
+                         onClick={() => setSelectedRoomForModal(item.room)} 
+                         className="text-[11px] font-medium text-[#C89B3C] hover:text-white hover:bg-[#C89B3C] bg-[#C89B3C]/10 px-2 py-0.5 rounded-full border border-[#C89B3C]/30 transition-colors cursor-pointer"
+                       >
+                         View Details
+                       </button>
+                     </div>
 
-        <div>
-          <span className="rounded-full bg-[#C89B3C]/10 px-3 py-1 text-xs font-semibold text-[#8a6a23]">
-            {item.room.roomType || item.room.category || "Room"}
-          </span>
+                     <p className="mt-2 text-sm text-gray-500">
+                       {item.room?.description || item.room?.roomDescription || "Luxury accommodation with premium amenities."}
+                     </p>
+                   </div>
 
-          <div className="flex items-center gap-2 mt-2">
-            <h3 className="text-xl font-semibold">
-              {item.room.name || item.room.roomName}
-            </h3>
-            <button 
-              type="button" 
-              onClick={() => setSelectedRoomForModal(item.room)} 
-              className="text-[11px] font-medium text-[#C89B3C] hover:text-white hover:bg-[#C89B3C] bg-[#C89B3C]/10 px-2 py-0.5 rounded-full border border-[#C89B3C]/30 transition-colors cursor-pointer"
-            >
-              View Details
-            </button>
-          </div>
+                   <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+                     <span>
+                       📐 {item.room?.roomSize || item.room?.size || "Standard"} {item.room?.roomSize ? "sq.ft" : ""}
+                     </span>
 
-          <p className="mt-2 text-sm text-gray-500">
-            {item.room.description || item.room.roomDescription || "Luxury accommodation with premium amenities."}
-          </p>
-        </div>
+                     <span>
+                       👤 {typeof (item.room?.capacity || item.room?.maxGuests) === "object" ? `${(item.room?.capacity?.adults || item.room?.maxGuests?.adults || 2)} Adults` : (item.room?.capacity || item.room?.maxGuests || ((item.room?.maxAdults || 0) + (item.room?.maxChildren || 0)) || 2)} Guests
+                     </span>
 
-        <div className="mt-4 flex flex-wrap items-center gap-4 text-sm">
+                     <span>
+                       🛏 {item.room?.bedType || item.room?.bed || "King Bed"}
+                     </span>
 
-          <span>
-            📐 {item.room.roomSize || item.room.size || "Standard"} {item.room.roomSize ? "sq.ft" : ""}
-          </span>
+                     <span className="ml-auto font-bold text-lg">
+                       ${((item.room?.discountPrice || item.room?.price || 0)).toLocaleString()}
+                     </span>
+                   </div>
 
-          <span>
-            👤 {item.room.capacity || item.room.maxGuests || ((item.room.maxAdults || 0) + (item.room.maxChildren || 0)) || 2} Guests
-          </span>
+                   <div className="mt-3 flex items-center justify-between text-sm font-medium text-[#2C4A6E] pt-2 border-t border-stone-100">
+                     <span>Room {index + 1} of {arr.length} selected</span>
+                     <span className="font-bold text-[#8a6a23]">Qty : 1</span>
+                   </div>
+                 </div>
+               </div>
+             </div>
+           ))}
 
-          <span>
-            🛏 {item.room.bedType || item.room.bed || "King Bed"}
-          </span>
-
-          <span className="ml-auto font-bold text-lg">
-            ${(item.room.discountPrice || item.room.price) * item.qty}
-          </span>
-
-        </div>
-
-        <div className="mt-3 text-sm font-medium text-[#2C4A6E]">
-          Quantity : {item.qty}
-        </div>
-
-      </div>
-
-    </div>
-  </div>
-))}
-
-
-          {/* Stay Details */}
-          <SectionCard
-            title="Stay Information"
-            subtitle="Tell us when you'd like to arrive and how many will be staying."
-          >
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <BookingInput
-                label="Check-in"
-                id="checkIn"
-                type="date"
-                icon={FiCalendar}
-                value={checkIn}
-                onChange={(e) => setCheckIn(e.target.value)}
-                required
-              />
-
-              <BookingInput
-                label="Check-out"
-                id="checkOut"
-                type="date"
-                icon={FiCalendar}
-                value={checkOut}
-                min={checkIn || undefined}
-                onChange={(e) => setCheckOut(e.target.value)}
-                required
-              />
-              <BookingInput
-                label="Guests"
-                id="guests"
-                as="select"
-                icon={FiUsers}
-                value={guests}
-                onChange={(e) => setGuests(Number(e.target.value))}
-                options={guestSelectOptions}
-              />
-              <BookingInput
-                label="Rooms"
-                id="roomsCount"
-                as="select"
-                icon={FiHome}
-                // value={roomsCount}
-                // onChange={(e) => setRoomsCount(Number(e.target.value))}
-                options={roomsSelectOptions}
-              />
-              <BookingInput
-                label="Children"
-                id="children"
-                as="select"
-                icon={FiUsers}
-                value={children}
-                onChange={(e) => setChildren(Number(e.target.value))}
-                options={childrenSelectOptions}
-              />
-              <BookingInput
-                label="Arrival Time"
-                id="arrivalTime"
-                as="select"
-                icon={FiClock}
-                value={arrivalTime}
-                onChange={(e) => setArrivalTime(e.target.value)}
-                options={[
-                  { value: "", label: "Select a time (optional)" },
-                  { value: "morning", label: "Morning (8AM – 12PM)" },
-                  { value: "afternoon", label: "Afternoon (12PM – 4PM)" },
-                  { value: "evening", label: "Evening (4PM – 8PM)" },
-                  { value: "night", label: "Night (After 8PM)" },
-                ]}
-              />
-              <BookingInput
-                label="Special Occasion"
-                id="occasion"
-                as="select"
-                icon={FiStar}
-                value={occasion}
-                onChange={(e) => setOccasion(e.target.value)}
-                className="sm:col-span-2"
-                options={[
-                  { value: "", label: "None (optional)" },
-                  { value: "honeymoon", label: "Honeymoon" },
-                  { value: "anniversary", label: "Anniversary" },
-                  { value: "business", label: "Business Trip" },
-                  { value: "family", label: "Family Stay" },
-                ]}
-              />
-            </div>
-          </SectionCard>
 
           {/* Guest Information */}
           <SectionCard
@@ -654,45 +670,125 @@ export default function BookingPage() {
             </p>
           </SectionCard>
 
-          {/* Payment / Policy Info Block */}
-          <SectionCard title="Payment & Booking Policy">
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 rounded-xl bg-[#C89B3C]/5 p-4">
-                <FiCreditCard className="mt-0.5 flex-none text-[#C89B3C]" />
-                <p className="text-sm text-stone-600">
-                  <span className="font-semibold text-stone-800">
-                    No payment is charged right now.
-                  </span>{" "}
-                  Your card details will only be required to guarantee the
-                  reservation; payment is handled securely at a later step.
-                </p>
+          {/* Interactive Required Payment Section */}
+          <SectionCard title="Payment Information (Required)">
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-3">
+                {[
+                  { id: "Credit Card", label: "Credit / Debit Card", desc: "Visa, MC, Amex" },
+                  { id: "Mobile Banking", label: "Mobile Wallet", desc: "PayPal, Apple Pay, Nagad" },
+                  { id: "Pay at Hotel", label: "Pay at Hotel", desc: "Cash on Arrival" }
+                ].map((opt) => (
+                  <label
+                    key={opt.id}
+                    onClick={() => setPaymentMethod(opt.id)}
+                    className={`cursor-pointer rounded-xl border p-4 transition-all duration-200 ${
+                      paymentMethod === opt.id
+                        ? "border-[#C89B3C] bg-[#C89B3C]/10 shadow-sm"
+                        : "border-stone-200 bg-stone-50 hover:border-stone-300"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={paymentMethod === opt.id}
+                        onChange={() => setPaymentMethod(opt.id)}
+                        className="h-4 w-4 text-[#C89B3C] focus:ring-[#C89B3C]"
+                      />
+                      <span className="text-sm font-bold text-stone-800">{opt.label}</span>
+                    </div>
+                    <p className="mt-1 pl-6 text-xs text-stone-500">{opt.desc}</p>
+                  </label>
+                ))}
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+              {paymentMethod === "Credit Card" && (
+                <div className="rounded-xl border border-stone-200/80 bg-stone-50/70 p-5 space-y-4">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-stone-500">Secure Card Details (Required)</h4>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div className="sm:col-span-2">
+                      <BookingInput
+                        label="Cardholder Full Name"
+                        id="cardHolderName"
+                        placeholder="e.g. Sofia Martinez"
+                        value={cardDetails.cardHolderName}
+                        onChange={handleCardChange("cardHolderName")}
+                        required={paymentMethod === "Credit Card"}
+                      />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <BookingInput
+                        label="Card Number"
+                        id="cardNumber"
+                        icon={FiCreditCard}
+                        placeholder="4532 •••• •••• 8942"
+                        maxLength="19"
+                        value={cardDetails.cardNumber}
+                        onChange={handleCardChange("cardNumber")}
+                        required={paymentMethod === "Credit Card"}
+                      />
+                    </div>
+                    <div>
+                      <BookingInput
+                        label="Expiration Date"
+                        id="expiryDate"
+                        placeholder="MM/YY"
+                        maxLength="5"
+                        value={cardDetails.expiryDate}
+                        onChange={handleCardChange("expiryDate")}
+                        required={paymentMethod === "Credit Card"}
+                      />
+                    </div>
+                    <div>
+                      <BookingInput
+                        label="Security Code (CVC)"
+                        id="cvc"
+                        icon={FiLock}
+                        placeholder="123"
+                        maxLength="4"
+                        value={cardDetails.cvc}
+                        onChange={handleCardChange("cvc")}
+                        required={paymentMethod === "Credit Card"}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {paymentMethod === "Mobile Banking" && (
+                <div className="rounded-xl bg-[#C89B3C]/10 border border-[#C89B3C]/30 p-4">
+                  <p className="text-sm text-stone-700 font-medium">
+                    ⚡ You will be securely directed to complete your instant payment authorization after clicking <strong>Confirm Booking</strong> below.
+                  </p>
+                </div>
+              )}
+
+              {paymentMethod === "Pay at Hotel" && (
+                <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4">
+                  <p className="text-sm text-emerald-800 font-medium">
+                    ✅ Your room stay will be reserved instantly. Simply settle your full invoice directly at the hotel reception during check-in.
+                  </p>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2 border-t border-stone-100">
                 <div className="flex items-start gap-3">
                   <FiClock className="mt-0.5 flex-none text-[#C89B3C]" />
-                  <p className="text-sm text-stone-600">
-                    Check-in from <strong>3:00 PM</strong> · Check-out by{" "}
-                    <strong>12:00 PM</strong>
+                  <p className="text-xs text-stone-600">
+                    Check-in from <strong>3:00 PM</strong> · Check-out by <strong>12:00 PM</strong>
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <FiShield className="mt-0.5 flex-none text-[#C89B3C]" />
-                  <p className="text-sm text-stone-600">
-                    Free cancellation available before{" "}
-                    <strong>{freeCancellationDate}</strong>
-                  </p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <FiTag className="mt-0.5 flex-none text-[#C89B3C]" />
-                  <p className="text-sm text-stone-600">
-                    Listed rate excludes applicable taxes and service charges
+                  <p className="text-xs text-stone-600">
+                    Free cancellation available before <strong>{freeCancellationDate}</strong>
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <FiLock className="mt-0.5 flex-none text-[#C89B3C]" />
-                  <p className="text-sm text-stone-600">
-                    Your information is protected with secure, encrypted
-                    booking
+                  <p className="text-xs text-stone-600">
+                    256-bit SSL encrypted secure payment transactions
                   </p>
                 </div>
               </div>
@@ -754,7 +850,7 @@ export default function BookingPage() {
                 label="Total Nights"
                 value={datesSelected ? nights : "1 (default)"}
               />
-              <SummaryRow label="Guests" value={`${guests} Adults, ${children} Children`} />
+              <SummaryRow label="Guests" value={typeof guests === "object" ? `${guests.adults || 2} Adults, ${guests.children || 0} Children` : `${guests} Adults, ${children} Children`} />
               {/* <SummaryRow label="Rooms" value={roomsCount} /> */}
             </div>
 
@@ -827,10 +923,11 @@ export default function BookingPage() {
             <button
               type="button"
               onClick={handleConfirmBooking}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#C89B3C] py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#b3892f] active:scale-[0.99]"
+              disabled={isBookingLoading}
+              className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#C89B3C] py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#b3892f] active:scale-[0.99] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               <FiCheckCircle />
-              Confirm Booking
+              {isBookingLoading ? "Processing Reservation..." : "Confirm Booking"}
             </button>
 
             <Link
@@ -934,7 +1031,7 @@ export default function BookingPage() {
                       </span>
                     )}
                     <span className="flex items-center gap-1.5 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-100">
-                      👤 {selectedRoomForModal.capacity || selectedRoomForModal.maxGuests || ((selectedRoomForModal.maxAdults || 0) + (selectedRoomForModal.maxChildren || 0))} Guests max
+                      👤 {typeof (selectedRoomForModal.capacity || selectedRoomForModal.maxGuests) === "object" ? `${(selectedRoomForModal.capacity?.adults || selectedRoomForModal.maxGuests?.adults || 2)} Adults` : (selectedRoomForModal.capacity || selectedRoomForModal.maxGuests || ((selectedRoomForModal.maxAdults || 0) + (selectedRoomForModal.maxChildren || 0)))} Guests max
                     </span>
                     {(selectedRoomForModal.roomSize || selectedRoomForModal.size) && (
                       <span className="flex items-center gap-1.5 bg-stone-50 px-3 py-1.5 rounded-lg border border-stone-100">

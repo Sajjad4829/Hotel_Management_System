@@ -280,14 +280,17 @@ export default function SearchHotelDetails() {
                   <h2 className="text-[20px] font-bold text-[#1E2A38]">Select your room</h2>
                 </div>
                 <div className="flex flex-col gap-4">
-                  {rooms.map(room => (
-                    <RoomSelectionCard 
-                      key={room.id} 
-                      room={room} 
-                      qty={selectedRooms[room.id] || 0}
-                      onQtyChange={(qty) => handleRoomQtyChange(room.id, qty)}
-                    />
-                  ))}
+                  {rooms.map(room => {
+                    const rId = String(room.id || room._id || '');
+                    return (
+                      <RoomSelectionCard 
+                        key={rId} 
+                        room={room} 
+                        qty={selectedRooms[rId] || 0}
+                        onQtyChange={(qty) => handleRoomQtyChange(rId, qty)}
+                      />
+                    );
+                  })}
                 </div>
               </Section>
             )}

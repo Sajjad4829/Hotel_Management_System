@@ -7,6 +7,7 @@ import hotelRoutes from './routes/hotelRoutes.js';
 import roomRoutes from './routes/roomRoutes.js';
 import amenityRoutes from './routes/amenityRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
 
 // Load environment variables from .env
 dotenv.config();
@@ -28,6 +29,7 @@ app.use('/api/hotels', hotelRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/amenities', amenityRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 // Root test route
 app.get('/', (req, res) => {

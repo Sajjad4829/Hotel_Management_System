@@ -75,7 +75,7 @@ export default function RoomCard({ room, count, onDecrement, onIncrement }) {
                 </span>
                 <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
                   <Users size={12} className="text-[#2563eb]" />
-                  Up to {room.maxGuests} guests
+                  Up to {typeof room.maxGuests === "object" ? `${room.maxGuests.adults || 2}` : room.maxGuests} guests
                 </span>
                 <span className="flex items-center gap-1.5 text-[12px] text-slate-500">
                   <BedDouble size={12} className="text-[#2563eb]" />

@@ -34,6 +34,7 @@ import HotelContactSection from './Components/Contact/Contact.jsx'
 import ProtectedRoute from './Components/ProtectedRoute.jsx'
 import { AuthProvider } from './Context/AuthContext.jsx'
 import UserDashboard from './Components/UserDashboard/UserDashboard.jsx'
+import AdminBookings from './Components/MainDashBoard/Pages/Booking_Management/AdminBookings.jsx'
 
 import Gallery from './Components/Gallery/Gallery.jsx'
 import { RoomProvider } from './Context/RoomContext.jsx'
@@ -56,9 +57,9 @@ function App() {
                 <Route path="/rooms" element={<RoomsPage />} />
                 <Route path="/rooms/:id" element={<RoomDetails />} />
                 
-                {/* Protected Booking Execution URLs */}
-                <Route path="/book/:id" element={<ProtectedRoute adminOnly={false}><BookingPage /></ProtectedRoute>} />
-                <Route path="/book" element={<ProtectedRoute adminOnly={false}><BookingPage /></ProtectedRoute>} />
+                {/* Booking Execution URLs - Auth check occurs when user confirms reservation */}
+                <Route path="/book/:id" element={<BookingPage />} />
+                <Route path="/book" element={<BookingPage />} />
                 
                 <Route path="/search-results" element={<SearchResultWrapper />} />
                 <Route path="/hotel/:id" element={<SearchHotelDetails />} />
@@ -75,6 +76,7 @@ function App() {
                 {/* Protected Customer Portal Routes */}
                 <Route path="/customer/dashboard" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="dashboard" /></ProtectedRoute>} />
                 <Route path="/customer/bookings" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="bookings" /></ProtectedRoute>} />
+                <Route path="/customer/bookings/:id" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="bookings" /></ProtectedRoute>} />
                 <Route path="/customer/profile" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="profile" /></ProtectedRoute>} />
                 <Route path="/customer/wishlist" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="wishlist" /></ProtectedRoute>} />
                 <Route path="/customer/settings" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="settings" /></ProtectedRoute>} />
@@ -85,6 +87,7 @@ function App() {
               {/* Protected Route exclusively for admin users at /dashboard */}
               <Route element={<ProtectedRoute adminOnly={true}><DashboardRoute /></ProtectedRoute>}>
                 <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/bookings" element={<AdminBookings />} />
                 <Route path="/dashboard/destinations" element={<Destinations />} />
                 <Route path="/dashboard/hotels" element={<Hotels />} />
                 <Route path="/dashboard/amenities" element={<Amenities />} />

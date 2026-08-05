@@ -202,8 +202,7 @@ export const createRoom = async (req, res) => {
 
     // Determine target Hotel ObjectId reference
     let targetHotelId = hotelId || propertyId;
-    if (targetHotelId && !targetHotelId.match(/^[0-9a-fA-F]{24}$/)) {
-      // If legacy string like 'dhaka-gulshan', look up actual Hotel ObjectId
+    if (targetHotelId && typeof targetHotelId === 'string' && !targetHotelId.match(/^[0-9a-fA-F]{24}$/)) {
       const existingHotel = await Hotel.findOne({ $or: [{ destination: targetHotelId }, { name: new RegExp(targetHotelId.replace(/-/g, ' '), 'i') }] });
       if (existingHotel) {
         targetHotelId = existingHotel._id;
@@ -216,10 +215,17 @@ export const createRoom = async (req, res) => {
       if (firstHotel) targetHotelId = firstHotel._id;
     }
 
+    // Protect against invalid ObjectId cast attempts
+    let validHotelObjectId = undefined;
+    if (targetHotelId && targetHotelId.toString().match(/^[0-9a-fA-F]{24}$/)) {
+      validHotelObjectId = targetHotelId;
+    }
+
     const newRoom = await Room.create({
-      hotelId: targetHotelId,
-      propertyId: targetHotelId ? targetHotelId.toString() : propertyId || '',
-      roomName: assignedName,
+      ...req.body,
+      hotelId: validHotelObjectId,
+      propertyId: validHotelObjectId ? validHotelObjectId.toString() : propertyId || 'default-property',
+      roomName: assignedName.trim(),
       roomNo: roomNo || `${Math.floor(100 + Math.random() * 899)}`,
       roomType: roomType || type || 'Deluxe',
       type: type || roomType || 'Deluxe',
@@ -243,7 +249,10 @@ export const createRoom = async (req, res) => {
       isActive: isActive !== undefined ? isActive : true,
     });
 
-    const populatedRoom = await Room.findById(newRoom._id).populate('hotelId', 'name location starRating');
+    let populatedRoom = newRoom;
+    if (validHotelObjectId) {
+      populatedRoom = await Room.findById(newRoom._id).populate('hotelId', 'name location starRating');
+    }
 
     return res.status(201).json({
       success: true,
@@ -254,7 +263,7 @@ export const createRoom = async (req, res) => {
     console.error('Create Room Error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Server error while creating room.',
+      message: error.message || 'Server error while creating room.',
       error: error.message,
     });
   }

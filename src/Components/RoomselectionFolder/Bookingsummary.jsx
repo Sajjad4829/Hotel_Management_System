@@ -1,4 +1,5 @@
 import { ArrowRight, ShoppingCart, Tag, Info } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { calculatePricing } from "../../utils/pricing";
 
@@ -14,7 +15,13 @@ export default function BookingSummary({
   children,
 }) {
   const navigate = useNavigate();
-const rooms = hotel?.rooms || [];
+  const [dateError, setDateError] = useState(false);
+
+  useEffect(() => {
+    if (checkIn && checkOut) setDateError(false);
+  }, [checkIn, checkOut]);
+
+  const rooms = hotel?.rooms || [];
 
 
 
@@ -22,8 +29,8 @@ const rooms = hotel?.rooms || [];
   const totalRoomsCount = selectedEntries.reduce((sum, [, qty]) => sum + qty, 0);
 
   const subtotal = selectedEntries.reduce((sum, [roomId, qty]) => {
-    const room = rooms.find((r) => r.id === Number(roomId));
-    return sum + (room ? room.price * qty : 0);
+    const room = rooms.find((r) => String(r.id || r._id) === String(roomId));
+    return sum + (room ? (room.discountPrice || room.price) * qty : 0);
   }, 0);
 
   const {
@@ -38,9 +45,14 @@ const rooms = hotel?.rooms || [];
     console.log("Hotel:", hotel);
     console.log("Hotel ID:", hotel?.id);
     if (!canContinue) return;
+    if (!checkIn || !checkOut) {
+      setDateError(true);
+      return;
+    }
+    setDateError(false);
 
     const roomsPayload = selectedEntries.map(([roomId, qty]) => ({
-      room: rooms.find((r) => r.id === Number(roomId)),
+      room: rooms.find((r) => String(r.id || r._id) === String(roomId)),
       qty,
     }));
     navigate(`/book/${hotel.id}`, {
@@ -52,6 +64,7 @@ const rooms = hotel?.rooms || [];
         checkOut,
         guests,
         children,
+        fromSelectRoom: Boolean(checkIn && checkOut),
 
         selectedRooms: roomsPayload,
 
@@ -168,9 +181,13 @@ const rooms = hotel?.rooms || [];
           <ArrowRight size={16} />
         </button>
 
-        {!canContinue && (
+        {!canContinue ? (
           <p className="text-[11px] text-slate-400 text-center -mt-2">
             Select at least one room to continue
+          </p>
+        ) : (!checkIn || !checkOut) && (
+          <p className={`text-[12px] text-center font-semibold transition-colors duration-200 -mt-2 ${dateError ? "text-red-600 animate-pulse" : "text-amber-600"}`}>
+            ⚠️ Please select check-in & check-out dates above to continue
           </p>
         )}
       </div>
