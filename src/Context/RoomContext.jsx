@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
 const defaultRooms = [
   { 
@@ -46,6 +47,26 @@ export function RoomProvider({ children }) {
     }
     return defaultRooms;
   });
+  const [loadingRooms, setLoadingRooms] = useState(false);
+
+  // Synchronize live rooms from MongoDB Atlas via Express API
+  useEffect(() => {
+    const fetchRoomsFromAPI = async () => {
+      try {
+        setLoadingRooms(true);
+        const res = await api.get('/rooms');
+        if (res.data && res.data.data) {
+          setRooms(res.data.data);
+          localStorage.setItem('havenRoomsData', JSON.stringify(res.data.data));
+        }
+      } catch (err) {
+        console.warn('⚠️ Unable to fetch live room inventory from server: using cached storage.', err.message);
+      } finally {
+        setLoadingRooms(false);
+      }
+    };
+    fetchRoomsFromAPI();
+  }, []);
 
   const [categories, setCategories] = useState(() => {
     const saved = localStorage.getItem('havenCategoriesData');
@@ -71,45 +92,77 @@ export function RoomProvider({ children }) {
     return (name || '').toString().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   };
 
-  const addRoom = (roomData) => {
+  const addRoom = async (roomData) => {
     const slug = generateSlug(roomData.roomName || roomData.name);
-    const newRoom = {
-      id: `rm-${Date.now()}`,
-      slug,
-      ...roomData,
-      price: Number(roomData.price) || 0,
-      roomSize: Number(roomData.roomSize) || 0,
-      maxAdults: Number(roomData.maxAdults) || 1,
-      maxChildren: Number(roomData.maxChildren) || 0,
-      displayOrder: Number(roomData.displayOrder) || 0,
-      isFeatured: Boolean(roomData.isFeatured),
-      isActive: Boolean(roomData.isActive)
-    };
-    setRooms(prev => [...prev, newRoom]);
+    try {
+      const res = await api.post('/rooms', { ...roomData, slug });
+      if (res.data && res.data.data) {
+        setRooms(prev => [res.data.data, ...prev]);
+        return res.data.data;
+      }
+    } catch (error) {
+      console.error('API Add Room Error, applying local backup:', error);
+      const newRoom = {
+        id: `rm-${Date.now()}`,
+        _id: `rm-${Date.now()}`,
+        slug,
+        ...roomData,
+        price: Number(roomData.price) || 0,
+        roomSize: Number(roomData.roomSize) || 0,
+        maxAdults: Number(roomData.maxAdults) || 1,
+        maxChildren: Number(roomData.maxChildren) || 0,
+        displayOrder: Number(roomData.displayOrder) || 0,
+        isFeatured: Boolean(roomData.isFeatured),
+        isActive: Boolean(roomData.isActive)
+      };
+      setRooms(prev => [...prev, newRoom]);
+      throw error;
+    }
   };
 
-  const updateRoom = (id, updatedData) => {
-    setRooms(prev => prev.map(room => 
-      room.id === id ? { 
-        ...room, 
-        ...updatedData, 
-        price: Number(updatedData.price) || room.price,
-        roomSize: Number(updatedData.roomSize) || room.roomSize,
-        maxAdults: Number(updatedData.maxAdults) || room.maxAdults,
-        maxChildren: Number(updatedData.maxChildren) || room.maxChildren,
-        displayOrder: Number(updatedData.displayOrder) || room.displayOrder,
-        isFeatured: Boolean(updatedData.isFeatured),
-        isActive: Boolean(updatedData.isActive)
-      } : room
-    ));
+  const updateRoom = async (id, updatedData) => {
+    const targetId = updatedData._id || id;
+    try {
+      const res = await api.put(`/rooms/${targetId}`, updatedData);
+      if (res.data && res.data.data) {
+        setRooms(prev => prev.map(room => (room.id === targetId || room._id === targetId || room.id === id) ? res.data.data : room));
+        return res.data.data;
+      }
+    } catch (error) {
+      console.error('API Update Room Error, updating local state:', error);
+      setRooms(prev => prev.map(room => 
+        (room.id === targetId || room._id === targetId || room.id === id) ? { 
+          ...room, 
+          ...updatedData, 
+          price: Number(updatedData.price) || room.price,
+          roomSize: Number(updatedData.roomSize) || room.roomSize,
+          maxAdults: Number(updatedData.maxAdults) || room.maxAdults,
+          maxChildren: Number(updatedData.maxChildren) || room.maxChildren,
+          displayOrder: Number(updatedData.displayOrder) || room.displayOrder,
+          isFeatured: Boolean(updatedData.isFeatured),
+          isActive: Boolean(updatedData.isActive)
+        } : room
+      ));
+      throw error;
+    }
   };
 
-  const deleteRoom = (id) => {
-    setRooms(prev => prev.filter(room => room.id !== id));
+  const deleteRoom = async (id) => {
+    try {
+      await api.delete(`/rooms/${id}`);
+      setRooms(prev => prev.filter(room => room.id !== id && room._id !== id));
+    } catch (error) {
+      console.error('API Delete Room Error, removing from local state:', error);
+      setRooms(prev => prev.filter(room => room.id !== id && room._id !== id));
+      throw error;
+    }
   };
 
   const getRoomsByProperty = (propertyId) => {
-    return rooms.filter(room => room.propertyId === propertyId);
+    return rooms.filter(room => {
+      const pId = room.propertyId || (room.hotelId && (room.hotelId._id || room.hotelId));
+      return pId && pId.toString() === propertyId.toString();
+    });
   };
 
   const addCategory = (catData) => {
@@ -139,7 +192,7 @@ export function RoomProvider({ children }) {
 
   return (
     <RoomContext.Provider value={{ 
-      rooms, addRoom, updateRoom, deleteRoom, getRoomsByProperty,
+      rooms, loadingRooms, addRoom, updateRoom, deleteRoom, getRoomsByProperty,
       categories, addCategory, updateCategory, deleteCategory
     }}>
       {children}

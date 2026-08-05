@@ -41,6 +41,7 @@ const NAV_ITEMS = [
     children: [
       { label: "Destinations", path: "/dashboard/destinations" },
       { label: "Hotels", path: "/dashboard/hotels" },
+      { label: "Amenities", path: "/dashboard/amenities" },
       { label: "Room Management", path: "/dashboard/rooms" },
       { label: "Room Categories", path: "/dashboard/rooms/categories" },
     ],

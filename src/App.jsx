@@ -28,59 +28,79 @@ import HeroWrapper from './Components/MainDashBoard/Pages/Appearance/HeroWrapper
 import NavbarWrapper from './Components/MainDashBoard/Pages/Appearance/NavbarWrapper.jsx'
 import Destinations from './Components/MainDashBoard/Pages/Property_Management/Destinations.jsx'
 import Hotels from './Components/MainDashBoard/Pages/Property_Management/Hotels.jsx'
+import Amenities from './Components/MainDashBoard/Pages/Property_Management/Amenities.jsx'
 import Offers from './Components/MainDashBoard/Pages/Marketing_Management/Offers.jsx'
-import LocationsPage from './Components/Locations/LocationsPage.jsx'
 import HotelContactSection from './Components/Contact/Contact.jsx'
+import ProtectedRoute from './Components/ProtectedRoute.jsx'
+import { AuthProvider } from './Context/AuthContext.jsx'
+import UserDashboard from './Components/UserDashboard/UserDashboard.jsx'
+
 import Gallery from './Components/Gallery/Gallery.jsx'
 import { RoomProvider } from './Context/RoomContext.jsx'
 import { PropertyProvider } from './Context/PropertyContext.jsx'
 
 function App() {
   return (
-    <PropertyProvider>
-      <PageProvider>
-        <RoomProvider>
-          <div className="min-h-screen bg-stone-50 overflow-x-hidden">
-            <ScrollToTop />
-          <AIAssistant />
-          <Routes>
-            <Route path="/" element={<PublicLayout />}>
-              <Route index element={<Home />} />
-              <Route path="/facility" element={<FacilitiesPage />} />
-              <Route path="/offers" element={<OffersPage />} />
-              <Route path="/rooms" element={<RoomsPage />} />
-              <Route path="/rooms/:id" element={<RoomDetails />} />
-              <Route path="/book/:id" element={<BookingPage />} />
-              <Route path="/book" element={<BookingPage />} />
-              <Route path="/search-results" element={<SearchResultWrapper />} />
-              <Route path="/hotel/:id" element={<SearchHotelDetails />} />
-              <Route path="/hotel/:id/rooms" element={<RoomSelection />} />
-              <Route path="/destination/:id" element={<DestinationDetails />} />
-              <Route path="/gallery" element={<Gallery />} />
-              <Route path="/locations" element={<LocationsPage />} />
-              <Route path="/contact" element={<HotelContactSection />} />
-              <Route path="/offers/:id" element={<OfferDetails />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-            </Route>
+    <AuthProvider>
+      <PropertyProvider>
+        <PageProvider>
+          <RoomProvider>
+            <div className="min-h-screen bg-stone-50 overflow-x-hidden">
+              <ScrollToTop />
+            <AIAssistant />
+            <Routes>
+              <Route path="/" element={<PublicLayout />}>
+                <Route index element={<Home />} />
+                <Route path="/facility" element={<FacilitiesPage />} />
+                <Route path="/offers" element={<OffersPage />} />
+                <Route path="/rooms" element={<RoomsPage />} />
+                <Route path="/rooms/:id" element={<RoomDetails />} />
+                
+                {/* Protected Booking Execution URLs */}
+                <Route path="/book/:id" element={<ProtectedRoute adminOnly={false}><BookingPage /></ProtectedRoute>} />
+                <Route path="/book" element={<ProtectedRoute adminOnly={false}><BookingPage /></ProtectedRoute>} />
+                
+                <Route path="/search-results" element={<SearchResultWrapper />} />
+                <Route path="/hotel/:id" element={<SearchHotelDetails />} />
+                <Route path="/hotel/:id/rooms" element={<RoomSelection />} />
+                <Route path="/destination/:id" element={<DestinationDetails />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/contact" element={<HotelContactSection />} />
 
-            <Route element={<DashboardRoute />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/dashboard/destinations" element={<Destinations />} />
-              <Route path="/dashboard/hotels" element={<Hotels />} />
-              <Route path="/dashboard/rooms" element={<RoomManagement />} />
-              <Route path="/dashboard/rooms/categories" element={<RoomCategories />} />
-              <Route path="/dashboard/offers" element={<Offers />} />
-              <Route path="/dashboard/appearance/hero" element={<HeroWrapper />} />
-              <Route path="/dashboard/appearance/navbar" element={<NavbarWrapper />} />
-              <Route path="/dashboard/content/:page" element={<ContentManagerWrapper />} />
-            </Route>
-          </Routes>
-        </div>
-        </RoomProvider>
-      </PageProvider>
-    </PropertyProvider>
+                <Route path="/offers/:id" element={<OfferDetails />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+
+                {/* Protected Customer Portal Routes */}
+                <Route path="/customer/dashboard" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="dashboard" /></ProtectedRoute>} />
+                <Route path="/customer/bookings" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="bookings" /></ProtectedRoute>} />
+                <Route path="/customer/profile" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="profile" /></ProtectedRoute>} />
+                <Route path="/customer/wishlist" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="wishlist" /></ProtectedRoute>} />
+                <Route path="/customer/settings" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="settings" /></ProtectedRoute>} />
+                {/* Legacy redirect support */}
+                <Route path="/customer/*" element={<ProtectedRoute adminOnly={false}><UserDashboard activeTab="dashboard" /></ProtectedRoute>} />
+              </Route>
+
+              {/* Protected Route exclusively for admin users at /dashboard */}
+              <Route element={<ProtectedRoute adminOnly={true}><DashboardRoute /></ProtectedRoute>}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/dashboard/destinations" element={<Destinations />} />
+                <Route path="/dashboard/hotels" element={<Hotels />} />
+                <Route path="/dashboard/amenities" element={<Amenities />} />
+                <Route path="/dashboard/rooms" element={<RoomManagement />} />
+                <Route path="/dashboard/rooms/categories" element={<RoomCategories />} />
+                <Route path="/dashboard/offers" element={<Offers />} />
+                <Route path="/dashboard/appearance/hero" element={<HeroWrapper />} />
+                <Route path="/dashboard/appearance/navbar" element={<NavbarWrapper />} />
+                <Route path="/dashboard/content/:page" element={<ContentManagerWrapper />} />
+              </Route>
+            </Routes>
+          </div>
+          </RoomProvider>
+        </PageProvider>
+      </PropertyProvider>
+    </AuthProvider>
   )
 }
 

@@ -8,15 +8,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useState } from "react";
-
+import { usePageContext } from "../../Context/PageContext";
 import { FaFacebookF, FaInstagram } from "react-icons/fa";
-// ── Utility ────────────────────────────────────────────────────────────────
-const gold = "#C8A96A";
-const navy = "#1F2937";
 
 // ── Sub-components ─────────────────────────────────────────────────────────
 
-function ContactCard({ icon: Icon, label, value, href }) {
+function ContactCard({ icon: Icon, label, value, href, gold = "#C8A96A" }) {
   return (
     <a
       href={href || "#"}
@@ -67,7 +64,7 @@ function SocialButton({ icon: Icon, label, href, color }) {
   );
 }
 
-function InputField({ label, type = "text", placeholder, value, onChange, name, rows }) {
+function InputField({ label, type = "text", placeholder, value, onChange, name, rows, gold = "#C8A96A" }) {
   const shared =
     "w-full px-4 py-3 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 bg-gray-50 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200";
 
@@ -104,7 +101,7 @@ function InputField({ label, type = "text", placeholder, value, onChange, name, 
   );
 }
 
-function MapCard() {
+function MapCard({ mapLabel, mapCity, mapCountry, mapLink, gold = "#C8A96A" }) {
   return (
     <div className="mt-5 rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
       {/* Stylised static map placeholder */}
@@ -136,17 +133,17 @@ function MapCard() {
             <MapPin size={22} className="text-white" />
           </div>
           <span className="bg-white text-xs font-semibold text-gray-700 px-3 py-1 rounded-full shadow-md">
-            Hotel Grand Dhaka
+            {mapLabel}
           </span>
         </div>
       </div>
       <div className="px-4 py-3 flex items-center justify-between bg-white">
         <div>
-          <p className="text-xs font-bold text-gray-700">Gulshan-2, Dhaka</p>
-          <p className="text-xs text-gray-400">Bangladesh — Open 24 / 7</p>
+          <p className="text-xs font-bold text-gray-700">{mapCity}</p>
+          <p className="text-xs text-gray-400">{mapCountry}</p>
         </div>
         <a
-          href="https://maps.google.com"
+          href={mapLink}
           target="_blank"
           rel="noreferrer"
           className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 hover:opacity-90"
@@ -161,22 +158,56 @@ function MapCard() {
 
 // ── Main Section ───────────────────────────────────────────────────────────
 
-export default function HotelContactSection({ data = {} }) {
-  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
+export default function HotelContactSection({ data: propData = {} }) {
+  const { pagesData } = usePageContext();
+  const ctxData = pagesData?.contact || {};
+  // propData wins over context
+  const d = { ...ctxData, ...propData };
+  const gold = d.accentColor || "#C8A96A";
+  const navy = "#1F2937";
+
+  // Build initial form state dynamically from formFields
+  const fields = Array.isArray(d.formFields) && d.formFields.length > 0
+    ? d.formFields
+    : [
+        { id: 'ff-1', label: 'Full Name',     name: 'fullName', type: 'text',     placeholder: 'John Doe',            required: true,  rows: null },
+        { id: 'ff-2', label: 'Email Address', name: 'email',    type: 'email',    placeholder: 'john@example.com',    required: true,  rows: null },
+        { id: 'ff-3', label: 'Phone Number',  name: 'phone',    type: 'tel',      placeholder: '+880 1234-567890',    required: false, rows: null },
+        { id: 'ff-4', label: 'Your Message',  name: 'message',  type: 'textarea', placeholder: 'How can we help you?',required: true,  rows: 4    },
+      ];
+
+  const emptyForm = () => Object.fromEntries(fields.map((f) => [f.name, '']));
+
+  const [form, setForm] = useState(emptyForm);
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
   function handleChange(e) {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+  }
+
+  function validate() {
+    const errs = {};
+    fields.forEach((f) => {
+      if (f.required && !form[f.name]?.trim()) {
+        errs[f.name] = `${f.label} is required.`;
+      }
+    });
+    return errs;
   }
 
   function handleSubmit(e) {
     e.preventDefault();
+    const errs = validate();
+    if (Object.keys(errs).length) { setErrors(errs); return; }
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
       setSent(true);
-      setForm({ name: "", email: "", phone: "", message: "" });
+      setForm(emptyForm());
       setTimeout(() => setSent(false), 4000);
     }, 1500);
   }
@@ -185,7 +216,7 @@ export default function HotelContactSection({ data = {} }) {
     <section
       id="contact"
       className="relative py-24 px-4 overflow-hidden"
-      style={{ background: "linear-gradient(135deg, #f9f7f4 0%, #ffffff 60%, #f3f0ec 100%)" }}
+      style={{ background: d.sectionBg || "linear-gradient(135deg, #f9f7f4 0%, #ffffff 60%, #f3f0ec 100%)" }}
     >
       {/* Decorative blobs */}
       <div
@@ -205,7 +236,7 @@ export default function HotelContactSection({ data = {} }) {
             className="text-xs font-bold uppercase tracking-[0.2em]"
             style={{ color: gold }}
           >
-            Reach Out
+            {d.badgeText || "Reach Out"}
           </span>
           <span className="h-px w-8" style={{ background: gold }} />
         </div>
@@ -222,63 +253,47 @@ export default function HotelContactSection({ data = {} }) {
               className="text-4xl md:text-5xl font-bold leading-tight mb-3"
               style={{ color: navy, fontFamily: "'Georgia', serif" }}
             >
-              Contact <span style={{ color: gold }}>Us</span>
+              {d.heading || "Contact"} <span style={{ color: gold }}>{d.headingHighlight || "Us"}</span>
             </h2>
             <p className="text-lg font-medium text-gray-500 mb-4">
-              We're here to assist you&nbsp;24/7
+              {d.subheading || "We're here to assist you 24/7"}
             </p>
             <p className="text-sm leading-relaxed text-gray-500 mb-8 max-w-sm">
-              Whether you need help with a reservation, a special occasion arrangement, or a general
-              enquiry — our concierge team is always ready to make your stay extraordinary.
+              {d.description}
             </p>
 
             {/* Contact cards */}
             <div className="flex flex-col gap-3 mb-8">
-              <ContactCard
-                icon={Phone}
-                label="Phone"
-                value="+880 1234-567890"
-                href="tel:+8801234567890"
-              />
-              <ContactCard
-                icon={Mail}
-                label="Email"
-                value="info@hotelname.com"
-                href="mailto:info@hotelname.com"
-              />
-              <ContactCard
-                icon={MapPin}
-                label="Address"
-                value="Gulshan-2, Dhaka, Bangladesh"
-              />
+              {d.phone && (
+                <ContactCard icon={Phone} label="Phone" value={d.phone} href={`tel:${(d.phone).replace(/\s|-/g, "")}`} gold={gold} />
+              )}
+              {d.email && (
+                <ContactCard icon={Mail} label="Email" value={d.email} href={`mailto:${d.email}`} gold={gold} />
+              )}
+              {d.address && (
+                <ContactCard icon={MapPin} label="Address" value={d.address} gold={gold} />
+              )}
             </div>
 
             {/* Social links */}
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
-                Follow &amp; Connect
-              </p>
-              <div className="flex items-center gap-3">
-                <SocialButton
-                  icon={FaFacebookF}
-                  label="Facebook"
-                  href="#"
-                  color="#1877F2"
-                />
-                <SocialButton
-                  icon={FaInstagram}
-                  label="Instagram"
-                  href="#"
-                  color="#E1306C"
-                />
-                <SocialButton
-                  icon={MessageCircle}
-                  label="WhatsApp"
-                  href="#"
-                  color="#25D366"
-                />
+            {(d.showFacebook || d.showInstagram || d.showWhatsapp) && (
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">
+                  Follow &amp; Connect
+                </p>
+                <div className="flex items-center gap-3">
+                  {d.showFacebook && (
+                    <SocialButton icon={FaFacebookF} label="Facebook" href={d.facebookUrl} color="#1877F2" />
+                  )}
+                  {d.showInstagram && (
+                    <SocialButton icon={FaInstagram} label="Instagram" href={d.instagramUrl} color="#E1306C" />
+                  )}
+                  {d.showWhatsapp && (
+                    <SocialButton icon={MessageCircle} label="WhatsApp" href={d.whatsappUrl} color="#25D366" />
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* ── Right Column ── */}
@@ -293,9 +308,9 @@ export default function HotelContactSection({ data = {} }) {
                   className="text-xl font-bold mb-1"
                   style={{ color: navy, fontFamily: "'Georgia', serif" }}
                 >
-                  Send a Message
+                  {d.formTitle || "Send a Message"}
                 </h3>
-                <p className="text-sm text-gray-400">We'll reply within a few hours.</p>
+                <p className="text-sm text-gray-400">{d.formSubtitle || "We'll reply within a few hours."}</p>
               </div>
 
               {/* Success banner */}
@@ -307,37 +322,68 @@ export default function HotelContactSection({ data = {} }) {
               )}
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                <InputField
-                  label="Full Name"
-                  name="name"
-                  placeholder="John Doe"
-                  value={form.name}
-                  onChange={handleChange}
-                />
-                <InputField
-                  label="Email Address"
-                  type="email"
-                  name="email"
-                  placeholder="john@example.com"
-                  value={form.email}
-                  onChange={handleChange}
-                />
-                <InputField
-                  label="Phone Number"
-                  type="tel"
-                  name="phone"
-                  placeholder="+880 1234-567890"
-                  value={form.phone}
-                  onChange={handleChange}
-                />
-                <InputField
-                  label="Your Message"
-                  name="message"
-                  placeholder="How can we help you?"
-                  value={form.message}
-                  onChange={handleChange}
-                  rows={4}
-                />
+                {fields.map((field) => (
+                  <div key={field.id} className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold uppercase tracking-widest text-gray-500">
+                      {field.label}
+                      {field.required && <span className="text-rose-400 ml-1">*</span>}
+                    </label>
+
+                    {field.type === 'textarea' ? (
+                      <textarea
+                        name={field.name}
+                        placeholder={field.placeholder}
+                        value={form[field.name] || ''}
+                        onChange={handleChange}
+                        rows={field.rows || 4}
+                        required={field.required}
+                        className="w-full px-4 py-3 rounded-xl border bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200 resize-none"
+                        style={{
+                          borderColor: errors[field.name] ? '#f87171' : '#e5e7eb',
+                          boxShadow: errors[field.name] ? '0 0 0 2px #fca5a555' : '',
+                        }}
+                        onFocus={(e) => { if (!errors[field.name]) e.target.style.boxShadow = `0 0 0 2px ${gold}55`; }}
+                        onBlur={(e) => { if (!errors[field.name]) e.target.style.boxShadow = ''; }}
+                      />
+                    ) : field.type === 'select' ? (
+                      <select
+                        name={field.name}
+                        value={form[field.name] || ''}
+                        onChange={handleChange}
+                        required={field.required}
+                        className="w-full px-4 py-3 rounded-xl border bg-gray-50 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
+                        style={{ borderColor: errors[field.name] ? '#f87171' : '#e5e7eb' }}
+                        onFocus={(e) => (e.target.style.boxShadow = `0 0 0 2px ${gold}55`)}
+                        onBlur={(e) => (e.target.style.boxShadow = '')}
+                      >
+                        <option value="">{field.placeholder || `Select ${field.label}…`}</option>
+                        {Array.isArray(field.options) && field.options.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type={field.type || 'text'}
+                        name={field.name}
+                        placeholder={field.placeholder}
+                        value={form[field.name] || ''}
+                        onChange={handleChange}
+                        required={field.required}
+                        className="w-full px-4 py-3 rounded-xl border bg-gray-50 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent transition-all duration-200"
+                        style={{
+                          borderColor: errors[field.name] ? '#f87171' : '#e5e7eb',
+                          boxShadow: errors[field.name] ? '0 0 0 2px #fca5a555' : '',
+                        }}
+                        onFocus={(e) => { if (!errors[field.name]) e.target.style.boxShadow = `0 0 0 2px ${gold}55`; }}
+                        onBlur={(e) => { if (!errors[field.name]) e.target.style.boxShadow = ''; }}
+                      />
+                    )}
+
+                    {errors[field.name] && (
+                      <p className="text-xs text-rose-500 mt-0.5">{errors[field.name]}</p>
+                    )}
+                  </div>
+                ))}
 
                 <button
                   type="submit"
@@ -359,7 +405,7 @@ export default function HotelContactSection({ data = {} }) {
                   ) : (
                     <>
                       <Send size={16} />
-                      Send Message
+                      {d.buttonText || "Send Message"}
                     </>
                   )}
                 </button>
@@ -367,7 +413,13 @@ export default function HotelContactSection({ data = {} }) {
             </div>
 
             {/* Map card */}
-            <MapCard />
+            <MapCard
+              mapLabel={d.mapLabel || "Hotel Grand Dhaka"}
+              mapCity={d.mapCity || "Gulshan-2, Dhaka"}
+              mapCountry={d.mapCountry || "Bangladesh — Open 24 / 7"}
+              mapLink={d.mapLink || "https://maps.google.com"}
+              gold={gold}
+            />
           </div>
         </div>
       </div>

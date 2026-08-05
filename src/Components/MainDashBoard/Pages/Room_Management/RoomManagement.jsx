@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiEye, FiX, FiCheck } from "react-icons/fi";
+import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiEye, FiX, FiCheck, FiUpload, FiLoader } from "react-icons/fi";
 import { useRoomContext } from "../../../../Context/RoomContext";
 import { usePropertyContext } from "../../../../Context/PropertyContext";
+import api from "../../../../services/api";
 
 const STATUS_OPTIONS = ["All", "Available", "Booked", "Occupied", "Maintenance"];
 const AMENITIES_LIST = ["WiFi", "AC", "TV", "Mini Bar", "Balcony", "Ocean View", "Room Service", "Coffee Maker"];
@@ -49,6 +50,8 @@ export default function RoomManagement() {
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [submittingRoom, setSubmittingRoom] = useState(false);
 
   // Default to first active category, or fallback to 'Standard'
   const defaultCategory = categories.find(c => c.isActive)?.name || "Standard";
@@ -113,18 +116,52 @@ export default function RoomManagement() {
     }
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     const payload = {
       ...formData,
       galleryImages: formData.galleryImages ? formData.galleryImages.split(",").map(s => s.trim()).filter(Boolean) : []
     };
-    if (selectedRoom) {
-      updateRoom(selectedRoom.id, payload);
-    } else {
-      addRoom(payload);
+    setSubmittingRoom(true);
+    try {
+      if (selectedRoom) {
+        await updateRoom(selectedRoom.id || selectedRoom._id, payload);
+      } else {
+        await addRoom(payload);
+      }
+      setIsFormModalOpen(false);
+    } catch (err) {
+      alert("Error saving room accommodation to database: " + (err.response?.data?.message || err.message));
+    } finally {
+      setSubmittingRoom(false);
     }
-    setIsFormModalOpen(false);
+  };
+
+  const handleImageUpload = async (e, isGallery = false) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingMedia(true);
+    const formPayload = new FormData();
+    formPayload.append("image", file);
+    formPayload.append("folder", "hotel_rooms");
+    try {
+      const res = await api.post("/upload", formPayload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const uploadedUrl = res.data.data.url;
+      if (isGallery) {
+        setFormData((prev) => ({
+          ...prev,
+          galleryImages: prev.galleryImages ? `${prev.galleryImages}, ${uploadedUrl}` : uploadedUrl,
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, thumbnailImage: uploadedUrl }));
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Remote Cloudinary upload failed.");
+    } finally {
+      setUploadingMedia(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -149,8 +186,9 @@ export default function RoomManagement() {
   };
 
   const getPropertyName = (propertyId) => {
-    const property = hotels.find(loc => loc.id === propertyId);
-    return property ? property.name : "Unknown Property";
+    if (propertyId && typeof propertyId === 'object' && propertyId.name) return propertyId.name;
+    const property = hotels.find(loc => loc.id === propertyId || loc._id === propertyId || (loc._id && loc._id.toString() === propertyId));
+    return property ? property.name : "Unassigned / All Hotels";
   };
 
   return (
@@ -301,11 +339,26 @@ export default function RoomManagement() {
             <h3 className="text-sm font-bold text-slate-800 mb-4 uppercase tracking-wider">Media</h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Thumbnail Image URL</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">Thumbnail Image URL</label>
+                  <label className="cursor-pointer text-xs text-amber-700 hover:text-amber-800 font-semibold flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    {uploadingMedia ? <FiLoader className="animate-spin" size={12} /> : <FiUpload size={12} />}
+                    <span>Upload via Cloudinary</span>
+                    <input type="file" accept="image/*" className="hidden" disabled={uploadingMedia} onChange={(e) => handleImageUpload(e, false)} />
+                  </label>
+                </div>
                 <input type="url" name="thumbnailImage" value={formData.thumbnailImage} onChange={handleChange} className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-amber-700 outline-none" />
+                {formData.thumbnailImage && <img src={formData.thumbnailImage} alt="Room preview" className="h-20 w-32 object-cover rounded mt-2 border" />}
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">Gallery Images (Comma Separated URLs)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-medium text-slate-700">Gallery Images (Comma Separated URLs)</label>
+                  <label className="cursor-pointer text-xs text-amber-700 hover:text-amber-800 font-semibold flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    {uploadingMedia ? <FiLoader className="animate-spin" size={12} /> : <FiUpload size={12} />}
+                    <span>Append Cloudinary Photo</span>
+                    <input type="file" accept="image/*" className="hidden" disabled={uploadingMedia} onChange={(e) => handleImageUpload(e, true)} />
+                  </label>
+                </div>
                 <textarea name="galleryImages" value={formData.galleryImages} onChange={handleChange} rows="3" placeholder="https://image1.jpg, https://image2.jpg" className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-amber-700 outline-none"></textarea>
               </div>
             </div>

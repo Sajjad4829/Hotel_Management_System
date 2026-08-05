@@ -3,7 +3,6 @@ import SearchBookingBar from "../Components/Bookingsearch/BookingSearch";
 import FeaturedRooms from "../Components/FeaturesRooms/FeaturesRoom";
 import FacilitiesPreview from "../Components/FacilityPreview/Facilitiespreview";
 import TestimonialsPage from "../Components/Testimonials/Testimonials";
-import HotelContactSection from "../Components/Contact/Contact";
 import AiRecommendedDestinations from "../Components/Home/AiRecommendedDestinations";
 
 export const componentRegistry = {
@@ -12,6 +11,5 @@ export const componentRegistry = {
   featuredCollection: FeaturedRooms,
   aiRecommended: AiRecommendedDestinations,
   facilities: FacilitiesPreview,
-  reviews: TestimonialsPage,
-  contact: HotelContactSection
+  reviews: TestimonialsPage
 };

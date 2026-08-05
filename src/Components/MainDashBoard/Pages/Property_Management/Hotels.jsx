@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiX, FiImage, FiMapPin } from "react-icons/fi";
+import { FiSearch, FiPlus, FiEdit2, FiTrash2, FiX, FiImage, FiMapPin, FiUpload, FiLoader } from "react-icons/fi";
 import { usePropertyContext } from "../../../../Context/PropertyContext";
+import api from "../../../../services/api";
 
 function Modal({ isOpen, onClose, title, children }) {
   if (!isOpen) return null;
@@ -20,11 +21,15 @@ function Modal({ isOpen, onClose, title, children }) {
 }
 
 export default function Hotels() {
-  const { hotels, destinations, addHotel, updateHotel, deleteHotel } = usePropertyContext();
+  const { hotels, destinations, addHotel, updateHotel, deleteHotel, loadingHotels } = usePropertyContext();
   
   const [search, setSearch] = useState("");
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedHotel, setSelectedHotel] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [submittingForm, setSubmittingForm] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   const initialFormState = {
     destinationId: "",
@@ -87,25 +92,58 @@ export default function Hotels() {
     }
   };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    
-    // Process comma separated lists and numbers
-    const processedData = {
-      ...formData,
-      originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
-      price: formData.price ? Number(formData.price) : null,
-      reviewCount: formData.reviewCount ? Number(formData.reviewCount) : 0,
-      amenities: formData.amenities ? formData.amenities.split(",").map(a => a.trim()).filter(a => a) : [],
-      gallery: formData.gallery ? formData.gallery.split(",").map(g => g.trim()).filter(g => g) : [],
-    };
-
-    if (selectedHotel) {
-      updateHotel(selectedHotel.id, processedData);
-    } else {
-      addHotel(processedData);
+  const handleImageUpload = async (e, isGallery = false) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingImage(true);
+    const formPayload = new FormData();
+    formPayload.append("image", file);
+    formPayload.append("folder", "hotel_properties");
+    try {
+      const res = await api.post("/upload", formPayload, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      const uploadedUrl = res.data.data.url;
+      if (isGallery) {
+        setFormData((prev) => ({
+          ...prev,
+          gallery: prev.gallery ? `${prev.gallery}, ${uploadedUrl}` : uploadedUrl,
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, image: uploadedUrl }));
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Image upload failed. Ensure you are signed in as Admin.");
+    } finally {
+      setUploadingImage(false);
     }
-    setIsFormModalOpen(false);
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setSubmittingForm(true);
+    try {
+      // Process comma separated lists and numbers
+      const processedData = {
+        ...formData,
+        originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
+        price: formData.price ? Number(formData.price) : null,
+        reviewCount: formData.reviewCount ? Number(formData.reviewCount) : 0,
+        amenities: formData.amenities ? formData.amenities.split(",").map(a => a.trim()).filter(a => a) : [],
+        gallery: formData.gallery ? formData.gallery.split(",").map(g => g.trim()).filter(g => g) : [],
+      };
+
+      if (selectedHotel) {
+        await updateHotel(selectedHotel.id || selectedHotel._id, processedData);
+      } else {
+        await addHotel(processedData);
+      }
+      setIsFormModalOpen(false);
+    } catch (error) {
+      alert("Failed to preserve hotel property changes: " + (error.response?.data?.message || error.message));
+    } finally {
+      setSubmittingForm(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -115,6 +153,11 @@ export default function Hotels() {
       [name]: type === 'checkbox' ? checked : value 
     }));
   };
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentHotels = filteredHotels.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredHotels.length / itemsPerPage) || 1;
 
   return (
     <>
@@ -147,9 +190,16 @@ export default function Hotels() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredHotels.length > 0 ? (
-                  filteredHotels.map((hotel) => {
-                    const destination = destinations.find(d => d.id === hotel.destinationId);
+                {loadingHotels ? (
+                  <tr>
+                    <td colSpan={6} className="py-10 text-center text-slate-400 font-medium">
+                      <FiLoader size={24} className="animate-spin mx-auto mb-2 text-amber-700" />
+                      Synchronizing property portfolio with backend...
+                    </td>
+                  </tr>
+                ) : currentHotels.length > 0 ? (
+                  currentHotels.map((hotel) => {
+                    const destination = destinations.find(d => d.id === hotel.destinationId || d.id === hotel.destination || d._id === hotel.destination);
                     return (
                       <tr key={hotel.id} className={`hover:bg-slate-50 ${!hotel.isActive ? 'opacity-50' : ''}`}>
                         <td className="whitespace-nowrap px-4 py-3">
@@ -241,8 +291,16 @@ export default function Hotels() {
             </div>
             
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-slate-700 mb-1">Cover Image URL</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-slate-700">Cover Image URL</label>
+                <label className="cursor-pointer text-xs text-amber-700 hover:text-amber-800 font-semibold flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  {uploadingImage ? <FiLoader className="animate-spin" size={12} /> : <FiUpload size={12} />}
+                  <span>Upload via Cloudinary</span>
+                  <input type="file" accept="image/*" className="hidden" disabled={uploadingImage} onChange={(e) => handleImageUpload(e, false)} />
+                </label>
+              </div>
               <input type="url" name="image" value={formData.image} onChange={handleChange} placeholder="https://..." className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-amber-700 outline-none" />
+              {formData.image && <img src={formData.image} alt="Preview" className="h-20 w-32 object-cover rounded mt-2 border" />}
             </div>
 
             <div className="sm:col-span-2">
@@ -251,7 +309,14 @@ export default function Hotels() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-slate-700 mb-1">Gallery Image URLs (Comma separated)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-medium text-slate-700">Gallery Image URLs (Comma separated)</label>
+                <label className="cursor-pointer text-xs text-amber-700 hover:text-amber-800 font-semibold flex items-center gap-1 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                  {uploadingImage ? <FiLoader className="animate-spin" size={12} /> : <FiUpload size={12} />}
+                  <span>Append Cloudinary Image</span>
+                  <input type="file" accept="image/*" className="hidden" disabled={uploadingImage} onChange={(e) => handleImageUpload(e, true)} />
+                </label>
+              </div>
               <textarea name="gallery" value={formData.gallery} onChange={handleChange} rows="2" placeholder="https://image1.jpg, https://image2.jpg" className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:border-amber-700 outline-none"></textarea>
             </div>
 
@@ -310,12 +375,24 @@ export default function Hotels() {
 
           <div className="pt-4 border-t border-slate-100 flex justify-end gap-3 mt-6">
             <button type="button" onClick={() => setIsFormModalOpen(false)} className="px-5 py-2.5 text-sm font-medium text-slate-700 bg-slate-100 rounded-lg hover:bg-slate-200 transition">Cancel</button>
-            <button type="submit" className="px-6 py-2.5 bg-amber-700 text-white rounded-lg text-sm font-medium hover:bg-amber-800 transition shadow-sm">
-              {selectedHotel ? "Save Changes" : "Create Hotel"}
+            <button type="submit" disabled={submittingForm || uploadingImage} className="inline-flex items-center gap-2 px-6 py-2.5 bg-amber-700 text-white rounded-lg text-sm font-medium hover:bg-amber-800 disabled:opacity-50 transition shadow-sm">
+              {submittingForm && <FiLoader className="animate-spin" size={14} />}
+              <span>{selectedHotel ? "Save Changes" : "Create Hotel"}</span>
             </button>
           </div>
         </form>
       </Modal>
+
+      {/* Pagination controls */}
+      {!loadingHotels && filteredHotels.length > itemsPerPage && (
+        <div className="mx-6 mb-6 py-3 px-4 border border-slate-200 rounded-xl flex items-center justify-between text-xs text-slate-600 bg-white shadow-sm">
+          <span>Showing <strong>{indexOfFirstItem + 1}</strong> to <strong>{Math.min(indexOfLastItem, filteredHotels.length)}</strong> of <strong>{filteredHotels.length}</strong> hotels</span>
+          <div className="flex gap-2">
+            <button onClick={() => setCurrentPage(p => Math.max(p - 1, 1))} disabled={currentPage === 1} className="px-3 py-1.5 rounded border border-slate-200 bg-slate-50 font-medium hover:bg-slate-100 disabled:opacity-40">Previous</button>
+            <button onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages} className="px-3 py-1.5 rounded border border-slate-200 bg-slate-50 font-medium hover:bg-slate-100 disabled:opacity-40">Next</button>
+          </div>
+        </div>
+      )}
     </>
   );
 }

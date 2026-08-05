@@ -13,7 +13,8 @@ import {
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
 import Input from "./Input";
 import Button from "./Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useAuth } from "../../Context/AuthContext.jsx";
 
 function Skyline() {
   const windows = useMemo(() => {
@@ -103,6 +104,14 @@ function Skyline() {
 }
 
 export default function Login() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const { login } = useAuth();
+  const [errorMsg, setErrorMsg] = useState("");
+
+  const isAdminLogin = searchParams.get("role") === "admin";
+
   const [theme, setTheme] = useState("dark");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(true);
@@ -112,33 +121,39 @@ export default function Login() {
   const handleChange = (e) =>
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => setLoading(false), 1400);
+    setErrorMsg("");
+    const res = await login(form.email, form.password);
+    setLoading(false);
+    if (res.success) {
+      if (location.state?.from) {
+        // Booking.com UX pattern: return customer immediately to their booking process with all room selections preserved
+        navigate(location.state.from, { state: location.state.bookingState || location.state, replace: true });
+      } else if (res.user.role === "admin") {
+        navigate("/dashboard");
+      } else {
+        navigate("/customer/dashboard");
+      }
+    } else {
+      setErrorMsg(res.message || "Invalid Email or Password.");
+    }
   };
 
   return (
-    <div
-      className={`${theme === "dark" ? "dark" : ""} relative min-h-screen w-full overflow-hidden transition-colors duration-500`}
-    >
+    <div className={`${theme === "dark" ? "dark" : ""} relative min-h-screen w-full overflow-hidden transition-colors duration-500`}>
       <div className="absolute inset-0 bg-[#F7F3EA] dark:bg-[#0B0E14] transition-colors duration-500" />
 
       <motion.div
         className="absolute -top-40 -left-32 h-[520px] w-[520px] rounded-full blur-[110px] opacity-40 dark:opacity-30"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(201,164,85,0.9) 0%, rgba(201,164,85,0) 70%)",
-        }}
+        style={{ background: "radial-gradient(circle, rgba(201,164,85,0.9) 0%, rgba(201,164,85,0) 70%)" }}
         animate={{ x: [0, 30, 0], y: [0, 20, 0] }}
         transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
         className="absolute top-1/3 -right-40 h-[600px] w-[600px] rounded-full blur-[130px] opacity-30 dark:opacity-25"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(88,101,242,0.35) 0%, rgba(88,101,242,0) 70%)",
-        }}
+        style={{ background: "radial-gradient(circle, rgba(88,101,242,0.35) 0%, rgba(88,101,242,0) 70%)" }}
         animate={{ x: [0, -25, 0], y: [0, -15, 0] }}
         transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
       />
@@ -168,41 +183,16 @@ export default function Login() {
             </span>
           </div>
 
-          <h1
-            className="text-[42px] leading-[1.08] text-[#1E1A10] dark:text-[#F5EFDF] mb-4"
-            style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}
-          >
-            Smart Hotel
-            <br />
-            Management System
+          <h1 className="text-[42px] leading-[1.08] text-[#1E1A10] dark:text-[#F5EFDF] mb-4" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
+            Smart Hotel<br />Management System
           </h1>
           <p className="text-[#6B6350] dark:text-[#B9AE93] text-[15px] mb-10">
-            Manage your hotel smarter.
+            {isAdminLogin ? "Executive Administrative Security Access" : "Experience premium luxury hotel booking and concierge services."}
           </p>
 
           <div className="h-[300px] w-full opacity-90">
             <Skyline />
           </div>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: -14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="flex lg:hidden flex-col items-center text-center mb-8"
-        >
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-b from-[#F0D28A] to-[#C9A455] shadow-[0_8px_24px_-6px_rgba(201,164,85,0.6)] mb-4">
-            <HiOutlineBuildingOffice2 className="text-[#1A1406]" size={22} />
-          </div>
-          <h1
-            className="text-[26px] leading-tight text-[#1E1A10] dark:text-[#F5EFDF] mb-1"
-            style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}
-          >
-            Smart Hotel Management System
-          </h1>
-          <p className="text-[#6B6350] dark:text-[#B9AE93] text-sm">
-            Manage your hotel smarter.
-          </p>
         </motion.div>
 
         <motion.div
@@ -212,15 +202,17 @@ export default function Login() {
           className="w-full max-w-[420px] rounded-[28px] border border-black/10 dark:border-white/10 bg-white/55 dark:bg-white/[0.045] backdrop-blur-2xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.35)] p-8 sm:p-10"
         >
           <div className="mb-8">
-            <h2
-              className="text-[26px] text-[#1E1A10] dark:text-[#F5EFDF] mb-1.5"
-              style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}
-            >
-              Welcome back
+            <h2 className="text-[26px] text-[#1E1A10] dark:text-[#F5EFDF] mb-1.5" style={{ fontFamily: "'Fraunces', serif", fontWeight: 500 }}>
+              {isAdminLogin ? "Admin Login Card" : "Customer Login"}
             </h2>
             <p className="text-[#6B6350] dark:text-[#B9AE93] text-sm">
-              Sign in to access your dashboard.
+              {isAdminLogin ? "Enter administrative credentials to proceed." : "Sign in to access your customer dashboard and bookings."}
             </p>
+            {errorMsg && (
+              <div className="mt-3 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-medium">
+                {errorMsg}
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -288,13 +280,27 @@ export default function Login() {
 
             <Button type="submit" isLoading={loading} className="mt-2 group">
               <span className="flex items-center gap-2">
-                Sign in
+                {isAdminLogin ? "Login" : "Sign in"}
                 <FiArrowRight className="transition-transform group-hover:translate-x-0.5" />
               </span>
             </Button>
           </form>
 
-          <div className="mt-8 pt-6 border-t border-black/10 dark:border-white/10 text-center">
+          {!isAdminLogin && (
+            <div className="mt-6 pt-5 border-t border-black/10 dark:border-white/10 text-center">
+              <p className="text-[14px] text-[#6B6350] dark:text-[#B9AE93]">
+                Don't have an account?{" "}
+                <Link
+                  to="/register"
+                  className="font-semibold text-[#A9843F] dark:text-[#C9A455] hover:underline ml-1"
+                >
+                  Register
+                </Link>
+              </p>
+            </div>
+          )}
+
+          <div className="mt-6 pt-4 border-t border-black/10 dark:border-white/10 text-center">
             <p className="text-[12px] text-[#8A7A50] dark:text-[#8C8264]">
               © 2026 Aurelia Suites · Smart Hotel Management System
             </p>

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
+import { useAuth } from "../../Context/AuthContext.jsx";
 import {
   FiEye,
   FiEyeOff,
@@ -106,6 +107,9 @@ function FloatingInput({
 
 export default function Register() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { register: registerAuth } = useAuth();
+  const [serverError, setServerError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -121,11 +125,14 @@ export default function Register() {
 
   const onSubmit = async (data) => {
     setSubmitting(true);
-    // Simulate async registration call
-    await new Promise((r) => setTimeout(r, 1200));
-    console.log("Register payload:", data);
+    setServerError("");
+    const res = await registerAuth(data.fullName, data.email, data.phone, data.password);
     setSubmitting(false);
-    // navigate("/login");
+    if (res.success) {
+      navigate("/login", { state: location.state });
+    } else {
+      setServerError(res.message || "Registration failed. Please check your information.");
+    }
   };
 
   return (
@@ -212,6 +219,12 @@ export default function Register() {
             Create your account to continue
           </p>
         </motion.div>
+
+        {serverError && (
+          <div className="mb-3 p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-medium text-center">
+            {serverError}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-2.5">
           <FloatingInput

@@ -9,8 +9,7 @@ const defaultPagesData = {
       "featuredCollection",
       "aiRecommended",
       "facilities",
-      "reviews",
-      "contact"
+      "reviews"
     ],
     navbar: {
       logoImage: "",
@@ -20,7 +19,6 @@ const defaultPagesData = {
         { id: 2, label: "Offers", link: "/offers" },
         { id: 3, label: "Rooms", link: "/rooms" },
         { id: 4, label: "Facilities", link: "/facility" },
-        { id: 5, label: "Locations", link: "/locations" },
         { id: 6, label: "Contact", link: "/contact" }
       ],
       headerButtons: [
@@ -336,9 +334,43 @@ const defaultPagesData = {
     ]
   },
   contact: {
-    title: "Get In Touch",
-    email: "contact@havenhotels.com",
-    phone: "+1 (555) 123-4567",
+    // Hero / header
+    badgeText: "Reach Out",
+    heading: "Contact",
+    headingHighlight: "Us",
+    subheading: "We're here to assist you 24/7",
+    description: "Whether you need help with a reservation, a special occasion arrangement, or a general enquiry — our concierge team is always ready to make your stay extraordinary.",
+    // Contact info cards
+    phone: "+880 1234-567890",
+    email: "info@hotelname.com",
+    address: "Gulshan-2, Dhaka, Bangladesh",
+    // Map card
+    mapLabel: "Hotel Grand Dhaka",
+    mapCity: "Gulshan-2, Dhaka",
+    mapCountry: "Bangladesh — Open 24 / 7",
+    mapLink: "https://maps.google.com",
+    // Form
+    formTitle: "Send a Message",
+    formSubtitle: "We'll reply within a few hours.",
+    buttonText: "Send Message",
+    buttonColor: "#C8A96A",
+    // Social links
+    facebookUrl: "#",
+    instagramUrl: "#",
+    whatsappUrl: "#",
+    showFacebook: true,
+    showInstagram: true,
+    showWhatsapp: true,
+    // Section colours
+    sectionBg: "linear-gradient(135deg, #f9f7f4 0%, #ffffff 60%, #f3f0ec 100%)",
+    accentColor: "#C8A96A",
+    // Dynamic form fields — admin can add/edit/delete/reorder
+    formFields: [
+      { id: "ff-1", label: "Full Name",       name: "fullName", type: "text",     placeholder: "John Doe",            required: true,  rows: null },
+      { id: "ff-2", label: "Email Address",   name: "email",    type: "email",    placeholder: "john@example.com",    required: true,  rows: null },
+      { id: "ff-3", label: "Phone Number",    name: "phone",    type: "tel",      placeholder: "+880 1234-567890",    required: false, rows: null },
+      { id: "ff-4", label: "Your Message",    name: "message",  type: "textarea", placeholder: "How can we help you?",required: true,  rows: 4    },
+    ],
   }
 };
 
@@ -391,6 +423,9 @@ export function PageProvider({ children }) {
         parsed.rooms = { ...defaultPagesData.rooms, ...(parsed.rooms || {}) };
         parsed.hotels = { ...defaultPagesData.hotels, ...(parsed.hotels || {}) };
 
+        // Migrate contact to full schema if it's still the old minimal version
+        parsed.contact = { ...defaultPagesData.contact, ...(parsed.contact || {}) };
+
         // Migrate navMenu if it lacks Offers (for older saved versions)
         if (parsed.home && parsed.home.navbar && parsed.home.navbar.navMenu) {
             const hasOffers = parsed.home.navbar.navMenu.some(item => item.link === '/offers' || item.label === 'Offers');
@@ -406,22 +441,16 @@ export function PageProvider({ children }) {
                 }
             }
 
-            // Also migrate Locations and Contact if they are missing
-            const hasLocations = parsed.home.navbar.navMenu.some(item => item.link === '/locations' || item.label === 'Locations');
-            if (!hasLocations) {
-                const newId = parsed.home.navbar.navMenu.length > 0 ? Math.max(...parsed.home.navbar.navMenu.map(i => i.id)) + 1 : 1;
-                parsed.home.navbar.navMenu.push({ id: newId, label: 'Locations', link: '/locations' });
-            }
-
+            // Also migrate Contact if it is missing
             const hasContact = parsed.home.navbar.navMenu.some(item => item.link === '/contact' || item.label === 'Contact');
             if (!hasContact) {
                 const newId = parsed.home.navbar.navMenu.length > 0 ? Math.max(...parsed.home.navbar.navMenu.map(i => i.id)) + 1 : 1;
                 parsed.home.navbar.navMenu.push({ id: newId, label: 'Contact', link: '/contact' });
             }
 
-            // Ensure the default "Home" link is removed for all existing users, but don't remove other links
+            // Ensure default "Home" and removed "Locations" links are filtered out for all existing users
             parsed.home.navbar.navMenu = parsed.home.navbar.navMenu.filter(
-                item => !(item.label.toLowerCase() === 'home' && item.link === '/')
+                item => !(item.label.toLowerCase() === 'home' && item.link === '/') && item.link !== '/locations'
             );
             
             // Also migrate Gallery to be before Offers if it doesn't exist
@@ -523,6 +552,11 @@ export function PageProvider({ children }) {
         // Add aiRecommended data if not there
         if (parsed.home && !parsed.home.aiRecommended) {
            parsed.home.aiRecommended = defaultPagesData.home.aiRecommended;
+        }
+
+        // Remove 'contact' from home layout — it now lives on its own /contact page
+        if (parsed.home && parsed.home.layout) {
+           parsed.home.layout = parsed.home.layout.filter(id => id !== 'contact');
         }
         
         return parsed;

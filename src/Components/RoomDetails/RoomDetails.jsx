@@ -689,7 +689,7 @@ export default function RoomDetails() {
                 </p>
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                   <button 
-                    onClick={() => navigate(-1)}
+                    onClick={() => navigate(`/book/${room.id}`, { state: { type: "room", room } })}
                     className="bg-amber-500 hover:bg-amber-400 text-white px-8 py-3 text-xs tracking-widest uppercase transition-colors duration-300 w-full sm:w-auto"
                   >
                     Reserve Now — ${room.price.toLocaleString()}/night

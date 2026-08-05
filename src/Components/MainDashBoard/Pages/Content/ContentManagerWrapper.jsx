@@ -10,6 +10,8 @@ import StatisticsEditor from './StatisticsEditor';
 import OffersFeaturedEditor from './OffersFeaturedEditor';
 import OffersGenericArrayEditor from './OffersGenericArrayEditor';
 import OffersSimpleSectionEditor from './OffersSimpleSectionEditor';
+import ContactEditor from './ContactEditor';
+import HotelContactSection from '../../../Contact/Contact';
 
 export default function ContentManagerWrapper() {
   const { page } = useParams(); // 'homepage', 'about', 'offer', etc.
@@ -19,6 +21,73 @@ export default function ContentManagerWrapper() {
   // Since we are refactoring, we currently only have editors for the 'homepage'
   // and they are broken down into sections.
   const isHomepage = page === 'homepage';
+
+  // ── Contact page gets its own wide split-view layout (like HeroWrapper) ──
+  if (page === 'contact') {
+    return (
+      <div className="max-w-[1600px] mx-auto py-6 px-4">
+
+        {/* Header */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900" style={{ fontFamily: 'Georgia, serif' }}>Contact Page</h1>
+            <p className="text-slate-500 mt-1">Edit every detail of your /contact page and preview changes live.</p>
+          </div>
+          <button
+            onClick={() => { setSavedStatus(true); setTimeout(() => setSavedStatus(false), 2000); }}
+            className="flex items-center gap-2 px-8 py-2.5 bg-[#1e3a5f] hover:bg-[#0f2942] text-white rounded-xl font-semibold transition-colors shadow-md shrink-0"
+          >
+            {savedStatus ? <Check size={18} /> : <Save size={18} />}
+            {savedStatus ? 'Saved!' : 'Save Changes'}
+          </button>
+        </div>
+
+        {/* Split view */}
+        <div className="flex flex-col xl:flex-row gap-6 items-start">
+
+          {/* Left — Editor panel */}
+          <div className="w-full xl:w-[42%] shrink-0">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 bg-slate-50">
+                <h2 className="text-base font-bold text-slate-800">Contact Page Settings</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Changes appear instantly in the live preview →</p>
+              </div>
+              <div className="p-6 space-y-4 max-h-[calc(100vh-220px)] overflow-y-auto">
+                <ContactEditor
+                  data={pagesData['contact'] || {}}
+                  onChange={(field, value) => {
+                    updatePageData('contact', null, field, value);
+                    setSavedStatus(false);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Right — Live Preview */}
+          <div className="w-full xl:w-[58%] sticky top-6">
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+              {/* Browser chrome bar */}
+              <div className="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center justify-between shrink-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+                  <span className="ml-3 text-xs font-semibold text-slate-500 uppercase tracking-widest">Live Preview</span>
+                </div>
+                <span className="text-xs text-slate-400 font-mono">/contact</span>
+              </div>
+              {/* Preview content */}
+              <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 220px)' }}>
+                <HotelContactSection data={pagesData['contact'] || {}} />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    );
+  }
 
   const handleInputChange = (section, field, value) => {
     updatePageData(page === 'homepage' ? 'home' : page, section, field, value);

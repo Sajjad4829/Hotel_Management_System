@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { calculatePricing } from "../../utils/pricing";
 import {
@@ -6,6 +6,7 @@ import {
   FiChevronRight, FiArrowLeft, FiWifi, FiCoffee, FiTruck, FiTag, FiLock,
 } from "react-icons/fi"; 
 import { useRoomContext } from "../../Context/RoomContext";
+import { useAuth } from "../../Context/AuthContext.jsx";
 
 function BookingInput({
   label,
@@ -142,6 +143,7 @@ function SectionCard({ title, subtitle, children, className = "" }) {
 export default function BookingPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, token } = useAuth();
   const { rooms: allRooms } = useRoomContext();
   const [arrivalTime, setArrivalTime] = useState("");
   const [occasion, setOccasion] = useState("");
@@ -182,11 +184,65 @@ export default function BookingPage() {
     address: "",
   });
 
+  // Automatically sync authenticated customer credentials into the booking form
+  useEffect(() => {
+    if (user) {
+      const nameParts = (user.fullName || "").split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
+      setGuestInfo((prev) => ({
+        ...prev,
+        firstName: prev.firstName || firstName,
+        lastName: prev.lastName || lastName,
+        email: prev.email || user.email || "",
+        phone: prev.phone || user.phone || "",
+      }));
+    }
+  }, [user]);
+
   // ---------- Special request state ----------
   const [specialRequests, setSpecialRequests] = useState("");
 
   const handleGuestInfoChange = (field) => (e) =>
     setGuestInfo((prev) => ({ ...prev, [field]: e.target.value }));
+
+  // Customer Login Authentication verification on Room Booking Confirmation
+  const handleConfirmBooking = (e) => {
+    e.preventDefault();
+    if (!token || !user) {
+      alert("Authentication Required: Please sign in to your customer account to confirm and secure your room booking.");
+      navigate("/login", { state: { from: location.pathname + location.search, bookingState: { ...location.state, checkIn, checkOut, guests, children } } });
+      return;
+    }
+
+    if (!checkIn || !checkOut) {
+      alert("Please select valid check-in and check-out dates to confirm your stay.");
+      return;
+    }
+
+    // Persist confirmed booking into customer's local dashboard state for real-time visibility
+    const confirmedReservation = {
+      id: "RES-" + Math.floor(100000 + Math.random() * 900000),
+      hotelName: bookingItem?.hotelName || hotel?.name || "Grand Horizon Resort & Spa",
+      roomType: bookingItem?.name || bookingItem?.title || "Executive Presidential Suite",
+      checkIn: checkIn,
+      checkOut: checkOut,
+      bookingStatus: "Confirmed",
+      paymentStatus: "Pay at Hotel",
+      totalAmount: pricing?.total ? `$${pricing.total.toLocaleString()}` : "$850",
+      bookedAt: new Date().toLocaleDateString()
+    };
+
+    try {
+      const currentBookings = JSON.parse(localStorage.getItem("customer_bookings") || "[]");
+      localStorage.setItem("customer_bookings", JSON.stringify([confirmedReservation, ...currentBookings]));
+    } catch (err) {
+      console.error("Failed to save customer booking state:", err);
+    }
+
+    alert(`🎉 Room Booking Confirmed!\n\nYour room reservation has been successfully verified and linked to your customer authentication account (${user.email}).\n\nRedirecting to your Customer Bookings Portal...`);
+    navigate("/customer/bookings");
+  };
 
   // ---------- Price calculation ----------
   const nights = useMemo(() => {
@@ -769,7 +825,8 @@ export default function BookingPage() {
             )}
 
             <button
-              type="submit"
+              type="button"
+              onClick={handleConfirmBooking}
               className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#C89B3C] py-3.5 text-sm font-semibold text-white shadow-md transition hover:bg-[#b3892f] active:scale-[0.99]"
             >
               <FiCheckCircle />
